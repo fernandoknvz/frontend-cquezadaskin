@@ -1,0 +1,42 @@
+name: Deploy Front App ISKIO Producción
+
+on:
+    push:
+      branches:
+        - main
+
+jobs:
+    Deploy:
+      name: Stopping App Front Services - ISKIO Producción
+      runs-on: prappiskio
+      steps:    
+        - name: Checkout code
+          uses: actions/checkout@v4
+          with:
+              fetch-depth: 0
+        - name: Docker Hub login (PAT)
+          run: |
+            echo "${{ secrets.DOCKER_TOKEN_ISKIO }}" | docker login \
+            -u "${{ secrets.DOCKER_USER_ISKIO }}" --password-stdin
+        - name: Stop Container Services
+          run: |
+            docker compose -f docker-compose-iskio-prd.yml stop
+        - name: Remove Container
+          run: |
+            docker compose -f docker-compose-iskio-prd.yml down
+        - name: Clean Images
+          run: |
+            docker compose -f docker-compose-iskio-prd.yml down --rmi all
+
+    StartStackService:
+      name: Deploy Frontend ISKIO APP Producción
+      runs-on: prappiskio
+      needs: Deploy
+      steps:
+        - name: Docker Hub login (PAT)
+          run: |
+            echo "${{ secrets.DOCKER_TOKEN_ISKIO }}" | docker login \
+            -u "${{ secrets.DOCKER_USER_ISKIO }}" --password-stdin
+        - name: Deploy Frontend ISKIO APP Producción
+          run: |
+            docker compose -f docker-compose-iskio-prd.yml up -d --build

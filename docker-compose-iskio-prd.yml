@@ -1,0 +1,17 @@
+services:
+  front-app:
+    build: .
+    container_name: app-front
+    env_file:
+      - .env
+    expose:
+      - "9443"
+    networks:
+      iskio_net:
+        ipv4_address: 172.16.145.11
+    restart: unless-stopped
+
+networks:
+  iskio_net:
+    external: true
+    name: iskio_net
