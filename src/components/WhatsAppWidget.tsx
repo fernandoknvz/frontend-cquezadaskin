@@ -1,26 +1,24 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { CalendarDays, Send, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 
+import { siteConfig } from "@/config/site";
+
 type Props = {
-  phoneNumber?: string; // sin "+"
+  phoneNumber?: string;
   defaultMessage?: string;
   position?: "bottom-right" | "bottom-left";
-
-  // âœ… Control de cuÃ¡nto sube al llegar al final
-  maxLift?: number; // px que sube mÃ¡ximo (al final)
-  liftDistanceFromBottom?: number; // desde cuÃ¡ntos px antes del final empieza a subir
+  maxLift?: number;
+  liftDistanceFromBottom?: number;
 };
 
 export default function WhatsAppWidget({
-  phoneNumber = "56987654321",
-  defaultMessage = "¡Hola! Me gustaría agendar una hora Contigo",
+  phoneNumber = siteConfig.whatsapp,
+  defaultMessage = "¡Hola! Me gustaría agendar una hora con CQuezadaSkin.",
   position = "bottom-right",
-
-  // âœ… Ajusta esto:
-  maxLift = 280, // â† AL LLEGAR AL FINAL, sube 500px
-  liftDistanceFromBottom = 800, // â† empieza a subir cuando faltan 800px para el final
+  maxLift = 280,
+  liftDistanceFromBottom = 800,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState(defaultMessage);
@@ -45,7 +43,6 @@ export default function WhatsAppWidget({
     setIsOpen(false);
   };
 
-  // âœ… Cerrar con ESC y click afuera
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsOpen(false);
@@ -65,7 +62,6 @@ export default function WhatsAppWidget({
     };
   }, [isOpen]);
 
-  // âœ… Lift inteligente: se ajusta al footer (sube cuando te acercas al final)
   useEffect(() => {
     let raf = 0;
 
@@ -73,16 +69,11 @@ export default function WhatsAppWidget({
       const scrollTop = window.scrollY;
       const viewportH = window.innerHeight;
       const docH = document.documentElement.scrollHeight;
-
-      // cuÃ¡nto falta para el final (0 = estÃ¡s en el fondo)
       const remaining = docH - (scrollTop + viewportH);
-
-      // progreso 0..1 (0 lejos, 1 en el final)
       const progress = Math.min(
         1,
         Math.max(0, (liftDistanceFromBottom - remaining) / liftDistanceFromBottom)
       );
-
       const nextLift = progress * maxLift;
 
       setLiftAmount((prev) => (Math.abs(prev - nextLift) < 0.5 ? prev : nextLift));
@@ -111,7 +102,6 @@ export default function WhatsAppWidget({
       transition={{ type: "tween", duration: 0.35, ease: "easeOut" }}
       className={`fixed ${posClasses} z-50 flex flex-col gap-4`}
     >
-      {/* Ventana */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -191,7 +181,6 @@ export default function WhatsAppWidget({
         )}
       </AnimatePresence>
 
-      {/* BotÃ³n agendar */}
       <motion.a
         href="/agendar"
         className="
@@ -217,7 +206,6 @@ export default function WhatsAppWidget({
         <CalendarDays className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={2.2} />
       </motion.a>
 
-      {/* BotÃ³n flotante */}
       <motion.button
         onClick={() => setIsOpen((v) => !v)}
         className="

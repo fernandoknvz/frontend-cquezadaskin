@@ -19,6 +19,6 @@ const mapCategory = (item: any): ServiceCategory => ({
 });
 
 export const listServiceCategories = async () => {
-  const data = await apiFetch<any[]>("/categorias");
+  const data = await apiFetch<any[]>("/categorias", { skipAuth: true });
   return data.map(mapCategory);
 };

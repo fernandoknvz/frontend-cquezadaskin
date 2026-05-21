@@ -22,6 +22,8 @@ const mapPost = (item: InstagramPostRaw): InstagramPost => ({
 });
 
 export const listInstagramPosts = async (): Promise<InstagramPost[]> => {
-  const data = await apiFetch<InstagramPostRaw[]>("/instagram");
+  const data = await apiFetch<InstagramPostRaw[]>("/instagram", {
+    skipAuth: true,
+  });
   return data.map(mapPost);
 };

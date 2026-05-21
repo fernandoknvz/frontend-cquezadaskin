@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Phone, Mail, MapPin, Instagram } from "lucide-react";
+import { siteConfig } from "@/config/site";
 import NavbarBrand from "./NavbarBrand";
 
 export const Footer: React.FC = () => {
@@ -44,30 +45,30 @@ export const Footer: React.FC = () => {
             <div className="mt-4 space-y-3 text-sm text-[#B8B8B8]">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-[#00D1C1]" />
-                <a className="hover:text-white" href="tel:+56973864233">
-                  +569 7386 4233
+                <a className="hover:text-white" href={siteConfig.phoneHref}>
+                  {siteConfig.phone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-[#00D1C1]" />
-                <a className="hover:text-white" href="mailto:contacto@cquezadaskin.cl">
-                  contacto@cquezadaskin.cl
+                <a className="hover:text-white" href={`mailto:${siteConfig.email}`}>
+                  {siteConfig.email}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Instagram className="h-4 w-4 text-[#00D1C1]" />
                 <a
                   className="hover:text-white"
-                  href="https://www.instagram.com/cquezadaskin/"
+                  href={siteConfig.instagram}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  @cquezadaskin
+                  {siteConfig.instagramHandle}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-[#00D1C1]" />
-                <span>Quilpué, Chile</span>
+                <span>{siteConfig.address}</span>
               </div>
             </div>
           </div>
@@ -77,7 +78,7 @@ export const Footer: React.FC = () => {
 
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <p className="text-xs text-[#8E8E8E]">
-            © {new Date().getFullYear()} CQuezadaSkin. Sistema Web de
+            © {new Date().getFullYear()} {siteConfig.name}. Sistema Web de
             Agendamiento creado por Fernando Olguea Desarrollador de Software.
           </p>
           <div className="flex gap-4 text-xs">

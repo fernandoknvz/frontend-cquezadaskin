@@ -291,7 +291,6 @@ export const AgendarPage: React.FC = () => {
       setServicesError(null);
       try {
         const data = await listServices();
-        console.log("services loaded:", data);
         const servicesArray = Array.isArray(data) ? data : [];
         const active = servicesArray.filter((service) => service.activo !== false);
         setServices(active);

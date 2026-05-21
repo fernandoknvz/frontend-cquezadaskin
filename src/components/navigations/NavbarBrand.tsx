@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { siteConfig } from "@/config/site";
 import brandLogo from "@/assets/logo_cquezadaskin.png";
 
 export const NavbarBrand: React.FC = () => {
   return (
-    <Link to="/" className="group flex items-center gap-3" aria-label="Ir al inicio de CQuezadaSkin">
+    <Link to="/" className="group flex items-center gap-3" aria-label={`Ir al inicio de ${siteConfig.name}`}>
       <div
         className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[#00D1C1]/35 bg-[#0B0F0F] shadow-[0_0_30px_rgba(0,209,193,0.16)] transition group-hover:border-[#00D1C1]/70 group-hover:shadow-[0_0_34px_rgba(0,209,193,0.24)]"
         aria-hidden="true"

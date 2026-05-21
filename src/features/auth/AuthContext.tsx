@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import {
   type AuthUser,
@@ -9,6 +9,7 @@ import {
 import {
   clearAuthStorage,
   getAccessToken,
+  getRememberSession,
   getStoredUser,
   setAccessToken,
   setRememberSession,
@@ -19,7 +20,7 @@ type AuthContextValue = {
   user: AuthUser | null;
   token: string | null;
   loading: boolean;
-  login: (username: string, password: string, remember?: boolean) => Promise<void>;
+  login: (identifier: string, password: string, remember?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
@@ -48,15 +49,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setAccessToken(value, persist);
   };
 
-  const login = async (username: string, password: string, remember = true) => {
-    const response = await loginRequest(username, password);
+  const login = useCallback(async (identifier: string, password: string, remember = true) => {
+    const response = await loginRequest(identifier, password);
+    if (!response.token || !response.user) {
+      throw new Error("No se pudo iniciar sesión");
+    }
+
     setRememberSession(remember);
     setToken(response.token, remember);
     setUser(response.user);
     setStoredUser(response.user, remember);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await logoutRequest();
     } finally {
@@ -64,13 +69,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       clearAuthStorage();
     }
-  };
+  }, []);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     const response = await meRequest();
     setUser(response.user);
-    setStoredUser(response.user, Boolean(getAccessToken() && localStorage.getItem("iskio_auth_token")));
-  };
+    setStoredUser(response.user, getRememberSession());
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -103,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     init();
-  }, []);
+  }, [refreshUser]);
 
   const value = useMemo(
     () => ({
@@ -114,12 +119,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       logout,
       refreshUser,
     }),
-    [user, token, loading]
+    [user, token, loading, login, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

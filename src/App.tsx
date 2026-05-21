@@ -14,10 +14,9 @@ import AdminPage from "./pages/admin/AdminPage";
 import { ProtectedRoute } from "./features/auth/ProtectedRoute";
 import { AgendarPage } from "./pages/agendar/AgendarPage";
 import { MisReservasPage } from "./pages/reservas/MisReservasPage";
-
-// ✅ NUEVO
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import TermsPage from "./pages/legal/TermsPage";
+import NotFoundPage from "./pages/not-found/NotFoundPage";
 
 function App() {
   return (
@@ -31,10 +30,9 @@ function App() {
           <Route path="/servicios" element={<PersonalServicesPage />} />
           <Route path="/empresas" element={<BusinessServicesPage />} />
           <Route path="/eventos" element={<EventPage />} />
-
-          {/* ✅ NUEVO: Legal */}
           <Route path="/privacidad" element={<PrivacyPage />} />
           <Route path="/terminos" element={<TermsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
 
         <Route

@@ -75,6 +75,5 @@ export const listServices = async () => {
   const data = Array.isArray(response)
     ? response
     : response.data ?? response.servicios ?? [];
-  console.log("services loaded:", data);
   return data.map(mapService);
 };

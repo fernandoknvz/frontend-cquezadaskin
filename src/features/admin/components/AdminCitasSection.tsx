@@ -11,7 +11,7 @@ import {
 
 const STATUS_OPTIONS = ["pendiente", "confirmada", "cancelada"] as const;
 
-// Extendemos el tipo para incluir los campos que sÃ­ vienen del backend
+// Extiende el tipo para incluir campos que vienen del backend.
 interface AdminCitaExtended extends AdminCita {
   cliente_id: number;
   servicio_id: number;

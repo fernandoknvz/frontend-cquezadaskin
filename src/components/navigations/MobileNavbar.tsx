@@ -4,6 +4,7 @@ import { Menu, CalendarDays, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { siteConfig } from "@/config/site";
 import type { NavItem } from "./Navbar";
 import brandLogo from "@/assets/logo_cquezadaskin.png";
 
@@ -66,7 +67,7 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
                     CQuezada<span className="text-[#00D1C1]">Skin</span>
                   </div>
                   <div className="text-xs text-[#B8B8B8]">
-                    Home studio en Quilpué
+                    Home studio en {siteConfig.address}
                   </div>
                 </div>
               </div>
@@ -117,14 +118,14 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
                 variant="outline"
                 className="w-full rounded-2xl border-white/10 bg-[#111414] text-white hover:bg-[#00D1C1]/10"
               >
-                <a href="tel:+56912345678" className="gap-2">
+                <a href={siteConfig.phoneHref} className="gap-2">
                   <Phone className="h-4 w-4" />
                   Llamar
                 </a>
               </Button>
 
               <div className="text-xs text-[#8E8E8E]">
-                Horario: Lun-Sab 09:00-20:00
+                Horario: {siteConfig.schedule}
               </div>
             </div>
           </SheetContent>

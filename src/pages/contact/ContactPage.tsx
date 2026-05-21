@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { siteConfig } from "@/config/site";
 import {
   Building2,
   User,
@@ -25,13 +26,6 @@ import {
   MessageSquare,
   CheckCircle,
 } from "lucide-react";
-
-/**
- * âœ… Objetivo MVP:
- * - Mantener Contacto Consultas especiales aquÃ­ (CompanyForm)
- * - Agenda online debe ir al formulario canÃ³nico (AgendarPage)
- * - Eliminar cÃ³digo no usado (ClientForm) para evitar warnings/errores TS/ESLint
- */
 
 // Types
 type FormMode = "company" | null;
@@ -165,7 +159,7 @@ const ModeSelector: React.FC<{
       bullets={[
         "Orientación personalizada",
         "Respuesta cercana",
-        "Atención en Quilpué",
+        `Atención en ${siteConfig.address}`,
       ]}
       cta="Solicitar cotización"
       onClick={onSelectCompany}
@@ -176,7 +170,7 @@ const ModeSelector: React.FC<{
       title="Agenda online"
       description="Reserva limpiezas faciales, microneedling y tratamientos corporales."
       icon={<User className="h-6 w-6 text-[#00D1C1]" />}
-      bullets={["Facial y corporal", "Home studio en Quilpué", "Horarios disponibles"]}
+      bullets={["Facial y corporal", `Home studio en ${siteConfig.address}`, "Horarios disponibles"]}
       cta="Agendar sesión"
       onClick={onGoAgendar}
       disabled={disabled}
@@ -282,7 +276,7 @@ const CompanyForm: React.FC<{
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange("email")(e.target.value)}
-                placeholder="contacto@cquezadaskin.cl"
+                placeholder={siteConfig.email}
                 className="rounded-2xl border-white/10 h-12"
                 required
                 disabled={isLoading}
@@ -388,7 +382,6 @@ export const ContactPage: React.FC = () => {
     useFormNavigation();
   const { successMessage, showSuccess } = useSuccessMessage();
 
-  // âœ… Ajusta esto si tu ruta real es otra (ej: "/reservar")
   const AGENDAR_PATH = "/agendar";
 
   const handleGoAgendar = useCallback(() => {
@@ -462,17 +455,17 @@ export const ContactPage: React.FC = () => {
               <p>
                 ¿Necesitas ayuda? Escrí­benos a{" "}
                 <a
-                  href="mailto:contacto@cquezadaskin.cl"
+                href={`mailto:${siteConfig.email}`}
                   className="text-[#00D1C1] hover:underline"
                 >
-                  contacto@cquezadaskin.cl
+                  {siteConfig.email}
                 </a>{" "}
                 o llama al{" "}
-                <a href="tel:+56973864233" className="text-[#00D1C1] hover:underline">
-                  +56 9 8765 4321
+                <a href={siteConfig.phoneHref} className="text-[#00D1C1] hover:underline">
+                  {siteConfig.phone}
                 </a>
               </p>
-              <p className="mt-2">Horario de atencion: Lunes a Sabado de 9:00 a 20:00 hrs</p>
+              <p className="mt-2">Horario de atención: {siteConfig.schedule}</p>
             </div>
           </>
         )}

@@ -1,3 +1,5 @@
+import type { AuthUser } from "@/services/authApi";
+
 const TOKEN_KEY = "iskio_auth_token";
 const USER_KEY = "iskio_auth_user";
 const REMEMBER_KEY = "iskio_auth_remember";
@@ -46,7 +48,7 @@ export const getStoredUser = () => {
   const raw = localStorage.getItem(USER_KEY) ?? sessionStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as { id: number | string; username: string; rol: string };
+    return JSON.parse(raw) as AuthUser;
   } catch {
     return null;
   }

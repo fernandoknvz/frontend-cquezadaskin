@@ -1,10 +1,19 @@
 import { apiFetch } from "@/services/apiClient";
 
+export type AuthRole = "admin" | "superadmin" | string;
+
 export type AuthUser = {
   id: number | string;
   username: string;
-  rol: string;
+  email: string | null;
+  rol: AuthRole;
+};
+
+type LoginPayload = {
+  identifier: string;
+  username: string;
   email?: string | null;
+  password: string;
 };
 
 type LoginResponse = {
@@ -17,11 +26,21 @@ type MeResponse = {
   user: AuthUser;
 };
 
-export const loginRequest = (username: string, password: string) =>
-  apiFetch<LoginResponse>("/login", {
+export const loginRequest = (identifier: string, password: string) => {
+  const trimmedIdentifier = identifier.trim();
+  const payload: LoginPayload = {
+    identifier: trimmedIdentifier,
+    username: trimmedIdentifier,
+    email: trimmedIdentifier.includes("@") ? trimmedIdentifier : null,
+    password,
+  };
+
+  return apiFetch<LoginResponse>("/login", {
     method: "POST",
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify(payload),
+    skipAuth: true,
   });
+};
 
 export const meRequest = () => apiFetch<MeResponse>("/me");
 

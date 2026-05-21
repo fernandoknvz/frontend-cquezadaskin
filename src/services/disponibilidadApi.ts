@@ -9,7 +9,8 @@ export type DisponibilidadSlot = {
 
 export const getDisponibilidadPorFecha = async (fecha: string) => {
   const data = await apiFetch<{ fecha: string; horas: string[] }>(
-    `/disponibilidad?fecha=${encodeURIComponent(fecha)}`
+    `/disponibilidad?fecha=${encodeURIComponent(fecha)}`,
+    { skipAuth: true }
   );
   return data.horas ?? [];
 };

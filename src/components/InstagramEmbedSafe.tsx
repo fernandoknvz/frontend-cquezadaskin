@@ -55,14 +55,14 @@ function ensureInstagramScript(): Promise<void> {
 export const InstagramEmbedSafe: React.FC<Props> = ({ url, className }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // âœ… derivado (si no hay permalink, no intentamos embed)
+  // Derivado: si no hay permalink, no intentamos embed.
   const permalink = useMemo(() => normalizeInstagramPermalink(url), [url]);
   const canEmbed = Boolean(permalink);
 
-  // âœ… modo solo cambia por eventos async (no setState sync al entrar al effect)
+  // El modo solo cambia por eventos async.
   const [mode, setMode] = useState<Mode>(MODES.EMBED);
 
-  // Si el usuario pega una URL invÃ¡lida, render cae a fallback sin setState.
+  // Si el usuario pega una URL inválida, render cae a fallback sin setState.
   // (el render mismo lo maneja con canEmbed)
   useEffect(() => {
     if (!canEmbed) return;
@@ -102,7 +102,7 @@ export const InstagramEmbedSafe: React.FC<Props> = ({ url, className }) => {
 
   const openUrl = permalink ?? url;
 
-  // âœ… fallback inmediato si no es embebible (sin setState)
+  // Fallback inmediato si no es embebible.
   if (!canEmbed || mode === MODES.FALLBACK) {
     return (
       <div

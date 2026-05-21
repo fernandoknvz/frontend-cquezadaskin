@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+﻿import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Instagram, Pencil, Play, RefreshCw, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { siteConfig } from "@/config/site";
 import {
   type AdminInstagramPayload,
   type AdminInstagramPost,
@@ -66,9 +67,8 @@ const buildPayload = (form: InstagramFormState): AdminInstagramPayload => ({
 });
 
 /**
- * âœ… ADMIN ONLY
- * Este componente se mantiene intacto para usarse en el panel admin.
- * IMPORTANTE: ya NO se renderiza en /eventos (pÃºblico).
+ * Admin only. Este componente se mantiene disponible para el panel admin.
+ * Importante: no se renderiza en /eventos público.
  */
 export const AdminInstagramSection = () => {
   const [posts, setPosts] = useState<AdminInstagramPost[]>([]);
@@ -284,8 +284,7 @@ export const AdminInstagramSection = () => {
 };
 
 /**
- * âœ… PUBLIC ONLY
- * Vista pÃºblica de Eventos: solo lectura.
+ * Vista pública de Eventos: solo lectura.
  */
 const toEmbedUrl = (permalink: string) => {
   const clean = permalink.endsWith("/") ? permalink.slice(0, -1) : permalink;
@@ -410,7 +409,7 @@ function InstagramPostCard({ post }: { post: InstagramPost }) {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">
-              @cquezadaskin
+              {siteConfig.instagramHandle}
             </p>
             <p className="text-xs text-[#A8A8A8]">
               {kind} desde el estudio
@@ -480,13 +479,13 @@ const EventPage = () => {
         </p>
       </div>
 
-      {/* âœ… PÃºblico: solo lectura */}
       <PublicInstagramSection />
 
-      {/* âŒ NO renderizar admin aquÃ­ */}
+      {/* No renderizar admin aquí. */}
       {/* <AdminInstagramSection /> */}
     </main>
   );
 };
 
 export default EventPage;
+

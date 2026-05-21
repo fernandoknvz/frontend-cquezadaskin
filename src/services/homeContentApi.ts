@@ -17,6 +17,6 @@ const mapItem = (item: any): HomeContentItem => ({
 });
 
 export const listHomeContent = async () => {
-  const data = await apiFetch<any[]>("/home-content");
+  const data = await apiFetch<any[]>("/home-content", { skipAuth: true });
   return data.map(mapItem);
 };

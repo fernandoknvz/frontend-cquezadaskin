@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
+import { siteConfig } from "@/config/site";
 
 export default function PrivacyPage() {
   const navigate = useNavigate();
@@ -59,9 +60,9 @@ export default function PrivacyPage() {
             <p>
               <strong>Contacto:</strong>
               <br />
-              <strong>Correo:</strong> contacto@cquezadaskin.cl
+              <strong>Correo:</strong> {siteConfig.email}
               <br />
-              <strong>Teléfono:</strong> +56 9 7386 4233
+              <strong>Teléfono:</strong> {siteConfig.phone}
             </p>
 
             <h2>2. Datos que recopilamos</h2>
@@ -106,7 +107,7 @@ export default function PrivacyPage() {
             <h2>7. Derechos del usuario</h2>
             <p>
               El usuario puede solicitar acceso, rectificacion, eliminacion u
-              oposicion escribiendo a contacto@cquezadaskin.cl.
+              oposición escribiendo a {siteConfig.email}.
             </p>
 
             <h2>8. Conservacion de datos</h2>

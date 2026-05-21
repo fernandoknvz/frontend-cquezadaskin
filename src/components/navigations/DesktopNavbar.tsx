@@ -2,6 +2,7 @@
 import { NavLink, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Phone, CalendarDays } from "lucide-react";
+import { siteConfig } from "@/config/site";
 import type { NavItem } from "./Navbar";
 import { NavbarBrand } from "./NavbarBrand";
 
@@ -42,12 +43,12 @@ export const DesktopNavbar: React.FC<Props> = ({ items }) => {
       {/* Actions */}
       <div className="flex items-center gap-2">
         <a
-          href="tel:+56973864233"
+          href={siteConfig.phoneHref}
           className="hidden lg:inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#D6D6D6] transition hover:bg-[#00D1C1]/10 hover:text-white"
-          aria-label="Llamar a CQuezadaSkin"
+          aria-label={`Llamar a ${siteConfig.name}`}
         >
           <Phone className="h-4 w-4" />
-          <span>+569 7386 4233</span>
+          <span>{siteConfig.phone}</span>
         </a>
 
         <Button

@@ -11,7 +11,7 @@ export default function LoginPage() {
   const { login, user, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [remember, setRemember] = useState(true);
@@ -28,13 +28,19 @@ export default function LoginPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const trimmedIdentifier = identifier.trim();
+    if (!trimmedIdentifier || !password) {
+      setError("Ingresa email o usuario y contraseña.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      await login(username.trim(), password, remember);
+      await login(trimmedIdentifier, password, remember);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Credenciales inválidas");
+      setError(err instanceof Error ? err.message : "Credenciales incorrectas");
     } finally {
       setLoading(false);
     }
@@ -78,11 +84,11 @@ export default function LoginPage() {
         {mode === "login" ? (
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label htmlFor="username">Usuario</Label>
+              <Label htmlFor="identifier">Email o usuario</Label>
               <Input
-                id="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
+                id="identifier"
+                value={identifier}
+                onChange={(event) => setIdentifier(event.target.value)}
                 className="h-11 rounded-2xl border-white/10"
                 autoComplete="username"
               />

@@ -8,6 +8,14 @@ type ProtectedRouteProps = {
   requiredRole?: string;
 };
 
+const hasRequiredRole = (userRole: string, requiredRole?: string) => {
+  if (!requiredRole) return true;
+  if (requiredRole === "admin") {
+    return userRole === "admin" || userRole === "superadmin";
+  }
+  return userRole === requiredRole;
+};
+
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole,
@@ -27,7 +35,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (requiredRole && user.rol !== requiredRole && user.rol !== "superadmin") {
+  if (!hasRequiredRole(user.rol, requiredRole)) {
     return <Navigate to="/" replace />;
   }
 

@@ -14,7 +14,7 @@ import {
 /**
  * ====== CONFIG HORARIA (ADMIN) ======
  * Step: 30 min
- * Bloques: 10:00â€“14:00 y 15:00â€“20:00 (como tu lista original, con corte 14â€“15)
+ * Bloques: 10:00-14:00 y 15:00-20:00.
  */
 const STEP_MINUTES = 30;
 
@@ -143,7 +143,7 @@ export const AdminDisponibilidadSection = () => {
   const handleDayToggle = async (fecha: string, active: boolean) => {
     const group = groupedSlots.find((item) => item.fecha === fecha);
 
-    // Si el dÃ­a ya tiene slots, alternamos esas horas existentes; si no, usamos TODAS las TIME_OPTIONS (ahora 30 min)
+    // Si el día ya tiene slots, alternamos esas horas existentes; si no, usamos todas las opciones.
     const hoursList = group ? normalizeHours(group.items) : TIME_OPTIONS;
 
     if (hoursList.length === 0) return;
