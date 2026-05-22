@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   BarChart3,
   CalendarDays,
+  CalendarRange,
   ClipboardList,
   Clock,
   Images,
@@ -14,6 +15,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { AdminAccountSection } from "@/features/admin/components/AdminAccountSection";
+import { AdminCalendarioSection } from "@/features/admin/components/AdminCalendarioSection";
 import { AdminCitasSection } from "@/features/admin/components/AdminCitasSection";
 import { AdminClientesSection } from "@/features/admin/components/AdminClientesSection";
 import { AdminDashboardSection } from "@/features/admin/components/AdminDashboardSection";
@@ -26,6 +28,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 
 type AdminSection =
   | "dashboard"
+  | "calendario"
   | "reservas"
   | "clientes"
   | "citas"
@@ -38,6 +41,7 @@ type AdminSection =
 const getSectionTitle = (section: AdminSection) => {
   const titles: Record<AdminSection, string> = {
     dashboard: "Dashboard de citas",
+    calendario: "Calendario",
     reservas: "Gestión de reservas",
     clientes: "Gestión de clientes",
     citas: "Gestión de citas",
@@ -95,6 +99,12 @@ export default function AdminPage() {
               title="Dashboard"
               description="Resumen de citas y servicios."
               onClick={() => setActiveSection("dashboard")}
+            />
+            <AdminCard
+              icon={<CalendarRange className="h-6 w-6" />}
+              title="Calendario"
+              description="Visualiza reservas, disponibilidad y bloqueos."
+              onClick={() => setActiveSection("calendario")}
             />
             <AdminCard
               icon={<ClipboardList className="h-6 w-6" />}
@@ -158,6 +168,8 @@ export default function AdminPage() {
 
             {activeSection === "servicios" ? (
               <AdminServicesSection />
+            ) : activeSection === "calendario" ? (
+              <AdminCalendarioSection />
             ) : activeSection === "home" ? (
               <AdminHomeContentSection />
             ) : activeSection === "instagram" ? (
