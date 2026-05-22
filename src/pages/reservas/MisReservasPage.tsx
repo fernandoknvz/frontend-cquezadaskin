@@ -1,6 +1,21 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { CalendarDays, Clock, ClipboardList, LogIn } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  ClipboardList,
+  History,
+  LockKeyhole,
+  LogIn,
+  LogOut,
+  Pencil,
+  RefreshCw,
+  RotateCw,
+  ShieldCheck,
+  UserRound,
+  XCircle,
+} from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -11,315 +26,934 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getClientToken } from "@/services/clientAuthStorage";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  listClienteReservas,
-  type ClienteReserva,
-} from "@/services/reservasApi";
+  clearClientSession,
+  getClientToken,
+  setStoredClient,
+} from "@/services/clientAuthStorage";
+import {
+  cancelarReservaCliente,
+  getClienteMe,
+  getClienteReservas,
+  reagendarReservaCliente,
+  updateClienteMe,
+  updateClientePassword,
+  type ClientePerfil,
+  type ReservaCliente,
+} from "@/services/clientPortalApi";
 
-const estadoMessages: Record<string, string> = {
-  solicitada: "Solicitud recibida, pendiente de confirmación",
-  confirmada: "Reserva confirmada",
-  cancelada: "Reserva cancelada",
+type PerfilForm = {
+  nombre: string;
+  email: string;
+  telefono: string;
+  aceptaPromociones: boolean;
+};
+
+type PasswordForm = {
+  actual: string;
+  nueva: string;
+  confirmacion: string;
+};
+
+type CancelForm = {
+  motivo: string;
+};
+
+type ReagendarForm = {
+  fecha: string;
+  hora: string;
+  motivo: string;
+};
+
+type ActionMode = "cancelar" | "reagendar" | null;
+
+const emptyPerfilForm: PerfilForm = {
+  nombre: "",
+  email: "",
+  telefono: "",
+  aceptaPromociones: false,
+};
+
+const emptyPasswordForm: PasswordForm = {
+  actual: "",
+  nueva: "",
+  confirmacion: "",
+};
+
+const estadoLabels: Record<string, string> = {
+  solicitada: "Solicitada",
   pendiente: "Pendiente",
+  confirmada: "Confirmada",
+  reagendada: "Reagendada",
+  cancelada: "Cancelada",
+  completada: "Completada",
 };
 
-const estadoStyles: Record<string, string> = {
-  solicitada: "border-[#00D1C1]/25 bg-[#00D1C1]/10 text-[#CFFCF8]",
-  confirmada: "border-[#00D1C1]/25 bg-[#00D1C1]/10 text-[#CFFCF8]",
-  cancelada: "border-red-400/30 bg-red-500/10 text-red-200",
-  pendiente: "border-white/10 bg-[#0B0F0F] text-[#D6D6D6]",
-};
-
-type ReservaAgrupada = {
-  key: string;
-  servicio: string;
-  fecha?: string;
-  estado: string;
-  startTime?: string;
-  endTime?: string;
-  duracionMin: number;
-  createdAt?: string;
-};
-
-const formatDate = (value?: string) => {
+const formatDate = (value?: string | null) => {
   if (!value) return "Sin fecha";
   const date = new Date(`${value.slice(0, 10)}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString("es-CL", {
+    weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
 };
 
-const formatDateTime = (value?: string) => {
-  if (!value) return "Sin registro";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("es-CL", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const timeLabel = (value?: string | null) =>
+  value ? value.slice(0, 5) : "Sin hora";
 
-const timeToMinutes = (value?: string) => {
-  if (!value) return null;
-  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
-  if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
-  return hour * 60 + minute;
-};
-
-const minutesToTime = (minutes: number) => {
-  const hour = String(Math.floor(minutes / 60)).padStart(2, "0");
-  const minute = String(minutes % 60).padStart(2, "0");
-  return `${hour}:${minute}`;
-};
-
-const getServicio = (reserva: ClienteReserva) =>
+const getReservaServicio = (reserva: ReservaCliente) =>
   reserva.servicio_nombre ??
   reserva.nombre_servicio ??
   reserva.servicio ??
   "Tratamiento CQuezadaSkin";
 
-const getServicioKey = (reserva: ClienteReserva) =>
-  String(reserva.servicio_id ?? getServicio(reserva)).toLowerCase();
+const getClienteEmail = (perfil: ClientePerfil | null) =>
+  perfil?.email ?? perfil?.correo ?? "";
 
-const getCreatedAt = (reserva: ClienteReserva) =>
-  reserva.created_at ?? reserva.fecha_creacion ?? reserva.createdAt;
-
-const groupReservas = (reservas: ClienteReserva[]) => {
-  const sorted = reservas
-    .map((reserva, index) => ({ reserva, index }))
-    .sort((a, b) => {
-      const aKey = [
-        getServicioKey(a.reserva),
-        a.reserva.fecha ?? "",
-        (a.reserva.estado ?? "pendiente").toLowerCase(),
-      ].join("|");
-      const bKey = [
-        getServicioKey(b.reserva),
-        b.reserva.fecha ?? "",
-        (b.reserva.estado ?? "pendiente").toLowerCase(),
-      ].join("|");
-
-      if (aKey !== bKey) return aKey.localeCompare(bKey);
-      return (
-        (timeToMinutes(a.reserva.hora) ?? 0) -
-        (timeToMinutes(b.reserva.hora) ?? 0)
-      );
-    });
-
-  const groups: Array<
-    ReservaAgrupada & {
-      servicioKey: string;
-      endMinutes: number | null;
-    }
-  > = [];
-
-  for (const { reserva, index } of sorted) {
-    const startMinutes = timeToMinutes(reserva.hora);
-    const estado = (reserva.estado ?? "pendiente").toLowerCase();
-    const servicioKey = getServicioKey(reserva);
-    const last = groups[groups.length - 1];
-
-    const canJoin =
-      last &&
-      startMinutes !== null &&
-      last.endMinutes !== null &&
-      last.servicioKey === servicioKey &&
-      last.fecha === reserva.fecha &&
-      last.estado === estado &&
-      startMinutes === last.endMinutes;
-
-    if (canJoin) {
-      last.endMinutes = startMinutes + 30;
-      last.endTime = minutesToTime(last.endMinutes);
-      last.duracionMin += 30;
-
-      const createdAt = getCreatedAt(reserva);
-      if (createdAt && (!last.createdAt || createdAt < last.createdAt)) {
-        last.createdAt = createdAt;
-      }
-      continue;
-    }
-
-    const endMinutes = startMinutes === null ? null : startMinutes + 30;
-    groups.push({
-      key: `${servicioKey}|${reserva.fecha ?? ""}|${estado}|${
-        reserva.hora ?? index
-      }`,
-      servicioKey,
-      servicio: getServicio(reserva),
-      fecha: reserva.fecha,
-      estado,
-      startTime: startMinutes === null ? undefined : minutesToTime(startMinutes),
-      endTime: endMinutes === null ? undefined : minutesToTime(endMinutes),
-      endMinutes,
-      duracionMin: 30,
-      createdAt: getCreatedAt(reserva),
-    });
+const isPromocionesEnabled = (perfil: ClientePerfil | null) => {
+  const value =
+    perfil?.acepta_promociones ??
+    perfil?.preferencias_promociones ??
+    perfil?.recibe_promociones;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value === "string") {
+    return value === "1" || value.toLowerCase() === "true";
   }
-
-  return groups.map(({ servicioKey: _servicioKey, endMinutes: _endMinutes, ...group }) => group);
+  return false;
 };
 
-export const MisReservasPage: React.FC = () => {
-  const [reservas, setReservas] = useState<ClienteReserva[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const mapPerfilToForm = (perfil: ClientePerfil | null): PerfilForm => ({
+  nombre: perfil?.nombre ?? "",
+  email: getClienteEmail(perfil),
+  telefono: perfil?.telefono ?? "",
+  aceptaPromociones: isPromocionesEnabled(perfil),
+});
 
-  const token = useMemo(() => getClientToken(), []);
-  const reservasAgrupadas = useMemo(() => groupReservas(reservas), [reservas]);
+const getEstadoClass = (estado?: string | null) => {
+  const normalized = (estado ?? "pendiente").toLowerCase();
+  if (normalized === "confirmada" || normalized === "completada") {
+    return "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+  }
+  if (normalized === "cancelada") {
+    return "border-red-400/30 bg-red-500/10 text-red-200";
+  }
+  if (normalized === "reagendada") {
+    return "border-amber-300/30 bg-amber-400/10 text-amber-200";
+  }
+  if (normalized === "solicitada") {
+    return "border-sky-300/30 bg-sky-400/10 text-sky-200";
+  }
+  return "border-white/10 bg-[#0B0F0F] text-[#D6D6D6]";
+};
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
+const isUnauthorizedError = (error: unknown) =>
+  error instanceof Error &&
+  (error as Error & { status?: number }).status === 401;
+
+export const MisReservasPage = () => {
+  const navigate = useNavigate();
+  const [token, setToken] = useState<string | null>(() => getClientToken());
+  const [perfil, setPerfil] = useState<ClientePerfil | null>(null);
+  const [perfilForm, setPerfilForm] = useState<PerfilForm>(emptyPerfilForm);
+  const [passwordForm, setPasswordForm] =
+    useState<PasswordForm>(emptyPasswordForm);
+  const [proximas, setProximas] = useState<ReservaCliente[]>([]);
+  const [historial, setHistorial] = useState<ReservaCliente[]>([]);
+  const [loading, setLoading] = useState(Boolean(getClientToken()));
+  const [savingPerfil, setSavingPerfil] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [savingAction, setSavingAction] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [selectedReserva, setSelectedReserva] = useState<ReservaCliente | null>(
+    null
+  );
+  const [actionMode, setActionMode] = useState<ActionMode>(null);
+  const [cancelForm, setCancelForm] = useState<CancelForm>({ motivo: "" });
+  const [reagendarForm, setReagendarForm] = useState<ReagendarForm>({
+    fecha: "",
+    hora: "",
+    motivo: "",
+  });
+
+  const clienteNombre = perfil?.nombre || "Cliente CQuezadaSkin";
+
+  const loadPortal = useCallback(async () => {
+    const currentToken = getClientToken();
+    setToken(currentToken);
+
+    if (!currentToken) {
+      setLoading(false);
+      setPerfil(null);
+      setProximas([]);
+      setHistorial([]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const [perfilResponse, reservasResponse] = await Promise.all([
+        getClienteMe(currentToken),
+        getClienteReservas(currentToken),
+      ]);
+      setPerfil(perfilResponse);
+      setStoredClient(perfilResponse);
+      setPerfilForm(mapPerfilToForm(perfilResponse));
+      setProximas(reservasResponse.proximas);
+      setHistorial(reservasResponse.historial);
+    } catch (err) {
+      if (isUnauthorizedError(err)) {
+        clearClientSession();
+        setToken(null);
+      }
+      setPerfil(null);
+      setProximas([]);
+      setHistorial([]);
+      setError(
+        getErrorMessage(err, "No se pudo cargar la información de tu cuenta")
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const loadReservas = async () => {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
+    loadPortal();
+  }, [loadPortal]);
 
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await listClienteReservas(token);
-        setReservas(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setReservas([]);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "No se pudieron cargar tus reservas"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  const totalReservas = useMemo(
+    () => proximas.length + historial.length,
+    [historial.length, proximas.length]
+  );
 
-    loadReservas();
-  }, [token]);
+  const handleLogoutClient = () => {
+    clearClientSession();
+    setToken(null);
+    setPerfil(null);
+    setProximas([]);
+    setHistorial([]);
+    setSelectedReserva(null);
+    setActionMode(null);
+    navigate("/agendar");
+  };
+
+  const handlePerfilSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!token) return;
+
+    setSavingPerfil(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const updated = await updateClienteMe(
+        {
+          nombre: perfilForm.nombre.trim(),
+          email: perfilForm.email.trim(),
+          correo: perfilForm.email.trim(),
+          telefono: perfilForm.telefono.trim(),
+          acepta_promociones: perfilForm.aceptaPromociones,
+          preferencias_promociones: perfilForm.aceptaPromociones,
+        },
+        token
+      );
+      setPerfil(updated);
+      setStoredClient(updated);
+      setPerfilForm(mapPerfilToForm(updated));
+      setMessage("Perfil actualizado correctamente");
+    } catch (err) {
+      setError(getErrorMessage(err, "No se pudo actualizar tu perfil"));
+    } finally {
+      setSavingPerfil(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!token) return;
+
+    if (passwordForm.nueva.length < 8) {
+      setError("La nueva contraseña debe tener al menos 8 caracteres");
+      return;
+    }
+
+    if (passwordForm.nueva !== passwordForm.confirmacion) {
+      setError("La confirmación de contraseña no coincide");
+      return;
+    }
+
+    setSavingPassword(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await updateClientePassword(
+        {
+          password_actual: passwordForm.actual,
+          password_nueva: passwordForm.nueva,
+          password_confirmacion: passwordForm.confirmacion,
+        },
+        token
+      );
+      setPasswordForm(emptyPasswordForm);
+      setMessage("Contraseña actualizada correctamente");
+    } catch (err) {
+      setError(getErrorMessage(err, "No se pudo actualizar la contraseña"));
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  const openCancelAction = (reserva: ReservaCliente) => {
+    setSelectedReserva(reserva);
+    setActionMode("cancelar");
+    setCancelForm({ motivo: "" });
+    setError(null);
+    setMessage(null);
+  };
+
+  const openReagendarAction = (reserva: ReservaCliente) => {
+    setSelectedReserva(reserva);
+    setActionMode("reagendar");
+    setReagendarForm({
+      fecha: reserva.fecha?.slice(0, 10) ?? "",
+      hora: reserva.hora?.slice(0, 5) ?? "",
+      motivo: "",
+    });
+    setError(null);
+    setMessage(null);
+  };
+
+  const closeActionPanel = () => {
+    setSelectedReserva(null);
+    setActionMode(null);
+  };
+
+  const handleCancelarReserva = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!token || !selectedReserva) return;
+
+    setSavingAction(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await cancelarReservaCliente(
+        selectedReserva.id,
+        { motivo: cancelForm.motivo.trim() },
+        token
+      );
+      setMessage("Reserva cancelada correctamente");
+      closeActionPanel();
+      await loadPortal();
+    } catch (err) {
+      setError(
+        getErrorMessage(
+          err,
+          "No se pudo cancelar la reserva. Revisa si está muy próxima, ya fue cancelada o no está disponible para cambios."
+        )
+      );
+    } finally {
+      setSavingAction(false);
+    }
+  };
+
+  const handleReagendarReserva = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!token || !selectedReserva) return;
+
+    setSavingAction(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await reagendarReservaCliente(
+        selectedReserva.id,
+        {
+          fecha: reagendarForm.fecha,
+          hora: reagendarForm.hora,
+          motivo: reagendarForm.motivo.trim(),
+        },
+        token
+      );
+      setMessage("Solicitud de reagendamiento enviada correctamente");
+      closeActionPanel();
+      await loadPortal();
+    } catch (err) {
+      setError(
+        getErrorMessage(
+          err,
+          "No se pudo reagendar la reserva. El horario podría no estar disponible."
+        )
+      );
+    } finally {
+      setSavingAction(false);
+    }
+  };
+
+  if (!token) {
+    return (
+      <section className="mx-auto w-[92%] max-w-5xl py-10 sm:py-14">
+        <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <LogIn className="h-5 w-5 text-[#00D1C1]" />
+              Inicia sesión como cliente
+            </CardTitle>
+            <CardDescription>
+              Ingresa desde el flujo de agenda para ver tu cuenta y reservas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              asChild
+              className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            >
+              <Link to="/agendar">Ir a agendar</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
 
   return (
-    <section className="mx-auto w-[92%] max-w-5xl py-10 sm:py-14">
-      <header className="max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-wide text-[#00D1C1]">
-          Área cliente
-        </p>
-        <h1 className="premium-heading mt-2 text-4xl font-semibold text-white sm:text-6xl">
-          Mis solicitudes
-        </h1>
-        <p className="mt-3 text-base text-[#D6D6D6] sm:text-lg">
-          Revisa el estado de tus solicitudes y reservas en CQuezadaSkin.
-        </p>
+    <section className="mx-auto w-[92%] max-w-6xl py-10 text-white sm:py-14">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#00D1C1]">
+            Área cliente
+          </p>
+          <h1 className="premium-heading mt-2 text-4xl font-semibold sm:text-6xl">
+            Mi cuenta
+          </h1>
+          <p className="mt-3 max-w-2xl text-base text-[#D6D6D6] sm:text-lg">
+            Revisa tu perfil, próximas reservas, historial y seguridad de tu
+            cuenta CQuezadaSkin.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/agendar">Nueva reserva</Link>
+          </Button>
+          <Button variant="outline" onClick={loadPortal} disabled={loading}>
+            <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+            Actualizar
+          </Button>
+          <Button variant="outline" onClick={handleLogoutClient}>
+            <LogOut className="h-4 w-4" />
+            Cerrar sesión
+          </Button>
+        </div>
       </header>
 
-      <div className="mt-8">
-        {!token ? (
-          <Card className="rounded-lg border-white/10 bg-[#121212]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <LogIn className="h-5 w-5 text-[#00D1C1]" />
-                Inicia sesión como cliente
-              </CardTitle>
-              <CardDescription>
-                Necesitas ingresar en el flujo de agenda para ver tus
-                solicitudes.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                className="rounded-lg bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
-              >
-                <Link to="/agendar">Ir a agendar</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : loading ? (
-          <div className="rounded-lg border border-white/10 bg-[#121212] p-6 text-sm text-[#B8B8B8]">
-            Cargando tus solicitudes...
-          </div>
-        ) : error ? (
-          <Alert variant="destructive">
-            <AlertTitle>No pudimos cargar tus solicitudes</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : reservasAgrupadas.length === 0 ? (
-          <Card className="rounded-lg border-white/10 bg-[#121212]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <ClipboardList className="h-5 w-5 text-[#00D1C1]" />
-                Aún no tienes solicitudes
-              </CardTitle>
-              <CardDescription>
-                Cuando envíes una solicitud de reserva, aparecerá en esta vista.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                className="rounded-lg bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
-              >
-                <Link to="/agendar">Enviar una solicitud</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {reservasAgrupadas.map((reserva) => {
-              const estadoText = estadoMessages[reserva.estado] ?? "Pendiente";
-              const estadoClass =
-                estadoStyles[reserva.estado] ?? estadoStyles.pendiente;
+      {message ? (
+        <Alert className="mt-6">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle>Listo</AlertTitle>
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+      ) : null}
 
-              return (
-                <Card
-                  key={reserva.key}
-                  className="rounded-lg border-white/10 bg-[#121212]"
-                >
-                  <CardContent className="p-5">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0">
-                        <h2 className="text-lg font-semibold text-white">
-                          {reserva.servicio}
-                        </h2>
-                        <div className="mt-3 grid gap-2 text-sm text-[#D6D6D6] sm:grid-cols-2">
-                          <p className="flex items-center gap-2">
-                            <CalendarDays className="h-4 w-4 text-[#00D1C1]" />
-                            {formatDate(reserva.fecha)}
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-[#00D1C1]" />
-                            {reserva.startTime && reserva.endTime
-                              ? `${reserva.startTime} a ${reserva.endTime}`
-                              : "Sin hora"}
-                          </p>
-                        </div>
-                        <p className="mt-3 text-sm font-medium text-[#D6D6D6]">
-                          Duración: {reserva.duracionMin} min
-                        </p>
-                        <p className="mt-3 text-sm text-[#A8A8A8]">
-                          Creada: {formatDateTime(reserva.createdAt)}
-                        </p>
-                      </div>
+      {error ? (
+        <Alert variant="destructive" className="mt-6">
+          <AlertTitle>Ocurrió un error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
 
-                      <div
-                        className={`w-fit rounded-full border px-3 py-1 text-sm font-medium ${estadoClass}`}
-                      >
-                        {estadoText}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {loading ? (
+        <div className="mt-8 rounded-2xl border border-white/10 bg-[#121212] p-6 text-sm text-[#B8B8B8]">
+          Cargando tu cuenta...
+        </div>
+      ) : (
+        <div className="mt-8 grid gap-6">
+          <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+            <ProfileCard
+              clienteNombre={clienteNombre}
+              perfilForm={perfilForm}
+              saving={savingPerfil}
+              totalReservas={totalReservas}
+              onChange={setPerfilForm}
+              onSubmit={handlePerfilSubmit}
+            />
+            <SecurityCard
+              passwordForm={passwordForm}
+              saving={savingPassword}
+              onChange={setPasswordForm}
+              onSubmit={handlePasswordSubmit}
+            />
+          </section>
+
+          <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <ReservasSection
+              title="Próximas reservas"
+              description="Gestiona tus próximas solicitudes y reservas."
+              icon={<ClipboardList className="h-5 w-5 text-[#00D1C1]" />}
+              emptyTitle="No tienes próximas reservas"
+              reservas={proximas}
+              showActions
+              onCancel={openCancelAction}
+              onReagendar={openReagendarAction}
+            />
+            <ReservasSection
+              title="Historial"
+              description="Reservas pasadas, completadas o canceladas."
+              icon={<History className="h-5 w-5 text-[#00D1C1]" />}
+              emptyTitle="Aún no hay historial"
+              reservas={historial}
+              showActions={false}
+              onCancel={openCancelAction}
+              onReagendar={openReagendarAction}
+            />
+          </section>
+
+          {selectedReserva && actionMode ? (
+            <ActionPanel
+              mode={actionMode}
+              reserva={selectedReserva}
+              cancelForm={cancelForm}
+              reagendarForm={reagendarForm}
+              saving={savingAction}
+              onCancelFormChange={setCancelForm}
+              onReagendarFormChange={setReagendarForm}
+              onClose={closeActionPanel}
+              onSubmitCancel={handleCancelarReserva}
+              onSubmitReagendar={handleReagendarReserva}
+            />
+          ) : null}
+        </div>
+      )}
     </section>
   );
 };
+
+function ProfileCard({
+  clienteNombre,
+  perfilForm,
+  saving,
+  totalReservas,
+  onChange,
+  onSubmit,
+}: {
+  clienteNombre: string;
+  perfilForm: PerfilForm;
+  saving: boolean;
+  totalReservas: number;
+  onChange: React.Dispatch<React.SetStateAction<PerfilForm>>;
+  onSubmit: (event: FormEvent) => void;
+}) {
+  return (
+    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <UserRound className="h-5 w-5 text-[#00D1C1]" />
+          Perfil
+        </CardTitle>
+        <CardDescription>
+          Hola, {clienteNombre}. Mantén tus datos de contacto actualizados.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="grid gap-4" onSubmit={onSubmit}>
+          <div className="grid gap-2">
+            <Label htmlFor="cliente-nombre">Nombre</Label>
+            <Input
+              id="cliente-nombre"
+              value={perfilForm.nombre}
+              onChange={(event) =>
+                onChange((prev) => ({ ...prev, nombre: event.target.value }))
+              }
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="cliente-email">Email / correo</Label>
+            <Input
+              id="cliente-email"
+              type="email"
+              value={perfilForm.email}
+              onChange={(event) =>
+                onChange((prev) => ({ ...prev, email: event.target.value }))
+              }
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="cliente-telefono">Teléfono</Label>
+            <Input
+              id="cliente-telefono"
+              value={perfilForm.telefono}
+              onChange={(event) =>
+                onChange((prev) => ({ ...prev, telefono: event.target.value }))
+              }
+              required
+            />
+          </div>
+          <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#D6D6D6]">
+            <input
+              type="checkbox"
+              checked={perfilForm.aceptaPromociones}
+              onChange={(event) =>
+                onChange((prev) => ({
+                  ...prev,
+                  aceptaPromociones: event.target.checked,
+                }))
+              }
+              className="mt-1"
+            />
+            Acepto recibir novedades y promociones de CQuezadaSkin.
+          </label>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-[#8E8E8E]">
+              {totalReservas} reservas registradas en tu cuenta.
+            </p>
+            <Button
+              type="submit"
+              className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+              disabled={saving}
+            >
+              <Pencil className="h-4 w-4" />
+              {saving ? "Guardando..." : "Guardar perfil"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SecurityCard({
+  passwordForm,
+  saving,
+  onChange,
+  onSubmit,
+}: {
+  passwordForm: PasswordForm;
+  saving: boolean;
+  onChange: React.Dispatch<React.SetStateAction<PasswordForm>>;
+  onSubmit: (event: FormEvent) => void;
+}) {
+  return (
+    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <ShieldCheck className="h-5 w-5 text-[#00D1C1]" />
+          Seguridad
+        </CardTitle>
+        <CardDescription>
+          Cambia tu contraseña sin guardar datos sensibles en el navegador.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="grid gap-4" onSubmit={onSubmit}>
+          <div className="grid gap-2">
+            <Label htmlFor="password-actual">Contraseña actual</Label>
+            <Input
+              id="password-actual"
+              type="password"
+              value={passwordForm.actual}
+              onChange={(event) =>
+                onChange((prev) => ({ ...prev, actual: event.target.value }))
+              }
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password-nueva">Nueva contraseña</Label>
+            <Input
+              id="password-nueva"
+              type="password"
+              value={passwordForm.nueva}
+              onChange={(event) =>
+                onChange((prev) => ({ ...prev, nueva: event.target.value }))
+              }
+              minLength={8}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password-confirmacion">
+              Confirmar nueva contraseña
+            </Label>
+            <Input
+              id="password-confirmacion"
+              type="password"
+              value={passwordForm.confirmacion}
+              onChange={(event) =>
+                onChange((prev) => ({
+                  ...prev,
+                  confirmacion: event.target.value,
+                }))
+              }
+              minLength={8}
+              required
+            />
+          </div>
+          <Button
+            type="submit"
+            className="w-fit rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+            disabled={saving}
+          >
+            <LockKeyhole className="h-4 w-4" />
+            {saving ? "Guardando..." : "Cambiar contraseña"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReservasSection({
+  title,
+  description,
+  icon,
+  emptyTitle,
+  reservas,
+  showActions,
+  onCancel,
+  onReagendar,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  emptyTitle: string;
+  reservas: ReservaCliente[];
+  showActions: boolean;
+  onCancel: (reserva: ReservaCliente) => void;
+  onReagendar: (reserva: ReservaCliente) => void;
+}) {
+  return (
+    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          {icon}
+          {title}
+        </CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {reservas.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5 text-sm text-[#A8A8A8]">
+            {emptyTitle}
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {reservas.map((reserva) => (
+              <ReservaCard
+                key={`${reserva.id}-${reserva.fecha}-${reserva.hora}`}
+                reserva={reserva}
+                showActions={showActions}
+                onCancel={onCancel}
+                onReagendar={onReagendar}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReservaCard({
+  reserva,
+  showActions,
+  onCancel,
+  onReagendar,
+}: {
+  reserva: ReservaCliente;
+  showActions: boolean;
+  onCancel: (reserva: ReservaCliente) => void;
+  onReagendar: (reserva: ReservaCliente) => void;
+}) {
+  const estado = (reserva.estado ?? "pendiente").toLowerCase();
+  const canManage = showActions && estado !== "cancelada" && estado !== "completada";
+
+  return (
+    <article className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold text-white">
+            {getReservaServicio(reserva)}
+          </h3>
+          <div className="mt-3 grid gap-2 text-sm text-[#D6D6D6] sm:grid-cols-2">
+            <p className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-[#00D1C1]" />
+              {formatDate(reserva.fecha)}
+            </p>
+            <p className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-[#00D1C1]" />
+              {timeLabel(reserva.hora)}
+            </p>
+          </div>
+        </div>
+        <span
+          className={`rounded-full border px-3 py-1 text-xs font-semibold ${getEstadoClass(
+            estado
+          )}`}
+        >
+          {estadoLabels[estado] ?? estado}
+        </span>
+      </div>
+
+      {reserva.observacion_admin ? (
+        <p className="mt-4 rounded-2xl border border-white/10 bg-[#121212] p-3 text-sm text-[#A8A8A8]">
+          {reserva.observacion_admin}
+        </p>
+      ) : null}
+
+      {canManage ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => onReagendar(reserva)}>
+            <RotateCw className="h-4 w-4" />
+            Reagendar
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-red-400/30 text-red-300 hover:bg-red-500/10 hover:text-red-300"
+            onClick={() => onCancel(reserva)}
+          >
+            <XCircle className="h-4 w-4" />
+            Cancelar
+          </Button>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function ActionPanel({
+  mode,
+  reserva,
+  cancelForm,
+  reagendarForm,
+  saving,
+  onCancelFormChange,
+  onReagendarFormChange,
+  onClose,
+  onSubmitCancel,
+  onSubmitReagendar,
+}: {
+  mode: ActionMode;
+  reserva: ReservaCliente;
+  cancelForm: CancelForm;
+  reagendarForm: ReagendarForm;
+  saving: boolean;
+  onCancelFormChange: React.Dispatch<React.SetStateAction<CancelForm>>;
+  onReagendarFormChange: React.Dispatch<React.SetStateAction<ReagendarForm>>;
+  onClose: () => void;
+  onSubmitCancel: (event: FormEvent) => void;
+  onSubmitReagendar: (event: FormEvent) => void;
+}) {
+  return (
+    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+      <CardHeader>
+        <CardTitle className="text-xl">
+          {mode === "cancelar" ? "Cancelar reserva" : "Reagendar reserva"}
+        </CardTitle>
+        <CardDescription>
+          {getReservaServicio(reserva)} · {formatDate(reserva.fecha)} ·{" "}
+          {timeLabel(reserva.hora)}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {mode === "cancelar" ? (
+          <form className="grid gap-4" onSubmit={onSubmitCancel}>
+            <div className="grid gap-2">
+              <Label htmlFor="cancelar-motivo">Motivo opcional</Label>
+              <Textarea
+                id="cancelar-motivo"
+                value={cancelForm.motivo}
+                onChange={(event) =>
+                  onCancelFormChange({ motivo: event.target.value })
+                }
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="submit"
+                className="rounded-2xl bg-red-500 font-semibold text-white hover:bg-red-400"
+                disabled={saving}
+              >
+                {saving ? "Procesando..." : "Confirmar cancelación"}
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cerrar
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <form className="grid gap-4" onSubmit={onSubmitReagendar}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="reagendar-fecha">Nueva fecha</Label>
+                <Input
+                  id="reagendar-fecha"
+                  type="date"
+                  value={reagendarForm.fecha}
+                  onChange={(event) =>
+                    onReagendarFormChange((prev) => ({
+                      ...prev,
+                      fecha: event.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="reagendar-hora">Nueva hora</Label>
+                <Input
+                  id="reagendar-hora"
+                  type="time"
+                  value={reagendarForm.hora}
+                  onChange={(event) =>
+                    onReagendarFormChange((prev) => ({
+                      ...prev,
+                      hora: event.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="reagendar-motivo">Motivo opcional</Label>
+              <Textarea
+                id="reagendar-motivo"
+                value={reagendarForm.motivo}
+                onChange={(event) =>
+                  onReagendarFormChange((prev) => ({
+                    ...prev,
+                    motivo: event.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="submit"
+                className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                disabled={saving}
+              >
+                {saving ? "Procesando..." : "Guardar reagendamiento"}
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cerrar
+              </Button>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default MisReservasPage;
