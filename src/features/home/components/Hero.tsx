@@ -28,7 +28,7 @@ export const Hero: React.FC = () => {
   }, [bgOverride, homeContent?.imagen_url]);
 
   return (
-    <section className="relative min-h-[92vh] w-full overflow-hidden bg-[#050505]">
+    <section className="relative min-h-[88svh] w-full overflow-hidden bg-[#050505] sm:min-h-[92vh]">
       <div className="absolute inset-0">
         <img
           src={bgSrc}
@@ -47,14 +47,14 @@ export const Hero: React.FC = () => {
         <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_100%)]" />
       </div>
 
-      <div className="relative mx-auto flex min-h-[92vh] w-[92%] max-w-7xl items-center py-16 sm:py-20 lg:w-[90%] 2xl:w-[82%]">
+      <div className="relative mx-auto flex min-h-[88svh] w-[92%] max-w-7xl items-center py-12 sm:min-h-[92vh] sm:py-20 lg:w-[90%] 2xl:w-[82%]">
         <div className="max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#111414]/80 px-4 py-2 text-sm font-medium text-[#D6D6D6] shadow-[0_0_30px_rgba(0,209,193,0.08)] backdrop-blur">
+          <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-[#111414]/80 px-3 py-2 text-xs font-medium text-[#D6D6D6] shadow-[0_0_30px_rgba(0,209,193,0.08)] backdrop-blur sm:px-4 sm:text-sm">
             <Sparkles className="h-4 w-4 text-[#00D1C1]" />
-            Skincare profesional en home studio
+            <span className="truncate">Skincare profesional en home studio</span>
           </div>
 
-          <h1 className="premium-heading mt-6 max-w-3xl text-5xl font-semibold text-white sm:text-6xl lg:text-7xl">
+          <h1 className="premium-heading mt-5 max-w-3xl text-4xl font-semibold leading-[0.95] text-white min-[390px]:text-5xl sm:mt-6 sm:text-6xl lg:text-7xl">
             {homeContent?.titulo ?? (
               <>
                 CQuezada<span className="text-[#00D1C1]">Skin</span>
@@ -67,7 +67,7 @@ export const Hero: React.FC = () => {
               "Tratamientos faciales y corporales con Constanza Quezada, cosmetóloga y esteticista. Limpiezas faciales, microneedling y cuidado de la piel en Quilpué."}
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-2 text-sm text-[#D6D6D6]">
+          <div className="mt-6 flex flex-wrap gap-2 text-xs text-[#D6D6D6] sm:text-sm">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#111414]/70 px-3 py-1.5">
               <MapPin className="h-4 w-4 text-[#00D1C1]" />
               Quilpué
@@ -82,7 +82,7 @@ export const Hero: React.FC = () => {
             ))}
           </div>
 
-          <div className="mt-9 flex w-full flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex w-full flex-col gap-3 sm:mt-9 sm:flex-row">
             <Button
               asChild
               className="h-12 rounded-2xl bg-[#00D1C1] px-7 text-base font-semibold text-[#03110f] shadow-[0_0_34px_rgba(0,209,193,0.25)] transition hover:bg-[#20E0D0] hover:shadow-[0_0_46px_rgba(0,209,193,0.34)]"

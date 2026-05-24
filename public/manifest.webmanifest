@@ -1,0 +1,17 @@
+{
+  "name": "CQuezadaSkin | Agenda skincare y estética",
+  "short_name": "CQuezadaSkin",
+  "description": "Agenda tratamientos faciales y corporales con CQuezadaSkin.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#00D1C1",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64 192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

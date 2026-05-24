@@ -36,11 +36,11 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
         <Button
           asChild
           size="sm"
-          className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+          className="rounded-2xl bg-[#00D1C1] px-3 font-semibold text-[#03110f] hover:bg-[#20E0D0]"
         >
           <Link to="/agendar" className="gap-2" aria-label="Reservar una hora">
             <CalendarDays className="h-4 w-4" />
-            Reservar
+            <span className="hidden min-[390px]:inline">Reservar</span>
           </Link>
         </Button>
 
@@ -56,7 +56,7 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="right" className="w-[320px] border-l border-white/10 bg-[#050505] p-0 text-white">
+          <SheetContent side="right" className="w-[min(88vw,340px)] border-l border-white/10 bg-[#050505] p-0 text-white">
             <div className="p-5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#00D1C1]/35 bg-[#0B0F0F] shadow-[0_0_28px_rgba(0,209,193,0.14)]">
@@ -89,7 +89,7 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
                   onClick={closeSheet}
                   className={({ isActive }) =>
                     [
-                      "block rounded-xl px-4 py-3 text-sm font-medium transition",
+                      "block min-h-11 rounded-xl px-4 py-3 text-sm font-medium transition",
                       "text-[#D6D6D6] hover:bg-[#00D1C1]/10 hover:text-white",
                       isActive ? "bg-[#00D1C1]/10 text-[#00D1C1]" : "",
                     ].join(" ")

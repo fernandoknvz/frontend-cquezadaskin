@@ -203,27 +203,27 @@ export const BusinessServicesPage: React.FC = () => {
   const categoriesToRender = dynamicCategories ?? STATIC_CATEGORIES;
 
   return (
-    <section className="w-[90%] 2xl:w-[80%] mx-auto">
+    <section className="mx-auto w-[92%] 2xl:w-[80%]">
       <div className="w-full">
-        <div className="w-full max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8 2xl:max-w-none 2xl:w-[80%]">
+        <div className="mx-auto w-full max-w-6xl py-10 sm:py-12 lg:py-14 2xl:w-[80%] 2xl:max-w-none">
           <header className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
+            <h1 className="mb-4 text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
               Atenciones especiales
             </h1>
-            <p className="mt-2 text-[#C9C9C9]">
+            <p className="mt-2 text-base text-[#C9C9C9] sm:text-lg">
               Skincare para grupos, activaciones y beneficios para colaboradores. Cotiza por jornada,
               cantidad de personas y tipo de tratamiento.
             </p>
           </header>
 
-          <div className="mt-10 space-y-14">
+          <div className="mt-10 space-y-12 sm:space-y-14">
             {categoriesToRender.map((cat) => (
               <CategoryBlock key={cat.id} category={cat} />
             ))}
           </div>
 
-          <div className="mt-12 rounded-3xl border border-white/10 bg-[#121212]/80 p-6 text-sm text-[#C9C9C9]">
-            <div className="flex items-start gap-3">
+          <div className="mt-12 rounded-2xl border border-white/10 bg-[#121212]/80 p-4 text-sm text-[#C9C9C9] sm:rounded-3xl sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
               <div
                 className="mt-0.5 rounded-2xl p-2"
                 style={{ backgroundColor: "rgba(246,231,223,0.85)" }}
@@ -239,7 +239,7 @@ export const BusinessServicesPage: React.FC = () => {
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                   <Button
                     asChild
-                    className="rounded-2xl shadow-sm"
+                    className="w-full rounded-2xl shadow-sm sm:w-auto"
                     style={{ backgroundColor: "#00D1C1", color: "white" }}
                   >
                     <Link to="/empresas" className="gap-2">
@@ -250,7 +250,7 @@ export const BusinessServicesPage: React.FC = () => {
                   <Button
                     asChild
                     variant="outline"
-                    className="rounded-2xl border-white/10 bg-[#121212]/80 hover:bg-[#121212]"
+                    className="w-full rounded-2xl border-white/10 bg-[#121212]/80 hover:bg-[#121212] sm:w-auto"
                   >
                     <Link to="/contacto" className="gap-2">
                       <MessageCircle className="h-4 w-4" />
@@ -304,7 +304,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
     >
       {/* Imagen */}
       <div className="media relative">
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#121212]/75 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#121212]/75 shadow-[0_10px_30px_rgba(0,0,0,0.08)] sm:rounded-3xl">
           <div className="aspect-[4/3] w-full">
             <img
               src={service.image}
@@ -360,7 +360,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Button
             asChild
-            className="rounded-2xl shadow-sm"
+            className="w-full rounded-2xl shadow-sm sm:w-auto"
             style={{ backgroundColor: "#00D1C1", color: "white" }}
           >
             <Link to={service.ctaPrimary.to} className="gap-2">
@@ -373,7 +373,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
             <Button
               asChild
               variant="outline"
-              className="rounded-2xl border-white/10 bg-[#121212]/80 hover:bg-[#121212]"
+              className="w-full rounded-2xl border-white/10 bg-[#121212]/80 hover:bg-[#121212] sm:w-auto"
             >
               <Link to={service.ctaSecondary.to} className="gap-2">
                 <MessageCircle className="h-4 w-4" />

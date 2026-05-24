@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { Eye, Pencil, RefreshCw, Search, UserCheck, UserX } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  RefreshCw,
+  RotateCw,
+  Search,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 
+import { AppModal } from "@/components/ui/AppModal";
 import { Button } from "@/components/ui/button";
+import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,8 +21,10 @@ import {
   patchClienteAdmin,
   updateClienteAdmin,
   type ClienteAdmin,
+  type ClienteReservaResumen,
   type Pagination,
 } from "@/services/adminClientesApi";
+import { reagendarReservaAdmin } from "@/services/adminReservasApi";
 
 type ClienteFormState = {
   nombre: string;
@@ -20,6 +32,23 @@ type ClienteFormState = {
   telefono: string;
   notas_admin: string;
   activo: boolean;
+};
+type ModalFeedback = {
+  tone: "success" | "error" | "info";
+  message: string;
+} | null;
+
+type ReagendarFormState = {
+  fecha: string;
+  hora: string;
+  motivo: string;
+};
+
+type ReagendarModalState = {
+  reserva: ClienteReservaResumen;
+  form: ReagendarFormState;
+  feedback: ModalFeedback;
+  saving: boolean;
 };
 
 const emptyPagination: Pagination = {
@@ -52,6 +81,19 @@ const formatDate = (value?: string | null) => {
   });
 };
 
+const normalizeDateInput = (value?: string | null) => {
+  if (!value) return "";
+  return value.includes("T") ? value.slice(0, 10) : value;
+};
+
+const normalizeTimeInput = (value?: string | null) => {
+  if (!value) return "";
+  return value.slice(0, 5);
+};
+
+const wait = (milliseconds: number) =>
+  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+
 const mapToForm = (cliente: ClienteAdmin): ClienteFormState => ({
   nombre: cliente.nombre ?? "",
   email: getClienteEmail(cliente),
@@ -70,10 +112,13 @@ export const AdminClientesSection = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [modalFeedback, setModalFeedback] = useState<ModalFeedback>(null);
   const [selectedCliente, setSelectedCliente] = useState<ClienteAdmin | null>(
     null
   );
   const [form, setForm] = useState<ClienteFormState | null>(null);
+  const [reagendarModal, setReagendarModal] =
+    useState<ReagendarModalState | null>(null);
 
   const loadClientes = useCallback(async () => {
     setLoading(true);
@@ -130,6 +175,7 @@ export const AdminClientesSection = () => {
     setSelectedCliente(cliente);
     setForm(mapToForm(cliente));
     setDetailLoading(true);
+    setModalFeedback(null);
     setError(null);
     setMessage(null);
     try {
@@ -145,11 +191,23 @@ export const AdminClientesSection = () => {
     }
   };
 
+  const refreshSelectedCliente = useCallback(
+    async (clienteId: ClienteAdmin["id"]) => {
+      const detail = await getClienteAdmin(clienteId);
+      setSelectedCliente(detail);
+      setForm(mapToForm(detail));
+      await loadClientes();
+      return detail;
+    },
+    [loadClientes]
+  );
+
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
     if (!selectedCliente || !form) return;
 
     setSaving(true);
+    setModalFeedback(null);
     setError(null);
     setMessage(null);
     try {
@@ -165,11 +223,20 @@ export const AdminClientesSection = () => {
       setSelectedCliente(updated);
       setForm(mapToForm(updated));
       setMessage("Cliente actualizado correctamente");
+      setModalFeedback({
+        tone: "success",
+        message: "Cambios guardados correctamente.",
+      });
+      await wait(900);
+      setSelectedCliente(null);
+      setForm(null);
+      setModalFeedback(null);
       await loadClientes();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "No se pudo actualizar el cliente"
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : "No se pudo actualizar el cliente";
+      setModalFeedback({ tone: "error", message: errorMessage });
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -195,6 +262,86 @@ export const AdminClientesSection = () => {
     }
   };
 
+  const openReagendarReserva = (reserva: ClienteReservaResumen) => {
+    setReagendarModal({
+      reserva,
+      form: {
+        fecha: normalizeDateInput(reserva.fecha),
+        hora: normalizeTimeInput(reserva.hora),
+        motivo: "",
+      },
+      feedback: null,
+      saving: false,
+    });
+  };
+
+  const setReagendarField = <K extends keyof ReagendarFormState>(
+    field: K,
+    value: ReagendarFormState[K]
+  ) => {
+    setReagendarModal((prev) =>
+      prev
+        ? {
+            ...prev,
+            form: {
+              ...prev.form,
+              [field]: value,
+            },
+          }
+        : prev
+    );
+  };
+
+  const handleReagendarReserva = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!selectedCliente || !reagendarModal) return;
+
+    const { reserva, form: reagendarForm } = reagendarModal;
+
+    setReagendarModal((prev) =>
+      prev ? { ...prev, feedback: null, saving: true } : prev
+    );
+    setError(null);
+    setMessage(null);
+
+    try {
+      const motivo = reagendarForm.motivo.trim();
+      await reagendarReservaAdmin(reserva.id, {
+        fecha: reagendarForm.fecha,
+        hora: reagendarForm.hora,
+        motivo,
+        observacion_admin: motivo,
+      });
+      setReagendarModal((prev) =>
+        prev
+          ? {
+              ...prev,
+              feedback: {
+                tone: "success",
+                message: "Reagendamiento guardado correctamente.",
+              },
+              saving: false,
+            }
+          : prev
+      );
+      await wait(900);
+      setReagendarModal(null);
+      await refreshSelectedCliente(selectedCliente.id);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "No se pudo reagendar la reserva";
+      setReagendarModal((prev) =>
+        prev
+          ? {
+              ...prev,
+              feedback: { tone: "error", message: errorMessage },
+              saving: false,
+            }
+          : prev
+      );
+    }
+  };
+
   const setFormField = <K extends keyof ClienteFormState>(
     field: K,
     value: ClienteFormState[K]
@@ -203,35 +350,40 @@ export const AdminClientesSection = () => {
   };
 
   return (
-    <section className="premium-panel rounded-3xl p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="premium-section-title text-3xl font-semibold">
+    <section className="premium-panel max-w-full overflow-hidden rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="premium-section-title text-2xl font-semibold sm:text-3xl">
             Clientes
           </h2>
           <p className="mt-1 text-sm text-[#D6D6D6]">
             Busca, revisa y actualiza datos administrativos de clientes.
           </p>
         </div>
-        <Button variant="outline" onClick={loadClientes} disabled={loading}>
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto"
+          onClick={loadClientes}
+          disabled={loading}
+        >
           <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
           Actualizar
         </Button>
       </div>
 
       <form className="mt-6 flex flex-col gap-3 sm:flex-row" onSubmit={handleSearchSubmit}>
-        <div className="relative flex-1">
+        <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8E8E8E]" />
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="h-11 rounded-2xl pl-10"
+            className="h-11 w-full rounded-2xl pl-10"
             placeholder="Buscar por nombre, email o teléfono"
           />
         </div>
         <Button
           type="submit"
-          className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+          className="w-full rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] sm:w-auto"
         >
           Buscar
         </Button>
@@ -249,7 +401,84 @@ export const AdminClientesSection = () => {
         </div>
       ) : null}
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
+      <div className="mt-6 grid gap-3 md:hidden">
+        {loading ? (
+          <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]">
+            Cargando...
+          </p>
+        ) : clientes.length === 0 ? (
+          <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]">
+            No hay clientes registrados
+          </p>
+        ) : (
+          clientes.map((cliente) => (
+            <article
+              key={cliente.id}
+              className="min-w-0 rounded-2xl border border-white/10 bg-[#111414]/70 p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="break-words text-base font-semibold text-white">
+                    {cliente.nombre || "Cliente sin nombre"}
+                  </h3>
+                  <p className="mt-1 break-words text-xs text-[#8E8E8E]">
+                    {cliente.rut ?? "Sin RUT"}
+                  </p>
+                </div>
+                <span
+                  className={[
+                    "shrink-0 rounded-full border px-3 py-1 text-xs font-semibold",
+                    isClienteActivo(cliente)
+                      ? "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]"
+                      : "border-red-400/30 bg-red-500/10 text-red-200",
+                  ].join(" ")}
+                >
+                  {isClienteActivo(cliente) ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+
+              <div className="mt-3 grid gap-1 text-sm text-[#D6D6D6]">
+                <p className="break-words">
+                  {getClienteEmail(cliente) || "Sin correo"}
+                </p>
+                <p className="break-words text-[#A8A8A8]">
+                  {cliente.telefono ?? "Sin telefono"}
+                </p>
+                <p className="break-words text-xs text-[#8E8E8E]">
+                  {cliente.notas_admin || "Sin notas"}
+                </p>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleSelectCliente(cliente)}
+                >
+                  <Eye className="h-4 w-4" />
+                  Ver
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleToggleActivo(cliente)}
+                >
+                  {isClienteActivo(cliente) ? (
+                    <UserX className="h-4 w-4" />
+                  ) : (
+                    <UserCheck className="h-4 w-4" />
+                  )}
+                  {isClienteActivo(cliente) ? "Desactivar" : "Activar"}
+                </Button>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <div className="mt-6 hidden overflow-hidden rounded-2xl border border-white/10 md:block">
         <div className="overflow-x-auto">
           <table className="min-w-[760px] w-full border-collapse text-left text-sm">
             <thead className="bg-[#0B0F0F] text-xs uppercase tracking-[0.14em] text-[#8E8E8E]">
@@ -331,11 +560,11 @@ export const AdminClientesSection = () => {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-[#A8A8A8]">
+      <div className="mt-4 flex flex-col gap-3 text-sm text-[#A8A8A8] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <span>
           Página {pagination.page} de {pagination.totalPages} · {pagination.total} registros
         </span>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex">
           <Button
             variant="outline"
             size="sm"
@@ -357,20 +586,38 @@ export const AdminClientesSection = () => {
         </div>
       </div>
 
-      {selectedCliente && form ? (
-        <div className="mt-8 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="premium-card rounded-3xl p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
+      <AppModal
+        open={Boolean(selectedCliente && form)}
+        title="Detalle de cliente"
+        description="Revisa el historial y actualiza los datos administrativos."
+        onOpenChange={(open) => {
+          if (!open && !saving) {
+            setSelectedCliente(null);
+            setForm(null);
+            setModalFeedback(null);
+          }
+        }}
+        className="w-[min(94vw,980px)]"
+      >
+        {selectedCliente && form ? (
+        <div className="grid min-w-0 gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="premium-card min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
                 <h3 className="text-xl font-semibold text-[#00D1C1]">
                   {selectedCliente.nombre}
                 </h3>
-                <p className="mt-1 text-sm text-[#D6D6D6]">
+                <p className="mt-1 break-words text-sm text-[#D6D6D6]">
                   {getClienteEmail(selectedCliente) || "Sin correo"} ·{" "}
                   {selectedCliente.telefono ?? "Sin teléfono"}
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setSelectedCliente(null)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+                onClick={() => setSelectedCliente(null)}
+              >
                 Cerrar
               </Button>
             </div>
@@ -406,13 +653,25 @@ export const AdminClientesSection = () => {
                       selectedCliente.reservas_recientes?.map((reserva) => (
                         <div
                           key={reserva.id}
-                          className="rounded-2xl border border-white/10 bg-[#0B0F0F]/70 px-3 py-2 text-sm text-[#D6D6D6]"
+                          className="flex min-w-0 flex-col gap-3 rounded-2xl border border-white/10 bg-[#0B0F0F]/70 px-3 py-2 text-sm text-[#D6D6D6] sm:flex-row sm:items-center sm:justify-between"
                         >
-                          <span className="font-medium text-white">
-                            {reserva.servicio_nombre ?? "Servicio"}
-                          </span>{" "}
+                          <div className="min-w-0">
+                            <span className="break-words font-medium text-white">
+                              {reserva.servicio_nombre ?? "Servicio"}
+                            </span>{" "}
                           · {formatDate(reserva.fecha)} {reserva.hora ?? ""} ·{" "}
-                          {reserva.estado ?? "pendiente"}
+                            {reserva.estado ?? "pendiente"}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="w-full shrink-0 sm:w-auto"
+                            onClick={() => openReagendarReserva(reserva)}
+                          >
+                            <RotateCw className="h-4 w-4" />
+                            Reagendar
+                          </Button>
                         </div>
                       ))
                     )}
@@ -422,11 +681,19 @@ export const AdminClientesSection = () => {
             )}
           </div>
 
-          <form className="premium-card rounded-3xl p-5" onSubmit={handleSave}>
+          <form className="premium-card min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-5" onSubmit={handleSave}>
             <div className="flex items-center gap-2">
               <Pencil className="h-5 w-5 text-[#00D1C1]" />
               <h3 className="text-xl font-semibold text-white">Editar cliente</h3>
             </div>
+
+            {modalFeedback ? (
+              <InlineFeedback
+                tone={modalFeedback.tone}
+                message={modalFeedback.message}
+                className="mt-4"
+              />
+            ) : null}
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
@@ -434,6 +701,7 @@ export const AdminClientesSection = () => {
                 <Input
                   id="cliente-nombre"
                   value={form.nombre}
+                  disabled={saving}
                   onChange={(event) => setFormField("nombre", event.target.value)}
                 />
               </div>
@@ -443,6 +711,7 @@ export const AdminClientesSection = () => {
                   id="cliente-email"
                   type="email"
                   value={form.email}
+                  disabled={saving}
                   onChange={(event) => setFormField("email", event.target.value)}
                 />
               </div>
@@ -451,6 +720,7 @@ export const AdminClientesSection = () => {
                 <Input
                   id="cliente-telefono"
                   value={form.telefono}
+                  disabled={saving}
                   onChange={(event) => setFormField("telefono", event.target.value)}
                 />
               </div>
@@ -458,6 +728,7 @@ export const AdminClientesSection = () => {
                 <input
                   type="checkbox"
                   checked={form.activo}
+                  disabled={saving}
                   onChange={(event) => setFormField("activo", event.target.checked)}
                 />
                 Cliente activo
@@ -467,6 +738,7 @@ export const AdminClientesSection = () => {
                 <Textarea
                   id="cliente-notas"
                   value={form.notas_admin}
+                  disabled={saving}
                   onChange={(event) =>
                     setFormField("notas_admin", event.target.value)
                   }
@@ -477,14 +749,114 @@ export const AdminClientesSection = () => {
 
             <Button
               type="submit"
-              className="mt-5 rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+              className="mt-5 w-full rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] sm:w-auto"
               disabled={saving}
             >
               {saving ? "Guardando..." : "Guardar cambios"}
             </Button>
           </form>
         </div>
-      ) : null}
+        ) : null}
+      </AppModal>
+
+      <AppModal
+        open={Boolean(reagendarModal)}
+        title="Reagendar reserva"
+        description="Actualiza la fecha y hora sin salir de la ficha del cliente."
+        onOpenChange={(open) => {
+          if (!open && !reagendarModal?.saving) {
+            setReagendarModal(null);
+          }
+        }}
+        className="w-[min(94vw,560px)]"
+      >
+        {reagendarModal ? (
+          <form className="grid gap-4" onSubmit={handleReagendarReserva}>
+            <div className="rounded-2xl border border-[#00D1C1]/20 bg-[#061817]/80 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#20E0D0]">
+                Reserva actual
+              </p>
+              <p className="mt-2 break-words text-base font-semibold text-white">
+                {reagendarModal.reserva.servicio_nombre ?? "Servicio"}
+              </p>
+              <p className="mt-1 text-sm text-[#D6D6D6]">
+                {formatDate(reagendarModal.reserva.fecha)}{" "}
+                {reagendarModal.reserva.hora ?? ""}
+              </p>
+            </div>
+
+            {reagendarModal.feedback ? (
+              <InlineFeedback
+                tone={reagendarModal.feedback.tone}
+                message={reagendarModal.feedback.message}
+              />
+            ) : null}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="cliente-reagendar-fecha">Nueva fecha</Label>
+                <Input
+                  id="cliente-reagendar-fecha"
+                  type="date"
+                  value={reagendarModal.form.fecha}
+                  disabled={reagendarModal.saving}
+                  required
+                  onChange={(event) =>
+                    setReagendarField("fecha", event.target.value)
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cliente-reagendar-hora">Nueva hora</Label>
+                <Input
+                  id="cliente-reagendar-hora"
+                  type="time"
+                  value={reagendarModal.form.hora}
+                  disabled={reagendarModal.saving}
+                  required
+                  onChange={(event) =>
+                    setReagendarField("hora", event.target.value)
+                  }
+                />
+              </div>
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="cliente-reagendar-motivo">Motivo opcional</Label>
+                <Textarea
+                  id="cliente-reagendar-motivo"
+                  value={reagendarModal.form.motivo}
+                  disabled={reagendarModal.saving}
+                  className="min-h-24"
+                  placeholder="Ej: solicitud del cliente"
+                  onChange={(event) =>
+                    setReagendarField("motivo", event.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2 sm:flex sm:flex-row-reverse sm:justify-start">
+              <Button
+                type="submit"
+                className="w-full rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] sm:w-auto"
+                disabled={reagendarModal.saving}
+              >
+                {reagendarModal.saving
+                  ? "Guardando..."
+                  : "Guardar reagendamiento"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
+                disabled={reagendarModal.saving}
+                onClick={() => setReagendarModal(null)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        ) : null}
+      </AppModal>
     </section>
   );
 };

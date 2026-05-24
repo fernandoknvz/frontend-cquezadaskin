@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AppModal } from "@/components/ui/AppModal";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,7 @@ const buildPayload = (form: InstagramFormState): AdminInstagramPayload => ({
 export const AdminInstagramSection = () => {
   const [posts, setPosts] = useState<AdminInstagramPost[]>([]);
   const [form, setForm] = useState<InstagramFormState>(emptyForm);
+  const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,7 @@ export const AdminInstagramSection = () => {
 
   const resetForm = () => {
     setForm(emptyForm);
+    setFormOpen(false);
     setMessage(null);
     setError(null);
   };
@@ -96,6 +99,7 @@ export const AdminInstagramSection = () => {
         setMessage("Post creado");
       }
       setForm(emptyForm);
+      setFormOpen(false);
       await loadPosts();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar post");
@@ -104,6 +108,7 @@ export const AdminInstagramSection = () => {
 
   const handleEdit = (post: AdminInstagramPost) => {
     setForm(mapToForm(post));
+    setFormOpen(true);
     setMessage(null);
     setError(null);
   };
@@ -133,12 +138,31 @@ export const AdminInstagramSection = () => {
             Agrega URLs de embeds para el carrusel o grilla.
           </p>
         </div>
-        <Button variant="outline" onClick={loadPosts}>
-          Actualizar lista
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => {
+              setForm(emptyForm);
+              setFormOpen(true);
+            }}
+          >
+            Crear post
+          </Button>
+          <Button variant="outline" onClick={loadPosts}>
+            Actualizar lista
+          </Button>
+        </div>
       </div>
 
-      <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
+      <AppModal
+        open={formOpen}
+        title={isEditing ? "Editar post" : "Crear post"}
+        description="Administra embeds de Instagram visibles en contenido."
+        onOpenChange={(open) => {
+          if (!open) resetForm();
+          else setFormOpen(true);
+        }}
+      >
+      <form className="grid gap-4" onSubmit={handleSubmit}>
         <div className="grid gap-2 md:grid-cols-2">
           <div className="grid gap-2 md:col-span-2">
             <Label htmlFor="instagram-embed">URL embed</Label>
@@ -194,6 +218,7 @@ export const AdminInstagramSection = () => {
           ) : null}
         </div>
       </form>
+      </AppModal>
 
       <div className="mt-8 grid gap-3">
         <h3 className="text-lg font-semibold text-[#00D1C1]">

@@ -28,8 +28,8 @@ export default function WhatsAppWidget({
 
   const posClasses =
     position === "bottom-left"
-      ? "left-6 bottom-6 items-start"
-      : "right-6 bottom-6 items-end";
+      ? "left-4 bottom-4 items-start sm:left-6 sm:bottom-6"
+      : "right-4 bottom-4 items-end sm:right-6 sm:bottom-6";
 
   const waUrl = useMemo(() => {
     const text = encodeURIComponent(message.trim() || defaultMessage);
@@ -100,7 +100,7 @@ export default function WhatsAppWidget({
       ref={containerRef}
       animate={{ y: -liftAmount }}
       transition={{ type: "tween", duration: 0.35, ease: "easeOut" }}
-      className={`fixed ${posClasses} z-50 flex flex-col gap-4`}
+      className={`fixed ${posClasses} z-50 flex flex-col gap-3 sm:gap-4`}
     >
       <AnimatePresence>
         {isOpen && (
@@ -111,7 +111,7 @@ export default function WhatsAppWidget({
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="
-              w-72 max-w-[calc(100vw-3rem)]
+              w-72 max-w-[calc(100vw-2rem)]
               rounded-2xl border border-[#00D1C1]/30
               bg-[#121212] shadow-lg
               p-4
@@ -184,7 +184,7 @@ export default function WhatsAppWidget({
       <motion.a
         href="/agendar"
         className="
-          group relative h-14 w-14 rounded-full sm:h-16 sm:w-16
+          group relative h-12 w-12 rounded-full sm:h-16 sm:w-16
           border border-white/10
           bg-[#00D1C1] text-[#03110f]
           shadow-[0_14px_34px_rgba(0,0,0,0.38),0_0_18px_rgba(0,209,193,0.22)]
@@ -203,13 +203,13 @@ export default function WhatsAppWidget({
         <span className="pointer-events-none absolute right-[4.75rem] hidden whitespace-nowrap rounded-full border border-[#00D1C1]/25 bg-[#0B0F0F]/95 px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.32)] backdrop-blur group-hover:block">
           Agendar cita
         </span>
-        <CalendarDays className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={2.2} />
+        <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8" strokeWidth={2.2} />
       </motion.a>
 
       <motion.button
         onClick={() => setIsOpen((v) => !v)}
         className="
-          group relative h-14 w-14 rounded-full sm:h-16 sm:w-16
+          group relative h-12 w-12 rounded-full sm:h-16 sm:w-16
           border border-white/10
           bg-[#25D366] text-white
           shadow-[0_14px_34px_rgba(0,0,0,0.38),0_0_18px_rgba(37,211,102,0.22)]
@@ -228,7 +228,7 @@ export default function WhatsAppWidget({
         <span className="pointer-events-none absolute right-[4.75rem] hidden whitespace-nowrap rounded-full border border-[#25D366]/25 bg-[#0B0F0F]/95 px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.32)] backdrop-blur group-hover:block">
           Escribir por WhatsApp
         </span>
-        <FaWhatsapp className="h-8 w-8 sm:h-9 sm:w-9" aria-hidden="true" />
+        <FaWhatsapp className="h-7 w-7 sm:h-9 sm:w-9" aria-hidden="true" />
       </motion.button>
     </motion.div>
   );

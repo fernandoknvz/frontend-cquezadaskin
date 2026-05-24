@@ -2,22 +2,23 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { Link, useNavigate } from "react-router-dom";
 import {
   CalendarDays,
-  CheckCircle2,
   Clock,
   ClipboardList,
   History,
   LockKeyhole,
   LogIn,
   LogOut,
+  MessageSquare,
   Pencil,
   RefreshCw,
   RotateCw,
+  Send,
   ShieldCheck,
+  Star,
   UserRound,
   XCircle,
 } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NotificationToast } from "@/components/ui/notification-toast";
 import { Textarea } from "@/components/ui/textarea";
 import {
   clearClientSession,
@@ -44,6 +46,11 @@ import {
   type ClientePerfil,
   type ReservaCliente,
 } from "@/services/clientPortalApi";
+import {
+  createValoracionCliente,
+  listValoracionesCliente,
+  type ValoracionCliente,
+} from "@/services/clientValoracionesApi";
 
 type PerfilForm = {
   nombre: string;
@@ -70,6 +77,19 @@ type ReagendarForm = {
 
 type ActionMode = "cancelar" | "reagendar" | null;
 
+type PortalNotification = {
+  variant: "success" | "error";
+  title: string;
+  description: string;
+};
+
+type ValoracionForm = {
+  cita_id: string;
+  nombre_mostrado: string;
+  comentario: string;
+  puntuacion: string;
+};
+
 const emptyPerfilForm: PerfilForm = {
   nombre: "",
   email: "",
@@ -83,6 +103,13 @@ const emptyPasswordForm: PasswordForm = {
   confirmacion: "",
 };
 
+const emptyValoracionForm: ValoracionForm = {
+  cita_id: "",
+  nombre_mostrado: "",
+  comentario: "",
+  puntuacion: "5",
+};
+
 const estadoLabels: Record<string, string> = {
   solicitada: "Solicitada",
   pendiente: "Pendiente",
@@ -90,6 +117,13 @@ const estadoLabels: Record<string, string> = {
   reagendada: "Reagendada",
   cancelada: "Cancelada",
   completada: "Completada",
+};
+
+const valoracionEstadoLabels: Record<string, string> = {
+  pendiente: "Pendiente",
+  aprobado: "Aprobada",
+  rechazada: "Rechazada",
+  rechazado: "Rechazada",
 };
 
 const formatDate = (value?: string | null) => {
@@ -169,12 +203,18 @@ export const MisReservasPage = () => {
     useState<PasswordForm>(emptyPasswordForm);
   const [proximas, setProximas] = useState<ReservaCliente[]>([]);
   const [historial, setHistorial] = useState<ReservaCliente[]>([]);
+  const [valoraciones, setValoraciones] = useState<ValoracionCliente[]>([]);
+  const [valoracionForm, setValoracionForm] =
+    useState<ValoracionForm>(emptyValoracionForm);
   const [loading, setLoading] = useState(Boolean(getClientToken()));
+  const [loadingValoraciones, setLoadingValoraciones] = useState(false);
   const [savingPerfil, setSavingPerfil] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingAction, setSavingAction] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [savingValoracion, setSavingValoracion] = useState(false);
+  const [notification, setNotification] = useState<PortalNotification | null>(
+    null
+  );
   const [selectedReserva, setSelectedReserva] = useState<ReservaCliente | null>(
     null
   );
@@ -187,6 +227,24 @@ export const MisReservasPage = () => {
   });
 
   const clienteNombre = perfil?.nombre || "Cliente CQuezadaSkin";
+  const clearNotification = useCallback(() => {
+    setNotification(null);
+  }, []);
+  const clearErrorNotification = useCallback(() => {
+    setNotification((current) =>
+      current?.variant === "error" ? null : current
+    );
+  }, []);
+  const showSuccess = useCallback((title: string, description: string) => {
+    setNotification({ variant: "success", title, description });
+  }, []);
+  const showError = useCallback((description: string) => {
+    setNotification({
+      variant: "error",
+      title: "No se pudo completar la acción",
+      description,
+    });
+  }, []);
 
   const loadPortal = useCallback(async () => {
     const currentToken = getClientToken();
@@ -197,21 +255,28 @@ export const MisReservasPage = () => {
       setPerfil(null);
       setProximas([]);
       setHistorial([]);
+      setValoraciones([]);
       return;
     }
 
     setLoading(true);
-    setError(null);
+    clearErrorNotification();
     try {
-      const [perfilResponse, reservasResponse] = await Promise.all([
+      const [perfilResponse, reservasResponse, valoracionesResponse] = await Promise.all([
         getClienteMe(currentToken),
         getClienteReservas(currentToken),
+        listValoracionesCliente(currentToken),
       ]);
       setPerfil(perfilResponse);
       setStoredClient(perfilResponse);
       setPerfilForm(mapPerfilToForm(perfilResponse));
+      setValoracionForm((prev) => ({
+        ...prev,
+        nombre_mostrado: prev.nombre_mostrado || perfilResponse.nombre || "",
+      }));
       setProximas(reservasResponse.proximas);
       setHistorial(reservasResponse.historial);
+      setValoraciones(valoracionesResponse);
     } catch (err) {
       if (isUnauthorizedError(err)) {
         clearClientSession();
@@ -220,13 +285,14 @@ export const MisReservasPage = () => {
       setPerfil(null);
       setProximas([]);
       setHistorial([]);
-      setError(
+      setValoraciones([]);
+      showError(
         getErrorMessage(err, "No se pudo cargar la información de tu cuenta")
       );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearErrorNotification, showError]);
 
   useEffect(() => {
     loadPortal();
@@ -243,18 +309,38 @@ export const MisReservasPage = () => {
     setPerfil(null);
     setProximas([]);
     setHistorial([]);
+    setValoraciones([]);
     setSelectedReserva(null);
     setActionMode(null);
     navigate("/agendar");
   };
+
+  const loadValoraciones = useCallback(async () => {
+    const currentToken = getClientToken();
+    if (!currentToken) return;
+
+    setLoadingValoraciones(true);
+    clearErrorNotification();
+    try {
+      const data = await listValoracionesCliente(currentToken);
+      setValoraciones(data);
+    } catch (err) {
+      if (isUnauthorizedError(err)) {
+        clearClientSession();
+        setToken(null);
+      }
+      showError(getErrorMessage(err, "No se pudieron cargar tus valoraciones"));
+    } finally {
+      setLoadingValoraciones(false);
+    }
+  }, [clearErrorNotification, showError]);
 
   const handlePerfilSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!token) return;
 
     setSavingPerfil(true);
-    setError(null);
-    setMessage(null);
+    clearNotification();
     try {
       const updated = await updateClienteMe(
         {
@@ -270,9 +356,12 @@ export const MisReservasPage = () => {
       setPerfil(updated);
       setStoredClient(updated);
       setPerfilForm(mapPerfilToForm(updated));
-      setMessage("Perfil actualizado correctamente");
+      showSuccess(
+        "Perfil actualizado",
+        "Tus datos fueron guardados correctamente."
+      );
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo actualizar tu perfil"));
+      showError(getErrorMessage(err, "No se pudo actualizar tu perfil"));
     } finally {
       setSavingPerfil(false);
     }
@@ -283,18 +372,17 @@ export const MisReservasPage = () => {
     if (!token) return;
 
     if (passwordForm.nueva.length < 8) {
-      setError("La nueva contraseña debe tener al menos 8 caracteres");
+      showError("La nueva contraseña debe tener al menos 8 caracteres");
       return;
     }
 
     if (passwordForm.nueva !== passwordForm.confirmacion) {
-      setError("La confirmación de contraseña no coincide");
+      showError("La confirmación de contraseña no coincide");
       return;
     }
 
     setSavingPassword(true);
-    setError(null);
-    setMessage(null);
+    clearNotification();
     try {
       await updateClientePassword(
         {
@@ -305,9 +393,12 @@ export const MisReservasPage = () => {
         token
       );
       setPasswordForm(emptyPasswordForm);
-      setMessage("Contraseña actualizada correctamente");
+      showSuccess(
+        "Contraseña actualizada",
+        "Tu nueva contraseña fue guardada correctamente."
+      );
     } catch (err) {
-      setError(getErrorMessage(err, "No se pudo actualizar la contraseña"));
+      showError(getErrorMessage(err, "No se pudo actualizar la contraseña"));
     } finally {
       setSavingPassword(false);
     }
@@ -317,8 +408,7 @@ export const MisReservasPage = () => {
     setSelectedReserva(reserva);
     setActionMode("cancelar");
     setCancelForm({ motivo: "" });
-    setError(null);
-    setMessage(null);
+    clearNotification();
   };
 
   const openReagendarAction = (reserva: ReservaCliente) => {
@@ -329,8 +419,7 @@ export const MisReservasPage = () => {
       hora: reserva.hora?.slice(0, 5) ?? "",
       motivo: "",
     });
-    setError(null);
-    setMessage(null);
+    clearNotification();
   };
 
   const closeActionPanel = () => {
@@ -343,19 +432,21 @@ export const MisReservasPage = () => {
     if (!token || !selectedReserva) return;
 
     setSavingAction(true);
-    setError(null);
-    setMessage(null);
+    clearNotification();
     try {
       await cancelarReservaCliente(
         selectedReserva.id,
         { motivo: cancelForm.motivo.trim() },
         token
       );
-      setMessage("Reserva cancelada correctamente");
+      showSuccess(
+        "Reserva cancelada",
+        "Tu reserva fue cancelada correctamente."
+      );
       closeActionPanel();
       await loadPortal();
     } catch (err) {
-      setError(
+      showError(
         getErrorMessage(
           err,
           "No se pudo cancelar la reserva. Revisa si está muy próxima, ya fue cancelada o no está disponible para cambios."
@@ -371,8 +462,7 @@ export const MisReservasPage = () => {
     if (!token || !selectedReserva) return;
 
     setSavingAction(true);
-    setError(null);
-    setMessage(null);
+    clearNotification();
     try {
       await reagendarReservaCliente(
         selectedReserva.id,
@@ -383,11 +473,14 @@ export const MisReservasPage = () => {
         },
         token
       );
-      setMessage("Solicitud de reagendamiento enviada correctamente");
+      showSuccess(
+        "Solicitud enviada",
+        "Tu solicitud de reagendamiento fue enviada correctamente."
+      );
       closeActionPanel();
       await loadPortal();
     } catch (err) {
-      setError(
+      showError(
         getErrorMessage(
           err,
           "No se pudo reagendar la reserva. El horario podría no estar disponible."
@@ -395,6 +488,61 @@ export const MisReservasPage = () => {
       );
     } finally {
       setSavingAction(false);
+    }
+  };
+
+  const handleValoracionSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!token) return;
+
+    const comentario = valoracionForm.comentario.trim();
+    const nombreMostrado = valoracionForm.nombre_mostrado.trim();
+    const puntuacion = Number(valoracionForm.puntuacion);
+
+    if (!nombreMostrado) {
+      showError("Ingresa el nombre que quieres mostrar en la valoracion");
+      return;
+    }
+
+    if (comentario.length < 10) {
+      showError("Cuentanos un poco mas sobre tu experiencia");
+      return;
+    }
+
+    if (!Number.isFinite(puntuacion) || puntuacion < 1 || puntuacion > 5) {
+      showError("Selecciona una puntuacion entre 1 y 5");
+      return;
+    }
+
+    setSavingValoracion(true);
+    clearNotification();
+    try {
+      await createValoracionCliente(
+        {
+          cita_id: valoracionForm.cita_id || null,
+          nombre_mostrado: nombreMostrado,
+          comentario,
+          puntuacion,
+        },
+        token
+      );
+      setValoracionForm({
+        ...emptyValoracionForm,
+        nombre_mostrado: nombreMostrado,
+      });
+      showSuccess(
+        "Valoración enviada",
+        "Tu valoración fue enviada y quedará pendiente de revisión."
+      );
+      await loadValoraciones();
+    } catch (err) {
+      if (isUnauthorizedError(err)) {
+        clearClientSession();
+        setToken(null);
+      }
+      showError(getErrorMessage(err, "No se pudo enviar tu valoracion"));
+    } finally {
+      setSavingValoracion(false);
     }
   };
 
@@ -425,13 +573,13 @@ export const MisReservasPage = () => {
   }
 
   return (
-    <section className="mx-auto w-[92%] max-w-6xl py-10 text-white sm:py-14">
-      <header className="flex flex-wrap items-start justify-between gap-4">
+    <section className="mx-auto w-[92%] max-w-6xl py-8 text-white sm:py-14">
+      <header className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-[#00D1C1]">
             Área cliente
           </p>
-          <h1 className="premium-heading mt-2 text-4xl font-semibold sm:text-6xl">
+          <h1 className="premium-heading mt-2 text-3xl font-semibold min-[390px]:text-4xl sm:text-6xl">
             Mi cuenta
           </h1>
           <p className="mt-3 max-w-2xl text-base text-[#D6D6D6] sm:text-lg">
@@ -439,7 +587,7 @@ export const MisReservasPage = () => {
             cuenta CQuezadaSkin.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid w-full grid-cols-1 gap-2 min-[430px]:grid-cols-3 sm:flex sm:w-auto sm:flex-wrap">
           <Button variant="outline" asChild>
             <Link to="/agendar">Nueva reserva</Link>
           </Button>
@@ -454,19 +602,14 @@ export const MisReservasPage = () => {
         </div>
       </header>
 
-      {message ? (
-        <Alert className="mt-6">
-          <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Listo</AlertTitle>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      ) : null}
-
-      {error ? (
-        <Alert variant="destructive" className="mt-6">
-          <AlertTitle>Ocurrió un error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {notification ? (
+        <NotificationToast
+          key={`${notification.variant}-${notification.title}-${notification.description}`}
+          variant={notification.variant}
+          title={notification.title}
+          description={notification.description}
+          onClose={clearNotification}
+        />
       ) : null}
 
       {loading ? (
@@ -514,6 +657,17 @@ export const MisReservasPage = () => {
               onReagendar={openReagendarAction}
             />
           </section>
+
+          <MisValoracionesSection
+            reservas={historial}
+            valoraciones={valoraciones}
+            form={valoracionForm}
+            loading={loadingValoraciones}
+            saving={savingValoracion}
+            onRefresh={loadValoraciones}
+            onChange={setValoracionForm}
+            onSubmit={handleValoracionSubmit}
+          />
 
           {selectedReserva && actionMode ? (
             <ActionPanel
@@ -810,7 +964,7 @@ function ReservaCard({
       ) : null}
 
       {canManage ? (
-        <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 grid gap-2 min-[430px]:grid-cols-2 sm:flex sm:flex-wrap">
           <Button variant="outline" size="sm" onClick={() => onReagendar(reserva)}>
             <RotateCw className="h-4 w-4" />
             Reagendar
@@ -829,6 +983,207 @@ function ReservaCard({
     </article>
   );
 }
+
+function MisValoracionesSection({
+  reservas,
+  valoraciones,
+  form,
+  loading,
+  saving,
+  onRefresh,
+  onChange,
+  onSubmit,
+}: {
+  reservas: ReservaCliente[];
+  valoraciones: ValoracionCliente[];
+  form: ValoracionForm;
+  loading: boolean;
+  saving: boolean;
+  onRefresh: () => void;
+  onChange: React.Dispatch<React.SetStateAction<ValoracionForm>>;
+  onSubmit: (event: FormEvent) => void;
+}) {
+  const reservasElegibles = reservas.filter((reserva) => {
+    const estado = (reserva.estado ?? "").toLowerCase();
+    return estado === "completada" || estado === "confirmada" || estado === "";
+  });
+
+  return (
+    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <MessageSquare className="h-5 w-5 text-[#00D1C1]" />
+              Mis valoraciones
+            </CardTitle>
+            <CardDescription>
+              Comparte tu experiencia. La valoracion sera revisada antes de
+              publicarse.
+            </CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
+            <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+            Actualizar
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <form className="grid gap-4" onSubmit={onSubmit}>
+            <div className="grid gap-2">
+              <Label htmlFor="valoracion-cita">Reserva asociada opcional</Label>
+              <select
+                id="valoracion-cita"
+                value={form.cita_id}
+                onChange={(event) =>
+                  onChange((prev) => ({ ...prev, cita_id: event.target.value }))
+                }
+                className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 focus:ring-2 focus:ring-[#00D1C1]/30"
+              >
+                <option value="">Sin asociar a una reserva</option>
+                {reservasElegibles.map((reserva) => (
+                  <option key={String(reserva.id)} value={String(reserva.id)}>
+                    {getReservaServicio(reserva)} - {formatDate(reserva.fecha)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="valoracion-nombre">Nombre a mostrar</Label>
+              <Input
+                id="valoracion-nombre"
+                value={form.nombre_mostrado}
+                onChange={(event) =>
+                  onChange((prev) => ({
+                    ...prev,
+                    nombre_mostrado: event.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="valoracion-puntuacion">Puntuacion</Label>
+              <select
+                id="valoracion-puntuacion"
+                value={form.puntuacion}
+                onChange={(event) =>
+                  onChange((prev) => ({
+                    ...prev,
+                    puntuacion: event.target.value,
+                  }))
+                }
+                className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 focus:ring-2 focus:ring-[#00D1C1]/30"
+              >
+                <option value="5">5 estrellas</option>
+                <option value="4">4 estrellas</option>
+                <option value="3">3 estrellas</option>
+                <option value="2">2 estrellas</option>
+                <option value="1">1 estrella</option>
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="valoracion-comentario">Comentario</Label>
+              <Textarea
+                id="valoracion-comentario"
+                value={form.comentario}
+                onChange={(event) =>
+                  onChange((prev) => ({
+                    ...prev,
+                    comentario: event.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
+            <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-3 text-xs text-[#A8A8A8]">
+              Tu valoración fue enviada y quedará pendiente de revisión.
+            </p>
+            <Button
+              type="submit"
+              className="w-fit rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+              disabled={saving}
+            >
+              <Send className="h-4 w-4" />
+              {saving ? "Enviando..." : "Enviar valoracion"}
+            </Button>
+          </form>
+
+          <div className="grid gap-3">
+            {loading ? (
+              <div className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5 text-sm text-[#A8A8A8]">
+                Cargando tus valoraciones...
+              </div>
+            ) : valoraciones.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5 text-sm text-[#A8A8A8]">
+                Aun no has enviado valoraciones.
+              </div>
+            ) : (
+              valoraciones.map((valoracion) => (
+                <article
+                  key={String(valoracion.id)}
+                  className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold text-white">
+                        {valoracion.nombre_mostrado}
+                      </h3>
+                      <StarRating value={valoracion.puntuacion} />
+                    </div>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold ${getValoracionEstadoClass(
+                        valoracion.estado
+                      )}`}
+                    >
+                      {valoracionEstadoLabels[valoracion.estado] ??
+                        valoracion.estado}
+                    </span>
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-[#D6D6D6]">
+                    {valoracion.comentario}
+                  </p>
+                  {valoracion.respuesta_admin ? (
+                    <p className="mt-4 rounded-2xl border border-[#00D1C1]/20 bg-[#00D1C1]/10 p-3 text-sm text-[#D6D6D6]">
+                      {valoracion.respuesta_admin}
+                    </p>
+                  ) : null}
+                </article>
+              ))
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StarRating({ value }: { value: number }) {
+  return (
+    <div className="mt-2 flex items-center gap-0.5" aria-label={`${value} de 5`}>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <Star
+          key={index}
+          className={`h-4 w-4 ${
+            index < value ? "fill-[#00D1C1] text-[#00D1C1]" : "text-[#3A3A3A]"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+const getValoracionEstadoClass = (estado?: string | null) => {
+  const normalized = (estado ?? "pendiente").toLowerCase();
+  if (normalized === "aprobado") {
+    return "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+  }
+  if (normalized === "rechazado" || normalized === "rechazada") {
+    return "border-red-400/30 bg-red-500/10 text-red-200";
+  }
+  return "border-amber-300/30 bg-amber-400/10 text-amber-200";
+};
 
 function ActionPanel({
   mode,

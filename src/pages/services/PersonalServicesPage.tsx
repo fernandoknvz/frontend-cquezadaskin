@@ -196,15 +196,15 @@ export const PersonalServicesPage: React.FC = () => {
   };
 
   return (
-    <section className="mx-auto w-[92%] max-w-[1180px] py-12 sm:py-14">
+    <section className="mx-auto w-[92%] max-w-[1180px] py-10 sm:py-14">
       <header className="max-w-3xl scroll-mt-32">
         <p className="text-sm font-semibold uppercase tracking-wide text-[#00D1C1]">
           Servicios
         </p>
-        <h1 className="mt-2 text-4xl font-bold tracking-tight text-white md:text-5xl">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
           Tratamientos reales CQuezadaSkin
         </h1>
-        <p className="mt-3 text-lg text-[#C9C9C9]">
+        <p className="mt-3 text-base text-[#C9C9C9] sm:text-lg">
           Explora la carta de tratamientos faciales, corporales, lash & brows,
           fibroblast y camuflajes estéticos en Quilpué.
         </p>
@@ -233,7 +233,7 @@ export const PersonalServicesPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="mt-12 space-y-20 sm:space-y-24">
+      <div className="mt-10 space-y-16 sm:mt-12 sm:space-y-24">
         {categoriesToRender.map((category) => (
           <CategoryBlock
             key={category.id}
@@ -267,7 +267,7 @@ function CategoryBlock({
         </div>
 
         <div className="min-w-0">
-          <h2 className="premium-section-title text-3xl font-semibold">
+          <h2 className="premium-section-title text-2xl font-semibold min-[390px]:text-3xl">
             {category.name}
           </h2>
           <p className="mt-2 max-w-3xl text-base leading-relaxed text-[#D6D6D6]">
@@ -300,7 +300,7 @@ function CategoryBlock({
 function ServiceRow({ service }: { service: Service }) {
   return (
     <motion.article
-      className="premium-card premium-card-hover flex h-full min-h-[390px] flex-col rounded-3xl p-5 sm:p-6"
+      className="premium-card premium-card-hover flex h-full min-h-[340px] flex-col rounded-2xl p-5 sm:min-h-[390px] sm:rounded-3xl sm:p-6"
       variants={{
         hidden: { opacity: 0, y: 18 },
         visible: {
@@ -339,7 +339,7 @@ function ServiceRow({ service }: { service: Service }) {
         <div className="mt-auto flex flex-col gap-3 pt-6">
           <Button
             asChild
-            className="rounded-2xl bg-[#00D1C1] text-[#03110f] shadow-sm hover:bg-[#20E0D0]"
+            className="w-full rounded-2xl bg-[#00D1C1] text-[#03110f] shadow-sm hover:bg-[#20E0D0]"
           >
             <Link to={service.ctaPrimary.to} className="gap-2">
               <CalendarDays className="h-4 w-4" />
@@ -351,7 +351,7 @@ function ServiceRow({ service }: { service: Service }) {
             <Button
               asChild
               variant="outline"
-              className="rounded-2xl"
+              className="w-full rounded-2xl"
             >
               <Link to={service.ctaSecondary.to} className="gap-2">
                 <MessageCircle className="h-4 w-4" />

@@ -2,13 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart3,
-  CalendarDays,
   CalendarRange,
+  CircleHelp,
   ClipboardList,
-  Clock,
   Images,
-  Instagram,
   Sparkles,
+  Star,
   UserCog,
   Users,
 } from "lucide-react";
@@ -16,14 +15,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { AdminAccountSection } from "@/features/admin/components/AdminAccountSection";
 import { AdminCalendarioSection } from "@/features/admin/components/AdminCalendarioSection";
-import { AdminCitasSection } from "@/features/admin/components/AdminCitasSection";
 import { AdminClientesSection } from "@/features/admin/components/AdminClientesSection";
 import { AdminDashboardSection } from "@/features/admin/components/AdminDashboardSection";
-import { AdminDisponibilidadSection } from "@/features/admin/components/AdminDisponibilidadSection";
+import { AdminFAQSection } from "@/features/admin/components/AdminFAQSection";
 import { AdminHomeContentSection } from "@/features/admin/components/AdminHomeContentSection";
 import { AdminInstagramSection } from "@/features/admin/components/AdminInstagramSection";
 import { AdminReservasSection } from "@/features/admin/components/AdminReservasSection";
 import { AdminServicesSection } from "@/features/admin/components/AdminServicesSection";
+import { AdminValoracionesSection } from "@/features/admin/components/AdminValoracionesSection";
 import { useAuth } from "@/features/auth/AuthContext";
 
 type AdminSection =
@@ -31,25 +30,23 @@ type AdminSection =
   | "calendario"
   | "reservas"
   | "clientes"
-  | "citas"
-  | "disponibilidad"
   | "servicios"
-  | "instagram"
-  | "home"
+  | "faq"
+  | "valoraciones"
+  | "contenido"
   | "cuenta";
 
 const getSectionTitle = (section: AdminSection) => {
   const titles: Record<AdminSection, string> = {
     dashboard: "Dashboard de citas",
     calendario: "Calendario",
-    reservas: "Gestión de reservas",
-    clientes: "Gestión de clientes",
-    citas: "Gestión de citas",
-    disponibilidad: "Gestión de disponibilidad",
-    servicios: "Gestión de servicios",
-    instagram: "Gestión de Instagram",
-    home: "Gestión del home",
-    cuenta: "Gestión de cuenta",
+    reservas: "Gestion de reservas",
+    clientes: "Gestion de clientes",
+    servicios: "Gestion de servicios",
+    faq: "Gestion de FAQ",
+    valoraciones: "Gestion de valoraciones",
+    contenido: "Gestion de contenido",
+    cuenta: "Gestion de cuenta",
   };
 
   return titles[section];
@@ -64,8 +61,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="mx-auto w-[90%] px-4 py-12 text-white 2xl:w-[80%]">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="mx-auto w-[92%] max-w-full overflow-x-hidden py-8 text-white sm:py-10 lg:w-[90%] lg:px-4 lg:py-12 2xl:w-[80%]">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
           <h1 className="premium-heading text-4xl font-semibold sm:text-5xl">
             Panel administrador
@@ -78,7 +75,7 @@ export default function AdminPage() {
             . Rol: {user?.rol}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
           <Button variant="outline" className="rounded-2xl" asChild>
             <Link to="/">Ver sitio</Link>
           </Button>
@@ -86,14 +83,14 @@ export default function AdminPage() {
             className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
             onClick={handleLogout}
           >
-            Cerrar sesión
+            Cerrar sesion
           </Button>
         </div>
       </div>
 
       <div className="mt-8 grid gap-6">
         {!activeSection ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
             <AdminCard
               icon={<BarChart3 className="h-6 w-6" />}
               title="Dashboard"
@@ -119,69 +116,68 @@ export default function AdminPage() {
               onClick={() => setActiveSection("clientes")}
             />
             <AdminCard
-              icon={<CalendarDays className="h-6 w-6" />}
-              title="Citas agendadas"
-              description="Gestión anterior de citas por bloques."
-              onClick={() => setActiveSection("citas")}
-            />
-            <AdminCard
-              icon={<Clock className="h-6 w-6" />}
-              title="Disponibilidad"
-              description="Gestiona días y horas disponibles."
-              onClick={() => setActiveSection("disponibilidad")}
-            />
-            <AdminCard
               icon={<Sparkles className="h-6 w-6" />}
               title="Servicios"
-              description="Administra servicios, precios e imágenes."
+              description="Administra servicios, precios e imagenes."
               onClick={() => setActiveSection("servicios")}
             />
             <AdminCard
-              icon={<Instagram className="h-6 w-6" />}
-              title="Instagram embeds"
-              description="Agrega o edita iframes de Instagram."
-              onClick={() => setActiveSection("instagram")}
+              icon={<CircleHelp className="h-6 w-6" />}
+              title="FAQ"
+              description="Gestiona preguntas frecuentes publicas."
+              onClick={() => setActiveSection("faq")}
+            />
+            <AdminCard
+              icon={<Star className="h-6 w-6" />}
+              title="Valoraciones"
+              description="Modera testimonios y respuestas."
+              onClick={() => setActiveSection("valoraciones")}
             />
             <AdminCard
               icon={<Images className="h-6 w-6" />}
-              title="Home / Carousel"
-              description="Edita textos e imágenes del home."
-              onClick={() => setActiveSection("home")}
+              title="Contenido"
+              description="Edita home, carousel e Instagram embeds."
+              onClick={() => setActiveSection("contenido")}
             />
             <AdminCard
               icon={<UserCog className="h-6 w-6" />}
               title="Cuenta"
-              description="Cambia correo y contraseña."
+              description="Cambia correo y contrasena."
               onClick={() => setActiveSection("cuenta")}
             />
           </div>
         ) : (
-          <div className="grid gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="premium-section-title text-3xl font-semibold">
+          <div className="grid min-w-0 gap-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <h2 className="premium-section-title text-2xl font-semibold sm:text-3xl">
                 {getSectionTitle(activeSection)}
               </h2>
-              <Button variant="outline" onClick={() => setActiveSection(null)}>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => setActiveSection(null)}
+              >
                 Volver al panel
               </Button>
             </div>
 
             {activeSection === "servicios" ? (
               <AdminServicesSection />
+            ) : activeSection === "faq" ? (
+              <AdminFAQSection />
+            ) : activeSection === "valoraciones" ? (
+              <AdminValoracionesSection />
             ) : activeSection === "calendario" ? (
               <AdminCalendarioSection />
-            ) : activeSection === "home" ? (
-              <AdminHomeContentSection />
-            ) : activeSection === "instagram" ? (
-              <AdminInstagramSection />
-            ) : activeSection === "disponibilidad" ? (
-              <AdminDisponibilidadSection />
+            ) : activeSection === "contenido" ? (
+              <div className="grid gap-6">
+                <AdminHomeContentSection />
+                <AdminInstagramSection />
+              </div>
             ) : activeSection === "reservas" ? (
               <AdminReservasSection />
             ) : activeSection === "clientes" ? (
               <AdminClientesSection />
-            ) : activeSection === "citas" ? (
-              <AdminCitasSection />
             ) : activeSection === "cuenta" ? (
               <AdminAccountSection />
             ) : (
@@ -209,14 +205,14 @@ function AdminCard({
     <button
       type="button"
       onClick={onClick}
-      className="premium-card premium-card-hover premium-focus rounded-3xl p-6 text-left hover:-translate-y-1"
+      className="premium-card premium-card-hover premium-focus min-h-28 min-w-0 rounded-2xl p-4 text-left hover:-translate-y-1 sm:rounded-3xl sm:p-6"
     >
       <div className="flex items-center gap-3">
         <span className="rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-[#00D1C1]">
           {icon}
         </span>
-        <div>
-          <h2 className="premium-section-title text-2xl font-semibold">
+        <div className="min-w-0">
+          <h2 className="premium-section-title text-xl font-semibold sm:text-2xl">
             {title}
           </h2>
           <p className="mt-1 text-sm text-[#D6D6D6]">{description}</p>

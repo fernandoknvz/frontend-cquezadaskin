@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 
+import { AppModal } from "@/components/ui/AppModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,6 +79,7 @@ export const AdminServicesSection = () => {
   const [services, setServices] = useState<AdminService[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [form, setForm] = useState<ServiceFormState>(emptyForm);
+  const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +122,7 @@ export const AdminServicesSection = () => {
 
   const resetForm = () => {
     setForm(emptyForm);
+    setFormOpen(false);
     setMessage(null);
     setError(null);
   };
@@ -168,6 +171,7 @@ export const AdminServicesSection = () => {
 
   const handleEdit = (service: AdminService) => {
     setForm(mapToForm(service));
+    setFormOpen(true);
     setMessage(null);
     setError(null);
   };
@@ -195,12 +199,33 @@ export const AdminServicesSection = () => {
             Crea o edita los servicios visibles en el sitio.
           </p>
         </div>
-        <Button variant="outline" onClick={loadServices}>
-          Actualizar lista
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            onClick={() => {
+              setForm(emptyForm);
+              setFormOpen(true);
+            }}
+          >
+            Crear servicio
+          </Button>
+          <Button variant="outline" onClick={loadServices}>
+            Actualizar lista
+          </Button>
+        </div>
       </div>
 
-      <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
+      <AppModal
+        open={formOpen}
+        title={isEditing ? "Editar servicio" : "Crear servicio"}
+        description="Completa la informacion visible para el sitio."
+        onOpenChange={(open) => {
+          if (!open) resetForm();
+          else setFormOpen(true);
+        }}
+        className="w-[min(94vw,920px)]"
+      >
+      <form className="grid gap-4" onSubmit={handleSubmit}>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="service-title">Nombre</Label>
@@ -369,6 +394,7 @@ export const AdminServicesSection = () => {
           ) : null}
         </div>
       </form>
+      </AppModal>
 
       {message ? (
         <div className="mt-4 rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-sm text-[#00D1C1]">

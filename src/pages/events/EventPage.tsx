@@ -327,11 +327,11 @@ const PublicInstagramSection = () => {
   }, []);
 
   return (
-    <section className="rounded-[2rem] border border-[#00D1C1]/20 bg-[#0B0F0F]/92 p-5 shadow-[0_24px_90px_rgba(0,0,0,0.48),0_0_54px_rgba(0,209,193,0.10)] backdrop-blur sm:p-7">
+    <section className="rounded-2xl border border-[#00D1C1]/20 bg-[#0B0F0F]/92 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.48),0_0_54px_rgba(0,209,193,0.10)] backdrop-blur sm:rounded-[2rem] sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="premium-kicker">Contenido real</p>
-          <h2 className="premium-section-title mt-2 text-4xl font-semibold sm:text-5xl">
+          <h2 className="premium-section-title mt-2 text-3xl font-semibold sm:text-5xl">
             Instagram
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#D6D6D6] sm:text-base">
@@ -354,7 +354,7 @@ const PublicInstagramSection = () => {
           {[0, 1, 2].map((item) => (
             <div
               key={item}
-              className="min-h-[520px] animate-pulse rounded-3xl border border-white/10 bg-[#111414]/80"
+              className="min-h-[360px] animate-pulse rounded-2xl border border-white/10 bg-[#111414]/80 sm:min-h-[520px] sm:rounded-3xl"
             />
           ))}
         </div>
@@ -390,7 +390,7 @@ function InstagramPostCard({ post }: { post: InstagramPost }) {
 
   return (
     <motion.article
-      className="group overflow-hidden rounded-3xl border border-white/10 bg-[#111414]/88 shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition-colors duration-300 hover:border-[#00D1C1]/55 hover:shadow-[0_0_46px_rgba(0,209,193,0.16)]"
+      className="group overflow-hidden rounded-2xl border border-white/10 bg-[#111414]/88 shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition-colors duration-300 hover:border-[#00D1C1]/55 hover:shadow-[0_0_46px_rgba(0,209,193,0.16)] sm:rounded-3xl"
       variants={{
         hidden: { opacity: 0, y: 18 },
         visible: {
@@ -471,7 +471,7 @@ const EventPage = () => {
   return (
     <main className="mx-auto w-[92%] max-w-7xl py-10 sm:py-14">
       <div className="mb-8 max-w-3xl">
-        <h1 className="premium-heading text-5xl font-semibold text-white sm:text-6xl">
+        <h1 className="premium-heading text-4xl font-semibold text-white min-[390px]:text-5xl sm:text-6xl">
           CQuezada<span className="text-[#00D1C1]">Skin</span> en Instagram
         </h1>
         <p className="mt-3 text-base leading-relaxed text-[#D6D6D6] sm:text-lg">

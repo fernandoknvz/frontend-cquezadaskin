@@ -56,10 +56,10 @@ export const Services: React.FC = () => {
 
   return (
     <section className="w-full bg-[#050505]">
-      <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8 2xl:w-[80%] 2xl:max-w-none">
+      <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8 2xl:w-[80%] 2xl:max-w-none">
         <div className="max-w-2xl">
           <p className="premium-kicker">Tratamientos</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white min-[390px]:text-3xl sm:text-4xl">
             Cuidado facial y corporal CQuezadaSkin
           </h2>
           <p className="mt-4 text-[#B8B8B8]">
@@ -135,7 +135,7 @@ function ServiceCard({ service }: { service: Service }) {
         <div className="mt-auto flex flex-col gap-3 pt-6">
           <Button
             asChild
-            className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+            className="w-full rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
           >
             <Link to={service.ctaPrimary.to} className="gap-2">
               <CalendarDays className="h-4 w-4" />
@@ -147,7 +147,7 @@ function ServiceCard({ service }: { service: Service }) {
             <Button
               asChild
               variant="outline"
-              className="rounded-2xl border-white/10 bg-[#121212]/[0.03] text-white hover:border-[#00D1C1]/50 hover:bg-[#121212]/[0.07]"
+              className="w-full rounded-2xl border-white/10 bg-[#121212]/[0.03] text-white hover:border-[#00D1C1]/50 hover:bg-[#121212]/[0.07]"
             >
               <Link to={service.ctaSecondary.to} className="gap-2">
                 <MessageCircle className="h-4 w-4" />

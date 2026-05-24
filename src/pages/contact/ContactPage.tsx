@@ -69,8 +69,8 @@ const useSuccessMessage = () => {
 // Small UI helper
 function SectionShell({ children }: { children: React.ReactNode }) {
   return (
-    <section className="w-[90%] 2xl:w-[80%] mx-auto">
-      <div className="w-full max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8 2xl:max-w-none 2xl:w-[80%]">
+    <section className="mx-auto w-full">
+      <div className="mx-auto w-[92%] max-w-6xl py-10 sm:py-12 lg:py-14 2xl:w-[80%] 2xl:max-w-none">
         {children}
       </div>
     </section>
@@ -97,7 +97,7 @@ function ClickableCard({
   return (
     <Card
       className={[
-        "rounded-3xl border-white/10 bg-[#121212]/80 backdrop-blur",
+        "rounded-2xl border-white/10 bg-[#121212]/80 backdrop-blur sm:rounded-3xl",
         "transition-all duration-300",
         disabled
           ? "opacity-60 pointer-events-none"
@@ -213,7 +213,7 @@ const CompanyForm: React.FC<{
   };
 
   return (
-    <Card className="mt-10 rounded-3xl border-white/10 bg-[#121212]/90 backdrop-blur">
+    <Card className="mt-8 rounded-2xl border-white/10 bg-[#121212]/90 backdrop-blur sm:mt-10 sm:rounded-3xl">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -316,7 +316,7 @@ const CompanyForm: React.FC<{
             />
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-2">
+          <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm text-[#B8B8B8] space-y-1">
               <p className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
@@ -330,7 +330,7 @@ const CompanyForm: React.FC<{
 
             <Button
               type="submit"
-              className="rounded-2xl shadow-sm h-12 px-8 bg-gradient-to-r from-[#00D1C1] to-[#20E0D0] hover:from-[#20E0D0] hover:to-[#35CFC3]"
+              className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#00D1C1] to-[#20E0D0] px-8 shadow-sm hover:from-[#20E0D0] hover:to-[#35CFC3] sm:w-auto"
               disabled={!canSubmit || isLoading}
             >
               {isLoading ? (
@@ -403,7 +403,7 @@ export const ContactPage: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <header className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
               Contacto CQuezadaSkin
             </h1>
             <p className="mt-3 text-lg text-[#C9C9C9]">

@@ -10,7 +10,9 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { AppModal } from "@/components/ui/AppModal";
 import { Button } from "@/components/ui/button";
+import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -37,6 +39,10 @@ const ESTADOS_RESERVA = [
 
 type VistaCalendario = "dia" | "semana";
 type PanelMode = "disponibilidad" | "bloqueo" | null;
+type ModalFeedback = {
+  tone: "success" | "error" | "info";
+  message: string;
+} | null;
 
 type DisponibilidadForm = {
   fecha: string;
@@ -130,6 +136,9 @@ const sortByHour = <T extends { hora: string }>(items: T[]) =>
 const getEventoContacto = (evento: CalendarioEvento) =>
   evento.cliente_email ?? evento.cliente_correo ?? evento.cliente_telefono ?? "";
 
+const wait = (milliseconds: number) =>
+  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+
 export const AdminCalendarioSection = () => {
   const [vista, setVista] = useState<VistaCalendario>("dia");
   const [fecha, setFecha] = useState(todayKey());
@@ -148,6 +157,7 @@ export const AdminCalendarioSection = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [modalFeedback, setModalFeedback] = useState<ModalFeedback>(null);
   const [disponibilidadForm, setDisponibilidadForm] =
     useState<DisponibilidadForm>({
       fecha: todayKey(),
@@ -234,6 +244,7 @@ export const AdminCalendarioSection = () => {
   const openDisponibilidadPanel = () => {
     setEditingDisponibilidad(null);
     setPanelMode("disponibilidad");
+    setModalFeedback(null);
     setMessage(null);
     setError(null);
     setDisponibilidadForm((prev) => ({ ...prev, fecha }));
@@ -242,6 +253,7 @@ export const AdminCalendarioSection = () => {
   const openBloqueoPanel = () => {
     setEditingDisponibilidad(null);
     setPanelMode("bloqueo");
+    setModalFeedback(null);
     setMessage(null);
     setError(null);
     setBloqueoForm((prev) => ({ ...prev, fecha }));
@@ -250,6 +262,7 @@ export const AdminCalendarioSection = () => {
   const openEditDisponibilidad = (item: DisponibilidadAdmin) => {
     setEditingDisponibilidad(item);
     setPanelMode("disponibilidad");
+    setModalFeedback(null);
     setMessage(null);
     setError(null);
     setDisponibilidadForm({
@@ -263,6 +276,7 @@ export const AdminCalendarioSection = () => {
   const handleCreateDisponibilidad = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
+    setModalFeedback(null);
     setMessage(null);
     setError(null);
     try {
@@ -280,15 +294,22 @@ export const AdminCalendarioSection = () => {
         await createDisponibilidad({ ...payload, tipo: "disponibilidad" });
         setMessage("Disponibilidad creada correctamente");
       }
+      setModalFeedback({
+        tone: "success",
+        message: "Cambios guardados correctamente.",
+      });
+      await wait(900);
       setEditingDisponibilidad(null);
       setPanelMode(null);
+      setModalFeedback(null);
       await loadCalendario();
     } catch (err) {
-      setError(
+      const errorMessage =
         err instanceof Error
           ? err.message
-          : "No se pudo guardar la disponibilidad"
-      );
+          : "No se pudo guardar la disponibilidad";
+      setModalFeedback({ tone: "error", message: errorMessage });
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -297,6 +318,7 @@ export const AdminCalendarioSection = () => {
   const handleCreateBloqueo = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
+    setModalFeedback(null);
     setMessage(null);
     setError(null);
     try {
@@ -306,12 +328,19 @@ export const AdminCalendarioSection = () => {
         motivo: bloqueoForm.motivo.trim(),
       });
       setMessage("Horario bloqueado correctamente");
+      setModalFeedback({
+        tone: "success",
+        message: "Cambios guardados correctamente.",
+      });
+      await wait(900);
       setPanelMode(null);
+      setModalFeedback(null);
       await loadCalendario();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "No se pudo bloquear el horario"
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : "No se pudo bloquear el horario";
+      setModalFeedback({ tone: "error", message: errorMessage });
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -344,33 +373,38 @@ export const AdminCalendarioSection = () => {
   };
 
   return (
-    <section className="premium-panel rounded-3xl p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="premium-section-title text-3xl font-semibold">
+    <section className="premium-panel max-w-full min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="premium-section-title text-2xl font-semibold sm:text-3xl">
             Calendario
           </h2>
           <p className="mt-1 text-sm text-[#D6D6D6]">
             Visualiza reservas, disponibilidad y bloqueos por día o semana.
           </p>
         </div>
-        <Button variant="outline" onClick={loadCalendario} disabled={loading}>
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto"
+          onClick={loadCalendario}
+          disabled={loading}
+        >
           <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
           Actualizar
         </Button>
       </div>
 
-      <div className="mt-6 grid gap-3 xl:grid-cols-[0.8fr_0.8fr_0.9fr_auto_auto_auto]">
+      <div className="mt-6 grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
         <Input
           type="date"
           value={fecha}
           onChange={(event) => setFecha(event.target.value)}
-          className="h-11 rounded-2xl"
+          className="h-11 w-full min-w-0 rounded-2xl xl:w-[11rem]"
         />
         <select
           value={vista}
           onChange={(event) => setVista(event.target.value as VistaCalendario)}
-          className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
+          className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 xl:w-[10rem]"
         >
           <option value="dia">Día</option>
           <option value="semana">Semana</option>
@@ -378,7 +412,7 @@ export const AdminCalendarioSection = () => {
         <select
           value={estado}
           onChange={(event) => setEstado(event.target.value)}
-          className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
+          className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 xl:w-[13rem]"
         >
           <option value="">Todos los estados</option>
           {ESTADOS_RESERVA.map((item) => (
@@ -387,17 +421,17 @@ export const AdminCalendarioSection = () => {
             </option>
           ))}
         </select>
-        <Button variant="outline" onClick={() => setFecha(todayKey())}>
+        <Button className="w-full min-w-0 xl:w-auto" variant="outline" onClick={() => setFecha(todayKey())}>
           Hoy
         </Button>
         <Button
-          className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+          className="w-full min-w-0 rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] xl:w-auto"
           onClick={openDisponibilidadPanel}
         >
           <Plus className="h-4 w-4" />
           Crear disponibilidad
         </Button>
-        <Button variant="outline" onClick={openBloqueoPanel}>
+        <Button className="w-full min-w-0 xl:w-auto" variant="outline" onClick={openBloqueoPanel}>
           <LockKeyhole className="h-4 w-4" />
           Bloquear horario
         </Button>
@@ -415,8 +449,26 @@ export const AdminCalendarioSection = () => {
         </div>
       ) : null}
 
-      {panelMode ? (
-        <div className="mt-6 premium-card rounded-3xl p-5">
+      <AppModal
+        open={Boolean(panelMode)}
+        title={
+          panelMode === "bloqueo"
+            ? "Bloquear horario"
+            : editingDisponibilidad
+              ? "Editar disponibilidad"
+              : "Crear disponibilidad"
+        }
+        description="Guarda el horario sin perder el contexto del calendario."
+        onOpenChange={(open) => {
+          if (!open && !saving) {
+            setEditingDisponibilidad(null);
+            setPanelMode(null);
+            setModalFeedback(null);
+          }
+        }}
+      >
+        {panelMode ? (
+        <div>
           {panelMode === "disponibilidad" ? (
             <form onSubmit={handleCreateDisponibilidad}>
               <h3 className="text-xl font-semibold text-white">
@@ -424,6 +476,13 @@ export const AdminCalendarioSection = () => {
                   ? "Editar disponibilidad"
                   : "Crear disponibilidad"}
               </h3>
+              {modalFeedback ? (
+                <InlineFeedback
+                  tone={modalFeedback.tone}
+                  message={modalFeedback.message}
+                  className="mt-4"
+                />
+              ) : null}
               <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div className="grid gap-2">
                   <Label htmlFor="disponibilidad-fecha">Fecha</Label>
@@ -431,6 +490,7 @@ export const AdminCalendarioSection = () => {
                     id="disponibilidad-fecha"
                     type="date"
                     value={disponibilidadForm.fecha}
+                    disabled={saving}
                     onChange={(event) =>
                       setDisponibilidadForm((prev) => ({
                         ...prev,
@@ -446,6 +506,7 @@ export const AdminCalendarioSection = () => {
                     id="disponibilidad-hora"
                     type="time"
                     value={disponibilidadForm.hora}
+                    disabled={saving}
                     onChange={(event) =>
                       setDisponibilidadForm((prev) => ({
                         ...prev,
@@ -460,6 +521,7 @@ export const AdminCalendarioSection = () => {
                   <select
                     id="disponibilidad-estado"
                     value={disponibilidadForm.disponible ? "true" : "false"}
+                    disabled={saving}
                     onChange={(event) =>
                       setDisponibilidadForm((prev) => ({
                         ...prev,
@@ -477,6 +539,7 @@ export const AdminCalendarioSection = () => {
                   <Input
                     id="disponibilidad-motivo"
                     value={disponibilidadForm.motivo}
+                    disabled={saving}
                     onChange={(event) =>
                       setDisponibilidadForm((prev) => ({
                         ...prev,
@@ -487,7 +550,7 @@ export const AdminCalendarioSection = () => {
                   />
                 </div>
               </div>
-              <div className="mt-5 flex flex-wrap gap-2">
+              <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
                 <Button
                   type="submit"
                   className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
@@ -498,9 +561,11 @@ export const AdminCalendarioSection = () => {
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={saving}
                   onClick={() => {
                     setEditingDisponibilidad(null);
                     setPanelMode(null);
+                    setModalFeedback(null);
                   }}
                 >
                   Cancelar
@@ -512,6 +577,13 @@ export const AdminCalendarioSection = () => {
               <h3 className="text-xl font-semibold text-white">
                 Bloquear horario
               </h3>
+              {modalFeedback ? (
+                <InlineFeedback
+                  tone={modalFeedback.tone}
+                  message={modalFeedback.message}
+                  className="mt-4"
+                />
+              ) : null}
               <div className="mt-5 grid gap-4 md:grid-cols-3">
                 <div className="grid gap-2">
                   <Label htmlFor="bloqueo-fecha">Fecha</Label>
@@ -519,6 +591,7 @@ export const AdminCalendarioSection = () => {
                     id="bloqueo-fecha"
                     type="date"
                     value={bloqueoForm.fecha}
+                    disabled={saving}
                     onChange={(event) =>
                       setBloqueoForm((prev) => ({
                         ...prev,
@@ -534,6 +607,7 @@ export const AdminCalendarioSection = () => {
                     id="bloqueo-hora"
                     type="time"
                     value={bloqueoForm.hora}
+                    disabled={saving}
                     onChange={(event) =>
                       setBloqueoForm((prev) => ({
                         ...prev,
@@ -548,6 +622,7 @@ export const AdminCalendarioSection = () => {
                   <Input
                     id="bloqueo-motivo"
                     value={bloqueoForm.motivo}
+                    disabled={saving}
                     onChange={(event) =>
                       setBloqueoForm((prev) => ({
                         ...prev,
@@ -558,7 +633,7 @@ export const AdminCalendarioSection = () => {
                   />
                 </div>
               </div>
-              <div className="mt-5 flex flex-wrap gap-2">
+              <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
                 <Button
                   type="submit"
                   className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
@@ -569,7 +644,11 @@ export const AdminCalendarioSection = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setPanelMode(null)}
+                  disabled={saving}
+                  onClick={() => {
+                    setPanelMode(null);
+                    setModalFeedback(null);
+                  }}
                 >
                   Cancelar
                 </Button>
@@ -577,7 +656,8 @@ export const AdminCalendarioSection = () => {
             </form>
           )}
         </div>
-      ) : null}
+        ) : null}
+      </AppModal>
 
       {vista === "dia" ? (
         <DayView
@@ -591,20 +671,30 @@ export const AdminCalendarioSection = () => {
           onDeleteDisponibilidad={handleDeleteDisponibilidad}
         />
       ) : (
-        <WeekView
-          days={weekDays}
-          eventosByDate={eventosByDate}
-          disponibilidadByDate={disponibilidadByDate}
-          loading={loading}
-          saving={saving}
-          onSelectEvento={setSelectedEvento}
-          onEditDisponibilidad={openEditDisponibilidad}
-          onDeleteDisponibilidad={handleDeleteDisponibilidad}
-        />
+        <div className="w-full max-w-full min-w-0 overflow-hidden">
+          <WeekView
+            days={weekDays}
+            eventosByDate={eventosByDate}
+            disponibilidadByDate={disponibilidadByDate}
+            loading={loading}
+            saving={saving}
+            onSelectEvento={setSelectedEvento}
+            onEditDisponibilidad={openEditDisponibilidad}
+            onDeleteDisponibilidad={handleDeleteDisponibilidad}
+          />
+        </div>
       )}
 
-      {selectedEvento ? (
-        <div className="mt-6 premium-card rounded-3xl p-5">
+      <AppModal
+        open={Boolean(selectedEvento)}
+        title={selectedEvento ? `Reserva #${selectedEvento.id}` : "Reserva"}
+        description="Detalle de la reserva seleccionada en calendario."
+        onOpenChange={(open) => {
+          if (!open) setSelectedEvento(null);
+        }}
+      >
+        {selectedEvento ? (
+        <div>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="text-xl font-semibold text-[#00D1C1]">
@@ -646,7 +736,8 @@ export const AdminCalendarioSection = () => {
             Para cambiar estados o reagendar, usa la sección Reservas.
           </p>
         </div>
-      ) : null}
+        ) : null}
+      </AppModal>
     </section>
   );
 };
@@ -671,8 +762,8 @@ function DayView({
   onDeleteDisponibilidad: (item: DisponibilidadAdmin) => void;
 }) {
   return (
-    <div className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-      <div className="premium-card rounded-3xl p-5">
+    <div className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="premium-card min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-5">
         <div className="flex items-center gap-2">
           <CalendarDays className="h-5 w-5 text-[#00D1C1]" />
           <h3 className="text-xl font-semibold text-white">
@@ -698,7 +789,7 @@ function DayView({
         </div>
       </div>
 
-      <div className="premium-card rounded-3xl p-5">
+      <div className="premium-card min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-5">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-[#00D1C1]" />
           <h3 className="text-xl font-semibold text-white">Horarios</h3>
@@ -735,8 +826,12 @@ function WeekView({
   onDeleteDisponibilidad: (item: DisponibilidadAdmin) => void;
 }) {
   return (
-    <div className="mt-6 overflow-x-auto">
-      <div className="grid min-w-[1080px] grid-cols-7 gap-3">
+    <div className="mt-6 min-w-0 max-w-full">
+      <p className="mb-2 text-xs text-[#8E8E8E] xl:hidden">
+        Desliza para ver mÃ¡s dÃ­as
+      </p>
+      <div className="w-full max-w-full overflow-x-auto overscroll-x-contain pb-3 [-webkit-overflow-scrolling:touch]">
+      <div className="flex flex-nowrap gap-3 xl:grid xl:w-full xl:grid-cols-7">
         {days.map((day) => {
           const dayEventos = sortByHour(eventosByDate.get(day) ?? []);
           const dayDisponibilidad = sortByHour(
@@ -744,15 +839,15 @@ function WeekView({
           );
 
           return (
-            <div key={day} className="premium-card rounded-3xl p-4">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#00D1C1]">
+            <div key={day} className="premium-card w-[10rem] shrink-0 rounded-2xl p-3 min-[700px]:w-[12rem] xl:w-auto xl:min-w-0 xl:rounded-3xl xl:p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-[#00D1C1] xl:text-sm">
                 {formatDate(day)}
               </h3>
-              <div className="mt-4 grid gap-3">
+              <div className="mt-3 grid gap-2.5 xl:mt-4 xl:gap-3">
                 {loading ? (
                   <p className="text-xs text-[#A8A8A8]">Cargando...</p>
                 ) : dayEventos.length === 0 ? (
-                  <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-3 text-xs text-[#8E8E8E]">
+                  <p className="rounded-xl border border-white/10 bg-[#0B0F0F] p-2.5 text-xs text-[#8E8E8E]">
                     Sin reservas
                   </p>
                 ) : (
@@ -778,6 +873,7 @@ function WeekView({
           );
         })}
       </div>
+      </div>
     </div>
   );
 }
@@ -792,18 +888,30 @@ function ReservaCard({
   onSelect: (evento: CalendarioEvento) => void;
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-white">
+    <article
+      className={
+        compact
+          ? "min-w-0 rounded-xl border border-white/10 bg-[#0B0F0F] p-2.5"
+          : "min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4"
+      }
+    >
+      <div
+        className={
+          compact
+            ? "grid gap-2"
+            : "flex flex-wrap items-start justify-between gap-3"
+        }
+      >
+        <div className="min-w-0">
+          <p className="break-words text-sm font-semibold leading-5 text-white">
             {timeLabel(evento.hora)} · {evento.cliente_nombre ?? "Cliente sin nombre"}
           </p>
-          <p className="mt-1 text-xs text-[#A8A8A8]">
+          <p className="mt-1 break-words text-xs text-[#A8A8A8]">
             {evento.servicio_nombre ?? "Servicio sin nombre"}
           </p>
         </div>
         <span
-          className={`rounded-full border px-3 py-1 text-xs font-semibold ${getEstadoClass(
+          className={`w-fit rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getEstadoClass(
             evento.estado
           )}`}
         >
@@ -819,11 +927,17 @@ function ReservaCard({
       <Button
         variant="outline"
         size="sm"
-        className="mt-3"
+        title="Ver detalle de reserva"
+        aria-label="Ver detalle de reserva"
+        className={
+          compact
+            ? "mt-2 h-8 w-8 rounded-full px-0"
+            : "mt-3 w-full sm:w-auto"
+        }
         onClick={() => onSelect(evento)}
       >
         <Eye className="h-4 w-4" />
-        Ver detalle
+        <span className={compact ? "sr-only" : ""}>Ver detalle</span>
       </Button>
     </article>
   );
@@ -850,55 +964,78 @@ function DisponibilidadList({
 
   if (items.length === 0) {
     return (
-      <p className="mt-5 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]">
+      <p
+        className={
+          compact
+            ? "rounded-xl border border-white/10 bg-[#0B0F0F] p-2.5 text-xs text-[#A8A8A8]"
+            : "mt-5 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]"
+        }
+      >
         Sin disponibilidad registrada
       </p>
     );
   }
 
   return (
-    <div className={compact ? "grid gap-2" : "mt-5 grid gap-3"}>
+    <div className={compact ? "grid gap-1.5" : "mt-5 grid gap-2.5"}>
       {items.map((item) => (
         <div
           key={`${item.id}-${item.fecha}-${item.hora}`}
-          className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-3"
+          className={`rounded-xl border bg-[#0B0F0F] p-2.5 ${
+            isBloqueo(item)
+              ? "border-red-400/20"
+              : "border-[#00D1C1]/20"
+          }`}
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-semibold text-white">
-              {timeLabel(item.hora)}
-            </span>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <span className="block text-sm font-semibold leading-5 text-white">
+                {timeLabel(item.hora)}
+              </span>
+              {item.motivo ? (
+                <p className="mt-0.5 truncate text-xs text-[#A8A8A8]">
+                  {item.motivo}
+                </p>
+              ) : null}
+            </div>
             <span
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${getDisponibilidadClass(
+              className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getDisponibilidadClass(
                 item
               )}`}
             >
               {isBloqueo(item) ? "bloqueo" : "disponible"}
             </span>
           </div>
-          {item.motivo ? (
-            <p className="mt-2 text-xs text-[#A8A8A8]">{item.motivo}</p>
-          ) : null}
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-2 flex items-center justify-end gap-1.5">
             {!isBloqueo(item) ? (
               <Button
                 variant="outline"
                 size="sm"
+                title="Editar horario"
+                aria-label="Editar horario"
+                className="h-8 w-8 rounded-full px-0 sm:w-auto sm:px-2.5"
                 disabled={saving}
                 onClick={() => onEdit(item)}
               >
                 <Pencil className="h-4 w-4" />
-                Editar
+                <span className={compact ? "hidden 2xl:inline" : "hidden sm:inline"}>
+                  Editar
+                </span>
               </Button>
             ) : null}
             <Button
               variant="outline"
               size="sm"
-              className="border-red-400/30 text-red-300 hover:bg-red-500/10 hover:text-red-300"
+              title="Eliminar horario"
+              aria-label="Eliminar horario"
+              className="h-8 w-8 rounded-full border-red-400/30 px-0 text-red-300 hover:bg-red-500/10 hover:text-red-300 sm:w-auto sm:px-2.5"
               disabled={saving}
               onClick={() => onDelete(item)}
             >
               <Trash2 className="h-4 w-4" />
-              Eliminar
+              <span className={compact ? "hidden 2xl:inline" : "hidden sm:inline"}>
+                Eliminar
+              </span>
             </Button>
           </div>
         </div>

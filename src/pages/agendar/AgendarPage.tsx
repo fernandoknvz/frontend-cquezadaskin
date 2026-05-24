@@ -514,8 +514,8 @@ export const AgendarPage: React.FC = () => {
   };
 
   return (
-    <section className="mx-auto w-[92%] max-w-6xl py-8 sm:py-12">
-      <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111]/90 shadow-[0_24px_80px_rgba(0,0,0,0.48)]">
+    <section className="mx-auto w-[92%] max-w-6xl py-6 sm:py-12">
+      <header className="overflow-hidden rounded-3xl border border-white/10 bg-[#111111]/90 shadow-[0_24px_80px_rgba(0,0,0,0.48)] sm:rounded-[2rem]">
         <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
           <div className="p-6 sm:p-8 lg:p-10">
             <p className="inline-flex items-center gap-2 rounded-full border border-[#00D1C1]/25 bg-[#00D1C1]/10 px-3 py-1.5 text-sm font-semibold text-[#20E0D0]">
@@ -529,7 +529,7 @@ export const AgendarPage: React.FC = () => {
               Elige tu servicio, fecha y horario disponible. Constanza revisará
               tu solicitud y te contactará para confirmar los detalles.
             </p>
-            <div className="mt-5 flex flex-wrap gap-2 text-sm text-[#B8B8B8]">
+            <div className="mt-5 flex flex-wrap gap-2 text-xs text-[#B8B8B8] sm:text-sm">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#111414]/70 px-3 py-1.5">
                 <MapPin className="h-4 w-4 text-[#00D1C1]" />
                 Home studio en Quilpué
@@ -562,7 +562,7 @@ export const AgendarPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="rounded-2xl border-white/10 bg-[#121212]/92 shadow-[0_18px_60px_rgba(0,0,0,0.36)]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
@@ -923,7 +923,7 @@ export const AgendarPage: React.FC = () => {
                     </PopoverTrigger>
                     <PopoverContent
                       align="start"
-                      className="w-auto rounded-lg p-0"
+                      className="w-[min(22rem,calc(100vw-2rem))] rounded-lg p-0"
                     >
                       <Calendar
                         mode="single"
@@ -937,7 +937,7 @@ export const AgendarPage: React.FC = () => {
                         }}
                         captionLayout="dropdown"
                         startMonth={new Date()}
-                        className="rounded-lg"
+                        className="w-full rounded-lg"
                       />
                     </PopoverContent>
                   </Popover>
