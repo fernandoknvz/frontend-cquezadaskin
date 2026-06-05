@@ -25,6 +25,7 @@ import {
   type ReservaEstado,
   type ReservasFilters,
 } from "@/services/adminReservasApi";
+import { getReservaTimeRange } from "@/lib/reservaTime";
 
 const ESTADOS_RESERVA = [
   "solicitada",
@@ -69,9 +70,6 @@ const formatDate = (value?: string | null) => {
     year: "numeric",
   });
 };
-
-const timeLabel = (value?: string | null) =>
-  value ? value.slice(0, 5) : "Sin hora";
 
 const getClienteEmail = (reserva: ReservaAdmin) =>
   reserva.cliente_email ?? reserva.cliente_correo ?? "";
@@ -393,7 +391,7 @@ export const AdminReservasSection = () => {
 
               <div className="mt-3 grid gap-1 text-sm text-[#D6D6D6]">
                 <p>
-                  {formatDate(reserva.fecha)} · {timeLabel(reserva.hora)}
+                  {formatDate(reserva.fecha)} · {getReservaTimeRange(reserva)}
                 </p>
                 <p className="break-words">{getClienteEmail(reserva) || "Sin correo"}</p>
                 <p className="break-words text-[#A8A8A8]">
@@ -484,7 +482,9 @@ export const AdminReservasSection = () => {
                     </td>
                     <td className="px-4 py-4 text-[#D6D6D6]">
                       <p>{formatDate(reserva.fecha)}</p>
-                      <p className="text-xs text-[#8E8E8E]">{timeLabel(reserva.hora)}</p>
+                      <p className="text-xs text-[#8E8E8E]">
+                        {getReservaTimeRange(reserva)}
+                      </p>
                     </td>
                     <td className="px-4 py-4">
                       <span
@@ -623,7 +623,7 @@ export const AdminReservasSection = () => {
             ) : (
               <div className="mt-5 grid gap-3 break-words text-sm text-[#D6D6D6]">
                 <p>Fecha: {formatDate(selectedReserva.fecha)}</p>
-                <p>Hora: {timeLabel(selectedReserva.hora)}</p>
+                <p>Hora: {getReservaTimeRange(selectedReserva)}</p>
                 <p>
                   Estado:{" "}
                   <span

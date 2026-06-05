@@ -1,5 +1,6 @@
 import { apiFetch } from "@/services/apiClient";
 import type { Pagination } from "@/services/adminClientesApi";
+import { dedupeReservasById } from "@/lib/reservaTime";
 
 export type ReservaEstado =
   | "solicitada"
@@ -21,6 +22,8 @@ export type ReservaAdmin = {
   servicio_nombre?: string | null;
   fecha: string;
   hora: string;
+  hora_fin?: string | null;
+  duracion_min?: number | string | null;
   estado: ReservaEstado;
   observacion_admin?: string | null;
   creado_en?: string | null;
@@ -158,7 +161,17 @@ export const mapReservaAdmin = (item: unknown): ReservaAdmin => {
       ) ??
       "Servicio sin nombre",
     fecha: toStringOrNull(record.fecha) ?? "",
-    hora: toStringOrNull(record.hora) ?? "",
+    hora:
+      toStringOrNull(record.hora ?? record.hora_inicio ?? record.start_time) ?? "",
+    hora_fin: toStringOrNull(
+      record.hora_fin ??
+        record.hora_termino ??
+        record.hora_fin_real ??
+        record.end_time
+    ),
+    duracion_min: toStringOrNull(
+      record.duracion_min ?? record.duracion ?? record.duracionMin
+    ),
     estado: toStringOrNull(record.estado) ?? "pendiente",
     observacion_admin: toStringOrNull(record.observacion_admin),
     creado_en: toStringOrNull(record.creado_en ?? record.created_at),
@@ -172,7 +185,7 @@ export const listReservasAdmin = async (
   const response = await apiFetch<unknown>(
     `/admin/reservas${buildQuery({ page: 1, limit: 10, ...filters })}`
   );
-  const data = getArrayFromResponse(response).map(mapReservaAdmin);
+  const data = dedupeReservasById(getArrayFromResponse(response).map(mapReservaAdmin));
   return {
     data,
     pagination: getPaginationFromResponse(response, filters),

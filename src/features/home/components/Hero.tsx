@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, ChevronRight, MapPin, Sparkles } from "lucide-react";
 import { listHomeContent, type HomeContentItem } from "@/services/homeContentApi";
-import fallbackHero from "@/assets/cquezadaskin-hero.png";
+
+const fallbackHero = "/img/banner.jpg";
 
 export const Hero: React.FC = () => {
   const [homeContent, setHomeContent] = useState<HomeContentItem | null>(null);

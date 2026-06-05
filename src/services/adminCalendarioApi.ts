@@ -3,6 +3,7 @@ import {
   normalizeAvailabilityDateForApi,
   normalizeAvailabilityTimeForApi,
 } from "@/lib/availabilitySlots";
+import { dedupeReservasById } from "@/lib/reservaTime";
 
 export type CalendarioEstado =
   | "solicitada"
@@ -24,6 +25,8 @@ export type CalendarioEvento = {
   servicio_nombre?: string | null;
   fecha: string;
   hora: string;
+  hora_fin?: string | null;
+  duracion_min?: number | string | null;
   estado: CalendarioEstado;
   observacion_admin?: string | null;
   creado_en?: string | null;
@@ -203,7 +206,17 @@ export const mapCalendarioEvento = (item: unknown): CalendarioEvento => {
         record.servicio_nombre ?? record.servicio_name ?? servicio.nombre ?? servicio.name
       ) ?? "Servicio sin nombre",
     fecha: toStringOrNull(record.fecha) ?? "",
-    hora: toStringOrNull(record.hora) ?? "",
+    hora:
+      toStringOrNull(record.hora ?? record.hora_inicio ?? record.start_time) ?? "",
+    hora_fin: toStringOrNull(
+      record.hora_fin ??
+        record.hora_termino ??
+        record.hora_fin_real ??
+        record.end_time
+    ),
+    duracion_min: toStringOrNull(
+      record.duracion_min ?? record.duracion ?? record.duracionMin
+    ),
     estado: toStringOrNull(record.estado) ?? "pendiente",
     observacion_admin: toStringOrNull(record.observacion_admin),
     creado_en: toStringOrNull(record.creado_en ?? record.created_at),
@@ -232,13 +245,15 @@ export const mapDisponibilidadAdmin = (item: unknown): DisponibilidadAdmin => {
 };
 
 const mapEventosResponse = (response: unknown) =>
-  collectArrays(response, [
-    "data",
-    "eventos",
-    "reservas",
-    "calendario",
-    "items",
-  ]).map(mapCalendarioEvento);
+  dedupeReservasById(
+    collectArrays(response, [
+      "data",
+      "eventos",
+      "reservas",
+      "calendario",
+      "items",
+    ]).map(mapCalendarioEvento)
+  );
 
 const mapDisponibilidadResponse = (response: unknown) =>
   collectArrays(response, [
