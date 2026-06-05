@@ -1,4 +1,8 @@
 import { apiFetch } from "@/services/apiClient";
+import {
+  normalizeAvailabilityDateForApi,
+  normalizeAvailabilityTimeForApi,
+} from "@/lib/availabilitySlots";
 
 export type CalendarioEstado =
   | "solicitada"
@@ -32,6 +36,10 @@ export type DisponibilidadAdmin = {
   hora: string;
   disponible?: boolean | number | string | null;
   tipo?: "disponibilidad" | "bloqueo" | string | null;
+  estado?: string | null;
+  reserva_id?: number | string | null;
+  ocupado?: boolean | number | string | null;
+  ocupada?: boolean | number | string | null;
   motivo?: string | null;
   updated_at?: string | null;
 };
@@ -59,10 +67,31 @@ export type DisponibilidadPayload = {
   motivo?: string;
 };
 
-export type BloqueoPayload = {
+export type DisponibilidadBulkPayload = {
   fecha: string;
-  hora: string;
+  hora_inicio: string;
+  hora_fin: string;
+  intervalo_minutos: number;
+  estado: "disponible" | "no_disponible";
   motivo?: string;
+};
+
+export type DisponibilidadBulkResponse = {
+  ok?: boolean;
+  creados: number;
+  omitidos: number;
+  errores: string[];
+  mensaje?: string;
+  data?: DisponibilidadAdmin[];
+};
+
+export type DisponibilidadDiaResponse = {
+  ok?: boolean;
+  actualizados?: number;
+  creados?: number;
+  omitidos?: number;
+  mensaje?: string;
+  errores?: string[];
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -191,6 +220,12 @@ export const mapDisponibilidadAdmin = (item: unknown): DisponibilidadAdmin => {
     hora: toStringOrNull(record.hora) ?? "",
     disponible: toBoolLike(record.disponible),
     tipo: toStringOrNull(record.tipo ?? record.type) ?? "disponibilidad",
+    estado: toStringOrNull(record.estado ?? record.status),
+    reserva_id: toStringOrNull(
+      record.reserva_id ?? record.reservaId ?? record.cita_id ?? record.citaId
+    ),
+    ocupado: toBoolLike(record.ocupado ?? record.reservado),
+    ocupada: toBoolLike(record.ocupada),
     motivo: toStringOrNull(record.motivo ?? record.observacion),
     updated_at: toStringOrNull(record.updated_at),
   };
@@ -253,6 +288,38 @@ export const createDisponibilidad = (payload: DisponibilidadPayload) =>
     }
   );
 
+export const createDisponibilidadBulk = (payload: DisponibilidadBulkPayload) => {
+  const apiPayload: DisponibilidadBulkPayload = {
+    fecha: normalizeAvailabilityDateForApi(payload.fecha),
+    hora_inicio: normalizeAvailabilityTimeForApi(payload.hora_inicio),
+    hora_fin: normalizeAvailabilityTimeForApi(payload.hora_fin),
+    intervalo_minutos: payload.intervalo_minutos,
+    estado: payload.estado,
+    motivo: payload.motivo ?? "",
+  };
+
+  return apiFetch<DisponibilidadBulkResponse>("/admin/disponibilidad/bulk", {
+    method: "POST",
+    body: JSON.stringify(apiPayload),
+  });
+};
+
+export const bloquearDiaDisponibilidad = (fecha: string) =>
+  apiFetch<DisponibilidadDiaResponse>("/admin/disponibilidad/bloquear-dia", {
+    method: "POST",
+    body: JSON.stringify({
+      fecha: normalizeAvailabilityDateForApi(fecha),
+    }),
+  });
+
+export const habilitarDiaDisponibilidad = (fecha: string) =>
+  apiFetch<DisponibilidadDiaResponse>("/admin/disponibilidad/habilitar-dia", {
+    method: "POST",
+    body: JSON.stringify({
+      fecha: normalizeAvailabilityDateForApi(fecha),
+    }),
+  });
+
 export const updateDisponibilidad = (
   id: number | string,
   payload: Partial<DisponibilidadPayload>
@@ -270,15 +337,6 @@ export const deleteDisponibilidad = (id: number | string) =>
     `/admin/disponibilidad/${encodeURIComponent(String(id))}`,
     {
       method: "DELETE",
-    }
-  );
-
-export const createBloqueo = (payload: BloqueoPayload) =>
-  apiFetch<{ message?: string; data?: DisponibilidadAdmin }>(
-    "/admin/bloqueos",
-    {
-      method: "POST",
-      body: JSON.stringify(payload),
     }
   );
 

@@ -55,6 +55,11 @@ import {
 import { getDisponibilidadPorFecha } from "@/services/disponibilidadApi";
 import { createReserva } from "@/services/reservasApi";
 import { listServices, type ServiceItem } from "@/services/servicesApi";
+import {
+  getBookableTimesForDate,
+  isBookableDateTime,
+  SAME_DAY_BOOKING_LEAD_MESSAGE,
+} from "@/lib/bookingTimeRules";
 import brandLogo from "@/assets/logo_cquezadaskin.png";
 
 type AuthMode = "login" | "register";
@@ -132,6 +137,11 @@ const timeLabel = (time: string) => time.slice(0, 5);
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error && error.message ? error.message : fallback;
+
+const getErrorStatus = (error: unknown) =>
+  error instanceof Error
+    ? (error as Error & { status?: number }).status
+    : undefined;
 
 const EMAIL_ERROR_MESSAGE = "Ingresa un correo electrónico válido.";
 const PHONE_ERROR_MESSAGE = "Ingresa un celular válido de 8 dígitos.";
@@ -320,8 +330,11 @@ export const AgendarPage: React.FC = () => {
       setTimesError(null);
       setBookingForm((prev) => ({ ...prev, hora: "" }));
       try {
-        const horas = await getDisponibilidadPorFecha(bookingForm.fecha);
-        setAvailableTimes(horas.map((hora) => hora.slice(0, 5)));
+        const horas = await getDisponibilidadPorFecha(bookingForm.fecha, {
+          servicioId: bookingForm.servicioId,
+          duracionMin: bookingForm.duracionMin,
+        });
+        setAvailableTimes(getBookableTimesForDate(bookingForm.fecha, horas));
       } catch (error) {
         setAvailableTimes([]);
         setTimesError(
@@ -333,7 +346,7 @@ export const AgendarPage: React.FC = () => {
     };
 
     loadTimes();
-  }, [bookingForm.fecha]);
+  }, [bookingForm.fecha, bookingForm.servicioId, bookingForm.duracionMin]);
 
   const selectedService = useMemo(
     () =>
@@ -491,6 +504,11 @@ export const AgendarPage: React.FC = () => {
     event.preventDefault();
     if (!canSubmitBooking || bookingLoading) return;
 
+    if (!isBookableDateTime(bookingForm.fecha, bookingForm.hora)) {
+      setBookingError(SAME_DAY_BOOKING_LEAD_MESSAGE);
+      return;
+    }
+
     setBookingLoading(true);
     setBookingError(null);
     setSuccessMessage(null);
@@ -505,8 +523,22 @@ export const AgendarPage: React.FC = () => {
       setSuccessMessage(FINAL_SUCCESS_MESSAGE);
       setBookingForm((prev) => ({ ...prev, hora: "" }));
     } catch (error) {
+      if (getErrorStatus(error) === 409) {
+        setBookingForm((prev) => ({ ...prev, hora: "" }));
+        try {
+          const horas = await getDisponibilidadPorFecha(bookingForm.fecha, {
+            servicioId: bookingForm.servicioId,
+            duracionMin: bookingForm.duracionMin,
+          });
+          setAvailableTimes(getBookableTimesForDate(bookingForm.fecha, horas));
+        } catch {
+          setAvailableTimes([]);
+        }
+      }
       setBookingError(
-        getErrorMessage(error, "No pudimos enviar tu solicitud de reserva.")
+        getErrorStatus(error) === 409
+          ? getErrorMessage(error, "Este horario ya fue reservado.")
+          : getErrorMessage(error, "No pudimos enviar tu solicitud de reserva.")
       );
     } finally {
       setBookingLoading(false);
@@ -1013,7 +1045,9 @@ export const AgendarPage: React.FC = () => {
                     !timesLoading &&
                     availableTimes.length === 0 ? (
                     <p className="text-sm text-[#20E0D0]">
-                      Sin horas disponibles para esta fecha
+                      {bookingForm.fecha === todayKey()
+                        ? SAME_DAY_BOOKING_LEAD_MESSAGE
+                        : "Sin horas disponibles para esta fecha"}
                     </p>
                   ) : null}
                 </div>

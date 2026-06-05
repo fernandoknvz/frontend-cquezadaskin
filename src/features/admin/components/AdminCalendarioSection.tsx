@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   CalendarDays,
+  CheckCircle2,
   Clock,
   Eye,
   LockKeyhole,
@@ -15,18 +16,27 @@ import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NotificationToast } from "@/components/ui/notification-toast";
 import {
-  createBloqueo,
-  createDisponibilidad,
+  bloquearDiaDisponibilidad,
+  createDisponibilidadBulk,
   deleteBloqueo,
   deleteDisponibilidad,
   getCalendarioDia,
   getCalendarioSemana,
   getDisponibilidad,
+  habilitarDiaDisponibilidad,
   updateDisponibilidad,
   type CalendarioEvento,
   type DisponibilidadAdmin,
 } from "@/services/adminCalendarioApi";
+import {
+  AVAILABILITY_INTERVALS,
+  generateAvailabilitySlots,
+  normalizeAvailabilityDateForApi,
+  normalizeAvailabilityTimeForApi,
+  type AvailabilityInterval,
+} from "@/lib/availabilitySlots";
 
 const ESTADOS_RESERVA = [
   "solicitada",
@@ -38,22 +48,27 @@ const ESTADOS_RESERVA = [
 ] as const;
 
 type VistaCalendario = "dia" | "semana";
-type PanelMode = "disponibilidad" | "bloqueo" | null;
+type PanelMode =
+  | "disponibilidad"
+  | "confirmar-bloquear-dia"
+  | "confirmar-habilitar-dia"
+  | null;
 type ModalFeedback = {
   tone: "success" | "error" | "info";
   message: string;
 } | null;
+type AdminNotification = {
+  variant: "success" | "error" | "warning" | "info";
+  title: string;
+  description: string;
+};
 
 type DisponibilidadForm = {
   fecha: string;
-  hora: string;
+  horaInicio: string;
+  horaFin: string;
+  intervaloMinutos: AvailabilityInterval;
   disponible: boolean;
-  motivo: string;
-};
-
-type BloqueoForm = {
-  fecha: string;
-  hora: string;
   motivo: string;
 };
 
@@ -105,8 +120,41 @@ const timeLabel = (value?: string | null) =>
 
 const normalizeText = (value?: string | null) => value?.toLowerCase() ?? "";
 
+const isReservedEstado = (value?: string | null) => {
+  const normalized = normalizeText(value);
+  return (
+    normalized === "reservado" ||
+    normalized === "reservada" ||
+    normalized === "ocupado" ||
+    normalized === "ocupada" ||
+    normalized === "reservada/ocupada"
+  );
+};
+
+const isTruthyFlag = (value: unknown) =>
+  value === true ||
+  value === 1 ||
+  (typeof value === "string" &&
+    ["1", "true", "si", "sí", "yes"].includes(value.toLowerCase()));
+
+const hasReservaId = (item: DisponibilidadAdmin) =>
+  item.reserva_id !== null &&
+  item.reserva_id !== undefined &&
+  String(item.reserva_id) !== "";
+
+const isOcupado = (item: DisponibilidadAdmin) =>
+  isReservedEstado(item.estado) ||
+  hasReservaId(item) ||
+  isTruthyFlag(item.ocupado) ||
+  isTruthyFlag(item.ocupada) ||
+  (item.disponible === false && normalizeText(item.tipo) !== "bloqueo");
+
 const isBloqueo = (item: DisponibilidadAdmin) =>
-  normalizeText(item.tipo) === "bloqueo" || item.disponible === false;
+  !isOcupado(item) &&
+  (normalizeText(item.tipo) === "bloqueo" ||
+    normalizeText(item.estado) === "bloqueado" ||
+    normalizeText(item.estado) === "no_disponible" ||
+    normalizeText(item.estado) === "no disponible");
 
 const getEstadoClass = (estado: string) => {
   const normalized = estado.toLowerCase();
@@ -126,7 +174,9 @@ const getEstadoClass = (estado: string) => {
 };
 
 const getDisponibilidadClass = (item: DisponibilidadAdmin) =>
-  isBloqueo(item)
+  isOcupado(item)
+    ? "border-amber-300/35 bg-amber-400/10 text-amber-200"
+    : isBloqueo(item)
     ? "border-red-400/30 bg-red-500/10 text-red-200"
     : "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
 
@@ -136,8 +186,32 @@ const sortByHour = <T extends { hora: string }>(items: T[]) =>
 const getEventoContacto = (evento: CalendarioEvento) =>
   evento.cliente_email ?? evento.cliente_correo ?? evento.cliente_telefono ?? "";
 
-const wait = (milliseconds: number) =>
-  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+const isActiveEvento = (evento: CalendarioEvento) =>
+  normalizeText(evento.estado) !== "cancelada";
+
+const getSlotKey = (fecha: string, hora: string) =>
+  `${normalizeAvailabilityDateForApi(fecha) || fecha.slice(0, 10)}-${timeLabel(
+    normalizeAvailabilityTimeForApi(hora) || hora
+  )}`;
+
+const getRequestStatus = (error: unknown) =>
+  error instanceof Error
+    ? (error as Error & { status?: number }).status
+    : undefined;
+
+const getAvailabilitySaveErrorMessage = (
+  error: unknown,
+  endpointUnavailableMessage?: string
+) => {
+  const status = getRequestStatus(error);
+  if (endpointUnavailableMessage && (status === 404 || status === 405)) {
+    return endpointUnavailableMessage;
+  }
+
+  return error instanceof Error
+    ? error.message
+    : "No se pudo guardar la disponibilidad";
+};
 
 export const AdminCalendarioSection = () => {
   const [vista, setVista] = useState<VistaCalendario>("dia");
@@ -155,21 +229,25 @@ export const AdminCalendarioSection = () => {
   const [panelMode, setPanelMode] = useState<PanelMode>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [notification, setNotification] = useState<AdminNotification | null>(
+    null
+  );
   const [modalFeedback, setModalFeedback] = useState<ModalFeedback>(null);
   const [disponibilidadForm, setDisponibilidadForm] =
     useState<DisponibilidadForm>({
       fecha: todayKey(),
-      hora: "10:00",
+      horaInicio: "10:00",
+      horaFin: "12:00",
+      intervaloMinutos: 30,
       disponible: true,
       motivo: "",
     });
-  const [bloqueoForm, setBloqueoForm] = useState<BloqueoForm>({
-    fecha: todayKey(),
-    hora: "10:00",
-    motivo: "",
-  });
+
+  const clearNotification = useCallback(() => setNotification(null), []);
+
+  const showToast = useCallback((notificationData: AdminNotification) => {
+    setNotification(notificationData);
+  }, []);
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(fecha);
@@ -197,7 +275,6 @@ export const AdminCalendarioSection = () => {
 
   const loadCalendario = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const [eventosResponse, disponibilidadResponse] = await Promise.all([
         vista === "dia" ? getCalendarioDia(fecha) : getCalendarioSemana(fecha),
@@ -208,13 +285,16 @@ export const AdminCalendarioSection = () => {
     } catch (err) {
       setEventos([]);
       setDisponibilidad([]);
-      setError(
-        err instanceof Error ? err.message : "No se pudo cargar el calendario"
-      );
+      showToast({
+        variant: "error",
+        title: "No se pudo cargar el calendario",
+        description:
+          err instanceof Error ? err.message : "Intenta actualizar nuevamente.",
+      });
     } finally {
       setLoading(false);
     }
-  }, [fecha, range, vista]);
+  }, [fecha, range, showToast, vista]);
 
   useEffect(() => {
     loadCalendario();
@@ -223,51 +303,168 @@ export const AdminCalendarioSection = () => {
   const eventosByDate = useMemo(() => {
     const groups = new Map<string, CalendarioEvento[]>();
     filteredEventos.forEach((evento) => {
-      const key = evento.fecha.slice(0, 10);
+      const key =
+        normalizeAvailabilityDateForApi(evento.fecha) || evento.fecha.slice(0, 10);
       groups.set(key, [...(groups.get(key) ?? []), evento]);
     });
     return groups;
   }, [filteredEventos]);
 
+  const activeEventosBySlot = useMemo(() => {
+    const groups = new Map<string, CalendarioEvento>();
+    eventos.forEach((evento) => {
+      if (!isActiveEvento(evento)) return;
+      groups.set(getSlotKey(evento.fecha, evento.hora), evento);
+    });
+    return groups;
+  }, [eventos]);
+
+  const disponibilidadSegura = useMemo(
+    () =>
+      disponibilidad.map((item) => {
+        const evento = activeEventosBySlot.get(getSlotKey(item.fecha, item.hora));
+        if (!evento) return item;
+
+        return {
+          ...item,
+          disponible: false,
+          estado: "reservado",
+          ocupado: true,
+          reserva_id: evento.id,
+          motivo: item.motivo ?? "Reserva activa",
+        };
+      }),
+    [activeEventosBySlot, disponibilidad]
+  );
+
   const disponibilidadByDate = useMemo(() => {
     const groups = new Map<string, DisponibilidadAdmin[]>();
-    disponibilidad.forEach((item) => {
-      const key = item.fecha.slice(0, 10);
+    disponibilidadSegura.forEach((item) => {
+      const key =
+        normalizeAvailabilityDateForApi(item.fecha) || item.fecha.slice(0, 10);
       groups.set(key, [...(groups.get(key) ?? []), item]);
     });
     return groups;
-  }, [disponibilidad]);
+  }, [disponibilidadSegura]);
 
   const dayEventos = sortByHour(eventosByDate.get(fecha) ?? []);
   const dayDisponibilidad = sortByHour(disponibilidadByDate.get(fecha) ?? []);
+  const disponibilidadSlotsByDate = useMemo(() => {
+    const groups = new Map<string, Set<string>>();
+    disponibilidadSegura.forEach((item) => {
+      const key =
+        normalizeAvailabilityDateForApi(item.fecha) || item.fecha.slice(0, 10);
+      const slots = groups.get(key) ?? new Set<string>();
+      slots.add(normalizeAvailabilityTimeForApi(item.hora) || timeLabel(item.hora));
+      groups.set(key, slots);
+    });
+    return groups;
+  }, [disponibilidadSegura]);
+  const reservaSlotsByDate = useMemo(() => {
+    const groups = new Map<string, Set<string>>();
+    eventos.forEach((evento) => {
+      if (!isActiveEvento(evento)) return;
+      const key =
+        normalizeAvailabilityDateForApi(evento.fecha) || evento.fecha.slice(0, 10);
+      const slots = groups.get(key) ?? new Set<string>();
+      slots.add(normalizeAvailabilityTimeForApi(evento.hora) || timeLabel(evento.hora));
+      groups.set(key, slots);
+    });
+    return groups;
+  }, [eventos]);
+  const slotValidation = useMemo(
+    () =>
+      generateAvailabilitySlots(
+        disponibilidadForm.horaInicio,
+        disponibilidadForm.horaFin,
+        disponibilidadForm.intervaloMinutos
+      ),
+    [
+      disponibilidadForm.horaFin,
+      disponibilidadForm.horaInicio,
+      disponibilidadForm.intervaloMinutos,
+    ]
+  );
+  const disponibilidadApiDate = normalizeAvailabilityDateForApi(
+    disponibilidadForm.fecha
+  );
+  const disponibilidadApiStartTime = normalizeAvailabilityTimeForApi(
+    disponibilidadForm.horaInicio
+  );
+  const disponibilidadApiEndTime = normalizeAvailabilityTimeForApi(
+    disponibilidadForm.horaFin
+  );
+  const existingSlotsForDate =
+    disponibilidadSlotsByDate.get(disponibilidadApiDate) ?? new Set<string>();
+  const reservedSlotsForDate =
+    reservaSlotsByDate.get(disponibilidadApiDate) ?? new Set<string>();
+  const clientDuplicatedSlots = slotValidation.slots.filter((slot) =>
+    existingSlotsForDate.has(slot)
+  );
+  const clientReservedSlots = slotValidation.slots.filter((slot) =>
+    reservedSlotsForDate.has(slot)
+  );
+  const clientCreatableSlots = slotValidation.slots.filter(
+    (slot) => !existingSlotsForDate.has(slot) && !reservedSlotsForDate.has(slot)
+  );
+  const isBulkCreate = panelMode === "disponibilidad" && !editingDisponibilidad;
+  const disponibilidadSubmitDisabled =
+    saving ||
+    (isBulkCreate &&
+      (Boolean(slotValidation.error) ||
+        !disponibilidadApiDate ||
+        !disponibilidadApiStartTime ||
+        !disponibilidadApiEndTime ||
+        clientCreatableSlots.length === 0));
+  const selectedDayHasAvailability = dayDisponibilidad.length > 0;
 
   const openDisponibilidadPanel = () => {
+    if (selectedDayHasAvailability) {
+      showToast({
+        variant: "info",
+        title: "El día ya tiene horarios",
+        description:
+          "Usa Habilitar día o Bloquear día para cambiar el estado del día seleccionado.",
+      });
+      return;
+    }
+
     setEditingDisponibilidad(null);
     setPanelMode("disponibilidad");
     setModalFeedback(null);
-    setMessage(null);
-    setError(null);
-    setDisponibilidadForm((prev) => ({ ...prev, fecha }));
+    clearNotification();
+    setDisponibilidadForm((prev) => ({
+      ...prev,
+      fecha: normalizeAvailabilityDateForApi(fecha) || fecha,
+      horaInicio: prev.horaInicio || "10:00",
+      horaFin: prev.horaFin || "12:00",
+    }));
   };
 
-  const openBloqueoPanel = () => {
+  const openBloquearDiaPanel = () => {
     setEditingDisponibilidad(null);
-    setPanelMode("bloqueo");
+    setPanelMode("confirmar-bloquear-dia");
     setModalFeedback(null);
-    setMessage(null);
-    setError(null);
-    setBloqueoForm((prev) => ({ ...prev, fecha }));
+    clearNotification();
+  };
+
+  const openHabilitarDiaPanel = () => {
+    setEditingDisponibilidad(null);
+    setPanelMode("confirmar-habilitar-dia");
+    setModalFeedback(null);
+    clearNotification();
   };
 
   const openEditDisponibilidad = (item: DisponibilidadAdmin) => {
     setEditingDisponibilidad(item);
     setPanelMode("disponibilidad");
     setModalFeedback(null);
-    setMessage(null);
-    setError(null);
+    clearNotification();
     setDisponibilidadForm({
-      fecha: item.fecha.slice(0, 10),
-      hora: timeLabel(item.hora),
+      fecha: normalizeAvailabilityDateForApi(item.fecha) || item.fecha.slice(0, 10),
+      horaInicio: normalizeAvailabilityTimeForApi(item.hora) || timeLabel(item.hora),
+      horaFin: normalizeAvailabilityTimeForApi(item.hora) || timeLabel(item.hora),
+      intervaloMinutos: 30,
       disponible: item.disponible !== false,
       motivo: item.motivo ?? "",
     });
@@ -275,98 +472,224 @@ export const AdminCalendarioSection = () => {
 
   const handleCreateDisponibilidad = async (event: FormEvent) => {
     event.preventDefault();
+    if (!editingDisponibilidad && disponibilidadSubmitDisabled) {
+      setModalFeedback({
+        tone: "error",
+        message:
+          slotValidation.error ??
+          (!disponibilidadApiDate
+            ? "Ingresa una fecha valida para continuar."
+            : null) ??
+          (!disponibilidadApiStartTime || !disponibilidadApiEndTime
+            ? "Ingresa horas validas para continuar."
+            : null) ??
+          "No hay horarios nuevos para crear en este rango.",
+      });
+      return;
+    }
+
     setSaving(true);
     setModalFeedback(null);
-    setMessage(null);
-    setError(null);
+    clearNotification();
     try {
-      const payload = {
-        fecha: disponibilidadForm.fecha,
-        hora: disponibilidadForm.hora,
-        disponible: disponibilidadForm.disponible,
-        motivo: disponibilidadForm.motivo.trim(),
-      };
-
       if (editingDisponibilidad) {
+        if (!disponibilidadApiDate || !disponibilidadApiStartTime) {
+          setModalFeedback({
+            tone: "error",
+            message: "Fecha y hora validas son requeridas.",
+          });
+          return;
+        }
+
+        const payload = {
+          fecha: disponibilidadApiDate,
+          hora: disponibilidadApiStartTime,
+          disponible: disponibilidadForm.disponible,
+          motivo: disponibilidadForm.motivo.trim(),
+        };
         await updateDisponibilidad(editingDisponibilidad.id, payload);
-        setMessage("Disponibilidad actualizada correctamente");
+        showToast({
+          variant: "success",
+          title: "Disponibilidad actualizada",
+          description: "El horario quedo guardado en el calendario.",
+        });
       } else {
-        await createDisponibilidad({ ...payload, tipo: "disponibilidad" });
-        setMessage("Disponibilidad creada correctamente");
+        const response = await createDisponibilidadBulk({
+          fecha: disponibilidadApiDate,
+          hora_inicio: disponibilidadApiStartTime,
+          hora_fin: disponibilidadApiEndTime,
+          intervalo_minutos: disponibilidadForm.intervaloMinutos,
+          estado: disponibilidadForm.disponible
+            ? "disponible"
+            : "no_disponible",
+          motivo: disponibilidadForm.motivo.trim(),
+        });
+        const backendOmitidos = Number(response.omitidos ?? 0);
+        const omitidos = Math.max(
+          backendOmitidos,
+          clientDuplicatedSlots.length + clientReservedSlots.length
+        );
+        const detail =
+          omitidos > 0
+            ? ` ${omitidos} horario${omitidos === 1 ? "" : "s"} omitido${
+                omitidos === 1 ? "" : "s"
+              }.`
+            : "";
+        const messageText =
+          response.mensaje ??
+          `Disponibilidad creada correctamente.${detail}`;
+        showToast({
+          variant: "success",
+          title: "Disponibilidad creada",
+          description: messageText,
+        });
       }
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
-      });
-      await wait(900);
       setEditingDisponibilidad(null);
       setPanelMode(null);
       setModalFeedback(null);
       await loadCalendario();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "No se pudo guardar la disponibilidad";
-      setModalFeedback({ tone: "error", message: errorMessage });
-      setError(errorMessage);
+      const errorMessage = getAvailabilitySaveErrorMessage(
+        err,
+        !editingDisponibilidad
+          ? "El endpoint de creación masiva aún no está disponible en backend."
+          : undefined
+      );
+      showToast({
+        variant: "error",
+        title: "No se pudo guardar",
+        description: errorMessage,
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleCreateBloqueo = async (event: FormEvent) => {
-    event.preventDefault();
+  const handleBloquearDia = async () => {
+    const fechaApi = normalizeAvailabilityDateForApi(fecha);
+    if (!fechaApi) {
+      showToast({
+        variant: "error",
+        title: "Fecha inválida",
+        description: "Selecciona una fecha válida antes de bloquear el día.",
+      });
+      return;
+    }
+
     setSaving(true);
     setModalFeedback(null);
-    setMessage(null);
-    setError(null);
+    clearNotification();
     try {
-      await createBloqueo({
-        fecha: bloqueoForm.fecha,
-        hora: bloqueoForm.hora,
-        motivo: bloqueoForm.motivo.trim(),
+      const response = await bloquearDiaDisponibilidad(fechaApi);
+      showToast({
+        variant: "success",
+        title: "Día bloqueado",
+        description:
+          response.mensaje ??
+          "Todos los horarios del día seleccionado quedaron bloqueados.",
       });
-      setMessage("Horario bloqueado correctamente");
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
-      });
-      await wait(900);
       setPanelMode(null);
       setModalFeedback(null);
       await loadCalendario();
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "No se pudo bloquear el horario";
-      setModalFeedback({ tone: "error", message: errorMessage });
-      setError(errorMessage);
+        err instanceof Error ? err.message : "No se pudo bloquear el día";
+      showToast({
+        variant: "error",
+        title: "No se pudo bloquear el día",
+        description:
+          getRequestStatus(err) === 404 || getRequestStatus(err) === 405
+            ? "El endpoint de bloqueo diario aún no está disponible en backend."
+            : errorMessage,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleHabilitarDia = async () => {
+    const fechaApi = normalizeAvailabilityDateForApi(fecha);
+    if (!fechaApi) {
+      showToast({
+        variant: "error",
+        title: "Fecha inválida",
+        description: "Selecciona una fecha válida antes de habilitar el día.",
+      });
+      return;
+    }
+
+    setSaving(true);
+    setModalFeedback(null);
+    clearNotification();
+    try {
+      const response = await habilitarDiaDisponibilidad(fechaApi);
+
+      showToast({
+        variant: "success",
+        title: "Día habilitado",
+        description:
+          response.mensaje ??
+          "Todos los horarios del día seleccionado quedaron disponibles.",
+      });
+      setPanelMode(null);
+      setModalFeedback(null);
+      await loadCalendario();
+    } catch (err) {
+      const errorMessage = getAvailabilitySaveErrorMessage(
+        err,
+        "El endpoint de habilitación diaria aún no está disponible en backend."
+      );
+      showToast({
+        variant: "error",
+        title: "No se pudo habilitar el día",
+        description: errorMessage,
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteDisponibilidad = async (item: DisponibilidadAdmin) => {
+    if (isOcupado(item)) {
+      showToast({
+        variant: "warning",
+        title: "Horario reservado",
+        description:
+          "Este horario tiene una reserva activa. Gestiona la reserva antes de modificar su disponibilidad.",
+      });
+      return;
+    }
+
     const label = isBloqueo(item) ? "bloqueo" : "disponibilidad";
     const confirmed = window.confirm(`¿Eliminar este ${label}?`);
     if (!confirmed) return;
 
     setSaving(true);
-    setMessage(null);
-    setError(null);
+    clearNotification();
     try {
       if (isBloqueo(item)) {
         await deleteBloqueo(item.id);
-        setMessage("Bloqueo eliminado correctamente");
+        showToast({
+          variant: "success",
+          title: "Bloqueo eliminado",
+          description: "El horario se elimino del calendario.",
+        });
       } else {
         await deleteDisponibilidad(item.id);
-        setMessage("Disponibilidad eliminada correctamente");
+        showToast({
+          variant: "success",
+          title: "Disponibilidad eliminada",
+          description: "El horario se elimino del calendario.",
+        });
       }
       await loadCalendario();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "No se pudo eliminar el horario"
-      );
+      showToast({
+        variant: "error",
+        title: "No se pudo eliminar",
+        description:
+          err instanceof Error ? err.message : "No se pudo eliminar el horario",
+      });
     } finally {
       setSaving(false);
     }
@@ -424,36 +747,53 @@ export const AdminCalendarioSection = () => {
         <Button className="w-full min-w-0 xl:w-auto" variant="outline" onClick={() => setFecha(todayKey())}>
           Hoy
         </Button>
+      </div>
+
+      <div className="mt-3 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 xl:flex xl:flex-wrap xl:items-center">
         <Button
           className="w-full min-w-0 rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] xl:w-auto"
           onClick={openDisponibilidadPanel}
+          disabled={selectedDayHasAvailability}
+          title={
+            selectedDayHasAvailability
+              ? "El día seleccionado ya tiene horarios"
+              : "Crear horarios nuevos para el día seleccionado"
+          }
         >
           <Plus className="h-4 w-4" />
           Crear disponibilidad
         </Button>
-        <Button className="w-full min-w-0 xl:w-auto" variant="outline" onClick={openBloqueoPanel}>
+        <Button
+          className="w-full min-w-0 rounded-2xl border-[#00D1C1]/40 text-[#20E0D0] hover:border-[#00D1C1]/70 hover:bg-[#00D1C1]/10 xl:w-auto"
+          variant="outline"
+          onClick={openHabilitarDiaPanel}
+        >
+          <CheckCircle2 className="h-4 w-4" />
+          Habilitar día
+        </Button>
+        <Button className="w-full min-w-0 xl:w-auto" variant="outline" onClick={openBloquearDiaPanel}>
           <LockKeyhole className="h-4 w-4" />
-          Bloquear horario
+          Bloquear día
         </Button>
       </div>
 
-      {message ? (
-        <div className="mt-4 rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-sm text-[#00D1C1]">
-          {message}
-        </div>
-      ) : null}
-
-      {error ? (
-        <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-300">
-          {error === "Acceso denegado" ? "Acceso denegado" : error}
-        </div>
+      {notification ? (
+        <NotificationToast
+          key={`${notification.variant}-${notification.title}-${notification.description}`}
+          variant={notification.variant}
+          title={notification.title}
+          description={notification.description}
+          onClose={clearNotification}
+        />
       ) : null}
 
       <AppModal
         open={Boolean(panelMode)}
         title={
-          panelMode === "bloqueo"
-            ? "Bloquear horario"
+          panelMode === "confirmar-bloquear-dia"
+            ? "Bloquear día"
+            : panelMode === "confirmar-habilitar-dia"
+              ? "Habilitar día"
             : editingDisponibilidad
               ? "Editar disponibilidad"
               : "Crear disponibilidad"
@@ -466,6 +806,7 @@ export const AdminCalendarioSection = () => {
             setModalFeedback(null);
           }
         }}
+        className="w-[min(94vw,920px)]"
       >
         {panelMode ? (
         <div>
@@ -482,8 +823,14 @@ export const AdminCalendarioSection = () => {
                   message={modalFeedback.message}
                   className="mt-4"
                 />
+              ) : saving ? (
+                <InlineFeedback
+                  tone="info"
+                  message="Guardando cambios..."
+                  className="mt-4"
+                />
               ) : null}
-              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <div className="grid gap-2">
                   <Label htmlFor="disponibilidad-fecha">Fecha</Label>
                   <Input
@@ -501,21 +848,70 @@ export const AdminCalendarioSection = () => {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="disponibilidad-hora">Hora</Label>
+                  <Label htmlFor="disponibilidad-hora-inicio">
+                    {editingDisponibilidad ? "Hora" : "Hora inicio"}
+                  </Label>
                   <Input
-                    id="disponibilidad-hora"
+                    id="disponibilidad-hora-inicio"
                     type="time"
-                    value={disponibilidadForm.hora}
+                    value={disponibilidadForm.horaInicio}
                     disabled={saving}
                     onChange={(event) =>
                       setDisponibilidadForm((prev) => ({
                         ...prev,
-                        hora: event.target.value,
+                        horaInicio: event.target.value,
                       }))
                     }
                     required
                   />
                 </div>
+                {!editingDisponibilidad ? (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="disponibilidad-hora-fin">
+                        Hora termino
+                      </Label>
+                      <Input
+                        id="disponibilidad-hora-fin"
+                        type="time"
+                        value={disponibilidadForm.horaFin}
+                        disabled={saving}
+                        onChange={(event) =>
+                          setDisponibilidadForm((prev) => ({
+                            ...prev,
+                            horaFin: event.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="disponibilidad-intervalo">
+                        Intervalo
+                      </Label>
+                      <select
+                        id="disponibilidad-intervalo"
+                        value={disponibilidadForm.intervaloMinutos}
+                        disabled={saving}
+                        onChange={(event) =>
+                          setDisponibilidadForm((prev) => ({
+                            ...prev,
+                            intervaloMinutos: Number(
+                              event.target.value
+                            ) as AvailabilityInterval,
+                          }))
+                        }
+                        className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
+                      >
+                        {AVAILABILITY_INTERVALS.map((interval) => (
+                          <option key={interval} value={interval}>
+                            {interval} minutos
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                ) : null}
                 <div className="grid gap-2">
                   <Label htmlFor="disponibilidad-estado">Estado</Label>
                   <select
@@ -531,10 +927,10 @@ export const AdminCalendarioSection = () => {
                     className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
                   >
                     <option value="true">Disponible</option>
-                    <option value="false">No disponible</option>
+                    <option value="false">No disponible / bloqueado</option>
                   </select>
                 </div>
-                <div className="grid gap-2 md:col-span-2 xl:col-span-1">
+                <div className="grid gap-2 sm:col-span-2 xl:col-span-3">
                   <Label htmlFor="disponibilidad-motivo">Motivo</Label>
                   <Input
                     id="disponibilidad-motivo"
@@ -550,11 +946,38 @@ export const AdminCalendarioSection = () => {
                   />
                 </div>
               </div>
+              {!editingDisponibilidad ? (
+                <div className="mt-5 grid gap-3 rounded-2xl border border-[#00D1C1]/20 bg-[#00D1C1]/10 p-4 text-sm text-[#D6D6D6]">
+                  <p className="font-semibold text-[#20E0D0]">
+                    {slotValidation.error
+                      ? slotValidation.error
+                      : `Se crearan ${clientCreatableSlots.length} horarios entre ${disponibilidadForm.horaInicio} y ${disponibilidadForm.horaFin}.`}
+                  </p>
+                  {!slotValidation.error ? (
+                    <p className="text-xs leading-5 text-[#A8A8A8]">
+                      Total calculado: {slotValidation.slots.length}. Duplicados
+                      omitidos: {clientDuplicatedSlots.length}. Con reserva
+                      existente: {clientReservedSlots.length}.
+                    </p>
+                  ) : null}
+                  {clientDuplicatedSlots.length > 0 ? (
+                    <p className="break-words text-xs text-amber-200">
+                      Duplicados detectados: {clientDuplicatedSlots.join(", ")}.
+                    </p>
+                  ) : null}
+                  {clientReservedSlots.length > 0 ? (
+                    <p className="break-words text-xs text-red-200">
+                      No se modificaran horarios con reserva:{" "}
+                      {clientReservedSlots.join(", ")}.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
                 <Button
                   type="submit"
                   className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
-                  disabled={saving}
+                  disabled={disponibilidadSubmitDisabled}
                 >
                   {saving ? "Guardando..." : "Guardar disponibilidad"}
                 </Button>
@@ -573,73 +996,47 @@ export const AdminCalendarioSection = () => {
               </div>
             </form>
           ) : (
-            <form onSubmit={handleCreateBloqueo}>
+            <div>
               <h3 className="text-xl font-semibold text-white">
-                Bloquear horario
+                {panelMode === "confirmar-bloquear-dia"
+                  ? "Bloquear día"
+                  : "Habilitar día"}
               </h3>
-              {modalFeedback ? (
+              {saving ? (
                 <InlineFeedback
-                  tone={modalFeedback.tone}
-                  message={modalFeedback.message}
+                  tone="info"
+                  message={
+                    panelMode === "confirmar-bloquear-dia"
+                      ? "Bloqueando día..."
+                      : "Habilitando día..."
+                  }
                   className="mt-4"
                 />
               ) : null}
-              <div className="mt-5 grid gap-4 md:grid-cols-3">
-                <div className="grid gap-2">
-                  <Label htmlFor="bloqueo-fecha">Fecha</Label>
-                  <Input
-                    id="bloqueo-fecha"
-                    type="date"
-                    value={bloqueoForm.fecha}
-                    disabled={saving}
-                    onChange={(event) =>
-                      setBloqueoForm((prev) => ({
-                        ...prev,
-                        fecha: event.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="bloqueo-hora">Hora</Label>
-                  <Input
-                    id="bloqueo-hora"
-                    type="time"
-                    value={bloqueoForm.hora}
-                    disabled={saving}
-                    onChange={(event) =>
-                      setBloqueoForm((prev) => ({
-                        ...prev,
-                        hora: event.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="bloqueo-motivo">Motivo</Label>
-                  <Input
-                    id="bloqueo-motivo"
-                    value={bloqueoForm.motivo}
-                    disabled={saving}
-                    onChange={(event) =>
-                      setBloqueoForm((prev) => ({
-                        ...prev,
-                        motivo: event.target.value,
-                      }))
-                    }
-                    placeholder="Opcional"
-                  />
-                </div>
-              </div>
+              <p className="mt-4 text-sm leading-6 text-[#D6D6D6]">
+                {panelMode === "confirmar-bloquear-dia"
+                  ? "¿Bloquear todos los horarios del día seleccionado?"
+                  : "¿Habilitar todos los horarios del día seleccionado?"}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[#20E0D0]">
+                {formatFullDate(fecha)}
+              </p>
               <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
                 <Button
-                  type="submit"
+                  type="button"
                   className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
                   disabled={saving}
+                  onClick={
+                    panelMode === "confirmar-bloquear-dia"
+                      ? handleBloquearDia
+                      : handleHabilitarDia
+                  }
                 >
-                  {saving ? "Guardando..." : "Bloquear horario"}
+                  {saving
+                    ? "Guardando..."
+                    : panelMode === "confirmar-bloquear-dia"
+                      ? "Bloquear día"
+                      : "Habilitar día"}
                 </Button>
                 <Button
                   type="button"
@@ -653,7 +1050,7 @@ export const AdminCalendarioSection = () => {
                   Cancelar
                 </Button>
               </div>
-            </form>
+            </div>
           )}
         </div>
         ) : null}
@@ -982,7 +1379,9 @@ function DisponibilidadList({
         <div
           key={`${item.id}-${item.fecha}-${item.hora}`}
           className={`rounded-xl border bg-[#0B0F0F] p-2.5 ${
-            isBloqueo(item)
+            isOcupado(item)
+              ? "border-amber-300/25"
+              : isBloqueo(item)
               ? "border-red-400/20"
               : "border-[#00D1C1]/20"
           }`}
@@ -1003,11 +1402,15 @@ function DisponibilidadList({
                 item
               )}`}
             >
-              {isBloqueo(item) ? "bloqueo" : "disponible"}
+              {isOcupado(item)
+                ? "reservado"
+                : isBloqueo(item)
+                  ? "bloqueo"
+                  : "disponible"}
             </span>
           </div>
           <div className="mt-2 flex items-center justify-end gap-1.5">
-            {!isBloqueo(item) ? (
+            {!isBloqueo(item) && !isOcupado(item) ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -1023,20 +1426,22 @@ function DisponibilidadList({
                 </span>
               </Button>
             ) : null}
-            <Button
-              variant="outline"
-              size="sm"
-              title="Eliminar horario"
-              aria-label="Eliminar horario"
-              className="h-8 w-8 rounded-full border-red-400/30 px-0 text-red-300 hover:bg-red-500/10 hover:text-red-300 sm:w-auto sm:px-2.5"
-              disabled={saving}
-              onClick={() => onDelete(item)}
-            >
-              <Trash2 className="h-4 w-4" />
-              <span className={compact ? "hidden 2xl:inline" : "hidden sm:inline"}>
-                Eliminar
-              </span>
-            </Button>
+            {!isOcupado(item) ? (
+              <Button
+                variant="outline"
+                size="sm"
+                title="Eliminar horario"
+                aria-label="Eliminar horario"
+                className="h-8 w-8 rounded-full border-red-400/30 px-0 text-red-300 hover:bg-red-500/10 hover:text-red-300 sm:w-auto sm:px-2.5"
+                disabled={saving}
+                onClick={() => onDelete(item)}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className={compact ? "hidden 2xl:inline" : "hidden sm:inline"}>
+                  Eliminar
+                </span>
+              </Button>
+            ) : null}
           </div>
         </div>
       ))}

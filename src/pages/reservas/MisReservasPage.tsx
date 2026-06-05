@@ -51,6 +51,12 @@ import {
   listValoracionesCliente,
   type ValoracionCliente,
 } from "@/services/clientValoracionesApi";
+import {
+  getMinimumBookableTimeForDate,
+  getTodayKey,
+  isBookableDateTime,
+  SAME_DAY_BOOKING_LEAD_MESSAGE,
+} from "@/lib/bookingTimeRules";
 
 type PerfilForm = {
   nombre: string;
@@ -460,6 +466,11 @@ export const MisReservasPage = () => {
   const handleReagendarReserva = async (event: FormEvent) => {
     event.preventDefault();
     if (!token || !selectedReserva) return;
+
+    if (!isBookableDateTime(reagendarForm.fecha, reagendarForm.hora)) {
+      showError(SAME_DAY_BOOKING_LEAD_MESSAGE);
+      return;
+    }
 
     setSavingAction(true);
     clearNotification();
@@ -1254,10 +1265,12 @@ function ActionPanel({
                   id="reagendar-fecha"
                   type="date"
                   value={reagendarForm.fecha}
+                  min={getTodayKey()}
                   onChange={(event) =>
                     onReagendarFormChange((prev) => ({
                       ...prev,
                       fecha: event.target.value,
+                      hora: "",
                     }))
                   }
                   required
@@ -1269,6 +1282,7 @@ function ActionPanel({
                   id="reagendar-hora"
                   type="time"
                   value={reagendarForm.hora}
+                  min={getMinimumBookableTimeForDate(reagendarForm.fecha)}
                   onChange={(event) =>
                     onReagendarFormChange((prev) => ({
                       ...prev,
@@ -1277,6 +1291,11 @@ function ActionPanel({
                   }
                   required
                 />
+                {reagendarForm.fecha === getTodayKey() ? (
+                  <p className="text-xs leading-5 text-[#A8A8A8]">
+                    {SAME_DAY_BOOKING_LEAD_MESSAGE}.
+                  </p>
+                ) : null}
               </div>
             </div>
             <div className="grid gap-2">
