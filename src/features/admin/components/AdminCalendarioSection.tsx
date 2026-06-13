@@ -25,7 +25,12 @@ import {
   type CalendarioEvento,
   type DisponibilidadAdmin,
 } from "@/services/adminCalendarioApi";
-import { getReservaTimeRange, timeLabel } from "@/lib/reservaTime";
+import {
+  addMinutesToTime,
+  getReservaEndTime,
+  getReservaTimeRange,
+  timeLabel,
+} from "@/lib/reservaTime";
 import {
   AVAILABILITY_INTERVALS,
   generateAvailabilitySlots,
@@ -148,15 +153,72 @@ const getDisponibilidadClass = (item: DisponibilidadAdmin) =>
 const sortByHour = <T extends { hora: string }>(items: T[]) =>
   [...items].sort((a, b) => timeLabel(a.hora).localeCompare(timeLabel(b.hora)));
 
+const timeToMinutes = (value?: string | null) => {
+  if (!value) return null;
+  const [hoursRaw, minutesRaw] = timeLabel(value).split(":");
+  const hours = Number(hoursRaw);
+  const minutes = Number(minutesRaw);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  return hours * 60 + minutes;
+};
+
+const getDisplayEndTime = (item: DisponibilidadAdmin) =>
+  item.hora_fin ? timeLabel(item.hora_fin) : addMinutesToTime(item.hora, 30);
+
+const mergeDisponibilidadReservaSlots = (
+  current: DisponibilidadAdmin,
+  incoming: DisponibilidadAdmin
+): DisponibilidadAdmin => {
+  const currentStart = timeToMinutes(current.hora);
+  const incomingStart = timeToMinutes(incoming.hora);
+  const currentEnd = timeToMinutes(getDisplayEndTime(current));
+  const incomingEnd = timeToMinutes(getDisplayEndTime(incoming));
+  const hora =
+    currentStart === null || (incomingStart !== null && incomingStart < currentStart)
+      ? incoming.hora
+      : current.hora;
+  const maxEnd =
+    currentEnd === null || (incomingEnd !== null && incomingEnd > currentEnd)
+      ? incomingEnd
+      : currentEnd;
+
+  return {
+    ...current,
+    ...incoming,
+    hora,
+    hora_fin:
+      maxEnd === null
+        ? current.hora_fin ?? incoming.hora_fin
+        : addMinutesToTime("00:00", maxEnd),
+    motivo: current.motivo ?? incoming.motivo,
+  };
+};
+
 const dedupeDisponibilidadForDisplay = (items: DisponibilidadAdmin[]) => {
-  const seenReservas = new Set<string>();
-  return items.filter((item) => {
-    if (!isOcupado(item) || !hasReservaId(item)) return true;
+  const reservasById = new Map<string, DisponibilidadAdmin>();
+  const result: DisponibilidadAdmin[] = [];
+
+  items.forEach((item) => {
+    if (!isOcupado(item) || !hasReservaId(item)) {
+      result.push(item);
+      return;
+    }
+
     const key = String(item.reserva_id);
-    if (seenReservas.has(key)) return false;
-    seenReservas.add(key);
-    return true;
+    const existing = reservasById.get(key);
+    if (!existing) {
+      reservasById.set(key, item);
+      result.push(item);
+      return;
+    }
+
+    const merged = mergeDisponibilidadReservaSlots(existing, item);
+    reservasById.set(key, merged);
+    const index = result.findIndex((candidate) => String(candidate.reserva_id) === key);
+    if (index >= 0) result[index] = merged;
   });
+
+  return result;
 };
 
 const getEventoContacto = (evento: CalendarioEvento) =>
@@ -169,6 +231,19 @@ const getSlotKey = (fecha: string, hora: string) =>
   `${normalizeAvailabilityDateForApi(fecha) || fecha.slice(0, 10)}-${timeLabel(
     normalizeAvailabilityTimeForApi(hora) || hora
   )}`;
+
+const getReservaCoveredSlots = (evento: CalendarioEvento) => {
+  const start = timeToMinutes(evento.hora);
+  const end = timeToMinutes(getReservaEndTime(evento));
+  if (start === null) return [timeLabel(evento.hora)];
+
+  const normalizedEnd = end !== null && end > start ? end : start + 30;
+  const slots: string[] = [];
+  for (let current = start; current < normalizedEnd; current += 30) {
+    slots.push(timeLabel(addMinutesToTime("00:00", current) ?? evento.hora));
+  }
+  return slots;
+};
 
 const getRequestStatus = (error: unknown) =>
   error instanceof Error
@@ -279,7 +354,9 @@ export const AdminCalendarioSection = () => {
     const groups = new Map<string, CalendarioEvento>();
     eventos.forEach((evento) => {
       if (!isActiveEvento(evento)) return;
-      groups.set(getSlotKey(evento.fecha, evento.hora), evento);
+      getReservaCoveredSlots(evento).forEach((hora) => {
+        groups.set(getSlotKey(evento.fecha, hora), evento);
+      });
     });
     return groups;
   }, [eventos]);
@@ -334,7 +411,9 @@ export const AdminCalendarioSection = () => {
       const key =
         normalizeAvailabilityDateForApi(evento.fecha) || evento.fecha.slice(0, 10);
       const slots = groups.get(key) ?? new Set<string>();
-      slots.add(normalizeAvailabilityTimeForApi(evento.hora) || timeLabel(evento.hora));
+      getReservaCoveredSlots(evento).forEach((hora) => {
+        slots.add(normalizeAvailabilityTimeForApi(hora) || timeLabel(hora));
+      });
       groups.set(key, slots);
     });
     return groups;
@@ -1087,7 +1166,9 @@ function DisponibilidadList({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <span className="block text-sm font-semibold leading-5 text-white">
-                {timeLabel(item.hora)}
+                {item.hora_fin && timeLabel(item.hora_fin) !== timeLabel(item.hora)
+                  ? `${timeLabel(item.hora)} - ${timeLabel(item.hora_fin)}`
+                  : timeLabel(item.hora)}
               </span>
               {item.motivo ? (
                 <p className="mt-0.5 truncate text-xs text-[#A8A8A8]">

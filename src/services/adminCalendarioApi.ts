@@ -37,6 +37,7 @@ export type DisponibilidadAdmin = {
   id: number | string;
   fecha: string;
   hora: string;
+  hora_fin?: string | null;
   disponible?: boolean | number | string | null;
   tipo?: "disponibilidad" | "bloqueo" | string | null;
   estado?: string | null;
@@ -231,6 +232,12 @@ export const mapDisponibilidadAdmin = (item: unknown): DisponibilidadAdmin => {
     id: toStringOrNull(record.id) ?? "",
     fecha: toStringOrNull(record.fecha) ?? "",
     hora: toStringOrNull(record.hora) ?? "",
+    hora_fin: toStringOrNull(
+      record.hora_fin ??
+        record.hora_termino ??
+        record.hora_fin_real ??
+        record.end_time
+    ),
     disponible: toBoolLike(record.disponible),
     tipo: toStringOrNull(record.tipo ?? record.type) ?? "disponibilidad",
     estado: toStringOrNull(record.estado ?? record.status),

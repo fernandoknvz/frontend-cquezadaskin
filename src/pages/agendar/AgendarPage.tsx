@@ -82,7 +82,9 @@ type BookingForm = {
 };
 
 const FINAL_SUCCESS_MESSAGE =
-  "Tu solicitud fue enviada. CQuezadaSkin te contactará para confirmar.";
+  "Tu solicitud fue enviada correctamente. CQuezadaSkin te contactará para confirmar.";
+const BOOKING_LOADING_MESSAGE =
+  "Estamos enviando tu solicitud y validando la disponibilidad del horario.";
 
 const todayKey = () => {
   const today = new Date();
@@ -522,6 +524,15 @@ export const AgendarPage: React.FC = () => {
       });
       setSuccessMessage(FINAL_SUCCESS_MESSAGE);
       setBookingForm((prev) => ({ ...prev, hora: "" }));
+      try {
+        const horas = await getDisponibilidadPorFecha(bookingForm.fecha, {
+          servicioId: bookingForm.servicioId,
+          duracionMin: bookingForm.duracionMin,
+        });
+        setAvailableTimes(getBookableTimesForDate(bookingForm.fecha, horas));
+      } catch {
+        setAvailableTimes([]);
+      }
     } catch (error) {
       if (getErrorStatus(error) === 409) {
         setBookingForm((prev) => ({ ...prev, hora: "" }));
@@ -537,8 +548,14 @@ export const AgendarPage: React.FC = () => {
       }
       setBookingError(
         getErrorStatus(error) === 409
-          ? getErrorMessage(error, "Este horario ya fue reservado.")
-          : getErrorMessage(error, "No pudimos enviar tu solicitud de reserva.")
+          ? getErrorMessage(
+              error,
+              "Ese horario acaba de ser tomado. Selecciona otra hora disponible."
+            )
+          : getErrorMessage(
+              error,
+              "No pudimos enviar tu solicitud. Revisa tu conexión e intenta nuevamente."
+            )
       );
     } finally {
       setBookingLoading(false);
@@ -1071,6 +1088,18 @@ export const AgendarPage: React.FC = () => {
                 </Alert>
               ) : null}
 
+              {bookingLoading ? (
+                <Alert className="rounded-lg border-[#00D1C1]/25 bg-[#00D1C1]/10">
+                  <Clock className="h-5 w-5 text-[#00D1C1]" />
+                  <div className="ml-3">
+                    <AlertTitle>Enviando solicitud</AlertTitle>
+                    <AlertDescription className="text-[#CFFCF8]">
+                      {BOOKING_LOADING_MESSAGE}
+                    </AlertDescription>
+                  </div>
+                </Alert>
+              ) : null}
+
               {bookingError ? (
                 <Alert variant="destructive">
                   <AlertTitle>No pudimos enviar la solicitud</AlertTitle>
@@ -1113,7 +1142,7 @@ export const AgendarPage: React.FC = () => {
                 className="h-12 w-full rounded-lg bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] sm:w-auto sm:px-8"
                 disabled={!canSubmitBooking || bookingLoading}
               >
-                {bookingLoading ? "Enviando..." : "Enviar solicitud"}
+                {bookingLoading ? "Validando horario..." : "Enviar solicitud"}
               </Button>
             </form>
           </CardContent>
