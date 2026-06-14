@@ -29,8 +29,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NotificationToast } from "@/components/ui/notification-toast";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/useToast";
 import {
   clearClientSession,
   getClientToken,
@@ -82,12 +82,6 @@ type ReagendarForm = {
 };
 
 type ActionMode = "cancelar" | "reagendar" | null;
-
-type PortalNotification = {
-  variant: "success" | "error";
-  title: string;
-  description: string;
-};
 
 type ValoracionForm = {
   cita_id: string;
@@ -202,6 +196,7 @@ const isUnauthorizedError = (error: unknown) =>
 
 export const MisReservasPage = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [token, setToken] = useState<string | null>(() => getClientToken());
   const [perfil, setPerfil] = useState<ClientePerfil | null>(null);
   const [perfilForm, setPerfilForm] = useState<PerfilForm>(emptyPerfilForm);
@@ -218,9 +213,6 @@ export const MisReservasPage = () => {
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingAction, setSavingAction] = useState(false);
   const [savingValoracion, setSavingValoracion] = useState(false);
-  const [notification, setNotification] = useState<PortalNotification | null>(
-    null
-  );
   const [selectedReserva, setSelectedReserva] = useState<ReservaCliente | null>(
     null
   );
@@ -234,23 +226,20 @@ export const MisReservasPage = () => {
 
   const clienteNombre = perfil?.nombre || "Cliente CQuezadaSkin";
   const clearNotification = useCallback(() => {
-    setNotification(null);
-  }, []);
+    toast.clear();
+  }, [toast]);
   const clearErrorNotification = useCallback(() => {
-    setNotification((current) =>
-      current?.variant === "error" ? null : current
-    );
-  }, []);
+    toast.clear();
+  }, [toast]);
   const showSuccess = useCallback((title: string, description: string) => {
-    setNotification({ variant: "success", title, description });
-  }, []);
+    toast.success({ title, description });
+  }, [toast]);
   const showError = useCallback((description: string) => {
-    setNotification({
-      variant: "error",
-      title: "No se pudo completar la acción",
+    toast.error({
+      title: "No se pudo completar la accion",
       description,
     });
-  }, []);
+  }, [toast]);
 
   const loadPortal = useCallback(async () => {
     const currentToken = getClientToken();
@@ -612,16 +601,6 @@ export const MisReservasPage = () => {
           </Button>
         </div>
       </header>
-
-      {notification ? (
-        <NotificationToast
-          key={`${notification.variant}-${notification.title}-${notification.description}`}
-          variant={notification.variant}
-          title={notification.title}
-          description={notification.description}
-          onClose={clearNotification}
-        />
-      ) : null}
 
       {loading ? (
         <div className="mt-8 rounded-2xl border border-white/10 bg-[#121212] p-6 text-sm text-[#B8B8B8]">

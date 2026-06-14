@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NotificationToast } from "@/components/ui/notification-toast";
 import {
   createDisponibilidadBulk,
   deleteBloqueo,
@@ -42,6 +41,7 @@ import {
   normalizeAvailabilityTimeForApi,
   type AvailabilityInterval,
 } from "@/lib/availabilitySlots";
+import { useToast } from "@/hooks/useToast";
 
 const ESTADOS_RESERVA = [
   "solicitada",
@@ -58,12 +58,6 @@ type ModalFeedback = {
   tone: "success" | "error" | "info";
   message: string;
 } | null;
-type AdminNotification = {
-  variant: "success" | "error" | "warning" | "info";
-  title: string;
-  description: string;
-};
-
 type DisponibilidadForm = {
   fecha: string;
   horaInicio: string;
@@ -338,6 +332,7 @@ const getAvailabilitySaveErrorMessage = (
 };
 
 export const AdminCalendarioSection = () => {
+  const toast = useToast();
   const [mode, setMode] = useState<CalendarMode>("dia");
   const [fecha, setFecha] = useState(todayKey());
   const [estado, setEstado] = useState("");
@@ -354,9 +349,6 @@ export const AdminCalendarioSection = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [notification, setNotification] = useState<AdminNotification | null>(
-    null
-  );
   const [modalFeedback, setModalFeedback] = useState<ModalFeedback>(null);
   const [disponibilidadForm, setDisponibilidadForm] =
     useState<DisponibilidadForm>({
@@ -368,11 +360,21 @@ export const AdminCalendarioSection = () => {
       motivo: "",
     });
 
-  const clearNotification = useCallback(() => setNotification(null), []);
+  const clearNotification = useCallback(() => toast.clear(), [toast]);
 
-  const showToast = useCallback((notificationData: AdminNotification) => {
-    setNotification(notificationData);
-  }, []);
+  const showToast = useCallback(
+    (notificationData: {
+      variant: "success" | "error" | "warning" | "info";
+      title: string;
+      description: string;
+    }) => {
+      toast.showToast(notificationData.variant, {
+        title: notificationData.title,
+        description: notificationData.description,
+      });
+    },
+    [toast]
+  );
 
   const weekDays = useMemo(() => getWeekDays(fecha), [fecha]);
   const range = useMemo(
@@ -986,16 +988,6 @@ export const AdminCalendarioSection = () => {
           </Button>
         ) : null}
       </div>
-
-      {notification ? (
-        <NotificationToast
-          key={`${notification.variant}-${notification.title}-${notification.description}`}
-          variant={notification.variant}
-          title={notification.title}
-          description={notification.description}
-          onClose={clearNotification}
-        />
-      ) : null}
 
       <AppModal
         open={Boolean(panelMode)}

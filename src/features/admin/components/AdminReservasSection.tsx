@@ -11,10 +11,10 @@ import {
 
 import { AppModal } from "@/components/ui/AppModal";
 import { Button } from "@/components/ui/button";
-import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/useToast";
 import type { Pagination } from "@/services/adminClientesApi";
 import {
   getReservaAdmin,
@@ -37,10 +37,6 @@ const ESTADOS_RESERVA = [
 ] as const;
 
 type ActionMode = "estado" | "reagendar" | null;
-type ModalFeedback = {
-  tone: "success" | "error" | "info";
-  message: string;
-} | null;
 
 type EstadoForm = {
   estado: ReservaEstado;
@@ -88,9 +84,6 @@ const getEstadoClass = (estado: string) => {
   return "border-white/10 bg-[#0B0F0F] text-[#D6D6D6]";
 };
 
-const wait = (milliseconds: number) =>
-  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-
 const initialFilters: ReservasFilters = {
   estado: "",
   fecha_desde: "",
@@ -101,15 +94,13 @@ const initialFilters: ReservasFilters = {
 };
 
 export const AdminReservasSection = () => {
+  const toast = useToast();
   const [reservas, setReservas] = useState<ReservaAdmin[]>([]);
   const [filters, setFilters] = useState<ReservasFilters>(initialFilters);
   const [pagination, setPagination] = useState<Pagination>(emptyPagination);
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [modalFeedback, setModalFeedback] = useState<ModalFeedback>(null);
   const [selectedReserva, setSelectedReserva] = useState<ReservaAdmin | null>(
     null
   );
@@ -126,20 +117,21 @@ export const AdminReservasSection = () => {
 
   const loadReservas = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const response = await listReservasAdmin(filters);
       setReservas(response.data);
       setPagination(response.pagination);
     } catch (err) {
       setReservas([]);
-      setError(
-        err instanceof Error ? err.message : "No se pudo cargar la información"
-      );
+      toast.error({
+        title: "No se pudieron cargar las reservas",
+        description:
+          err instanceof Error ? err.message : "No se pudo cargar la informacion",
+      });
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, toast]);
 
   useEffect(() => {
     loadReservas();
@@ -161,9 +153,6 @@ export const AdminReservasSection = () => {
     setSelectedReserva(reserva);
     setDetailLoading(true);
     setActionMode(null);
-    setModalFeedback(null);
-    setError(null);
-    setMessage(null);
     try {
       const detail = await getReservaAdmin(reserva.id);
       setSelectedReserva(detail);
@@ -177,9 +166,11 @@ export const AdminReservasSection = () => {
         observacion_admin: detail.observacion_admin ?? "",
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "No se pudo cargar la información"
-      );
+      toast.error({
+        title: "No se pudo cargar la reserva",
+        description:
+          err instanceof Error ? err.message : "No se pudo cargar la informacion",
+      });
     } finally {
       setDetailLoading(false);
     }
@@ -188,7 +179,6 @@ export const AdminReservasSection = () => {
   const openEstadoAction = (reserva: ReservaAdmin, estado?: ReservaEstado) => {
     setSelectedReserva(reserva);
     setActionMode("estado");
-    setModalFeedback(null);
     setEstadoForm({
       estado: estado ?? reserva.estado,
       observacion_admin: reserva.observacion_admin ?? "",
@@ -198,7 +188,6 @@ export const AdminReservasSection = () => {
   const openReagendarAction = (reserva: ReservaAdmin) => {
     setSelectedReserva(reserva);
     setActionMode("reagendar");
-    setModalFeedback(null);
     setReagendarForm({
       fecha: reserva.fecha?.slice(0, 10) ?? "",
       hora: reserva.hora?.slice(0, 5) ?? "",
@@ -211,31 +200,30 @@ export const AdminReservasSection = () => {
     if (!selectedReserva) return;
 
     setSaving(true);
-    setModalFeedback(null);
-    setError(null);
-    setMessage(null);
     try {
       await updateReservaEstadoAdmin(selectedReserva.id, {
         estado: estadoForm.estado,
         observacion_admin: estadoForm.observacion_admin.trim(),
         motivo: estadoForm.observacion_admin.trim(),
       });
-      setMessage("Reserva actualizada correctamente");
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
+      toast.success({
+        title:
+          estadoForm.estado === "cancelada"
+            ? "Reserva cancelada"
+            : "Reserva actualizada",
+        description: "Cambios guardados correctamente.",
       });
-      await wait(900);
       setActionMode(null);
-      setModalFeedback(null);
       await loadReservas();
       const detail = await getReservaAdmin(selectedReserva.id);
       setSelectedReserva(detail);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "No se pudo actualizar la reserva";
-      setModalFeedback({ tone: "error", message: errorMessage });
-      setError(errorMessage);
+      toast.error({
+        title: "No se pudo actualizar la reserva",
+        description: errorMessage,
+      });
     } finally {
       setSaving(false);
     }
@@ -246,9 +234,6 @@ export const AdminReservasSection = () => {
     if (!selectedReserva) return;
 
     setSaving(true);
-    setModalFeedback(null);
-    setError(null);
-    setMessage(null);
     try {
       await reagendarReservaAdmin(selectedReserva.id, {
         fecha: reagendarForm.fecha,
@@ -256,22 +241,21 @@ export const AdminReservasSection = () => {
         observacion_admin: reagendarForm.observacion_admin.trim(),
         motivo: reagendarForm.observacion_admin.trim(),
       });
-      setMessage("Reserva actualizada correctamente");
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
+      toast.success({
+        title: "Reserva reagendada",
+        description: "Cambios guardados correctamente.",
       });
-      await wait(900);
       setActionMode(null);
-      setModalFeedback(null);
       await loadReservas();
       const detail = await getReservaAdmin(selectedReserva.id);
       setSelectedReserva(detail);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "No se pudo reagendar la reserva";
-      setModalFeedback({ tone: "error", message: errorMessage });
-      setError(errorMessage);
+      toast.error({
+        title: "No se pudo reagendar la reserva",
+        description: errorMessage,
+      });
     } finally {
       setSaving(false);
     }
@@ -343,18 +327,6 @@ export const AdminReservasSection = () => {
           Filtrar
         </Button>
       </form>
-
-      {message ? (
-        <div className="mt-4 rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-sm text-[#00D1C1]">
-          {message}
-        </div>
-      ) : null}
-
-      {error ? (
-        <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-300">
-          {error === "Acceso denegado" ? "Acceso denegado" : error}
-        </div>
-      ) : null}
 
       <div className="mt-6 grid gap-3 lg:hidden">
         {loading ? (
@@ -588,7 +560,6 @@ export const AdminReservasSection = () => {
           if (!open && !saving) {
             setSelectedReserva(null);
             setActionMode(null);
-            setModalFeedback(null);
           }
         }}
         className="w-[min(94vw,980px)]"
@@ -680,13 +651,6 @@ export const AdminReservasSection = () => {
                 <h3 className="text-xl font-semibold text-white">
                   Cambiar estado
                 </h3>
-                {modalFeedback ? (
-                  <InlineFeedback
-                    tone={modalFeedback.tone}
-                    message={modalFeedback.message}
-                    className="mt-4"
-                  />
-                ) : null}
                 <div className="mt-5 grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="reserva-estado">Estado</Label>
@@ -738,7 +702,6 @@ export const AdminReservasSection = () => {
                     disabled={saving}
                     onClick={() => {
                       setActionMode(null);
-                      setModalFeedback(null);
                     }}
                   >
                     Cancelar
@@ -750,13 +713,6 @@ export const AdminReservasSection = () => {
                 <h3 className="text-xl font-semibold text-white">
                   Reagendar reserva
                 </h3>
-                {modalFeedback ? (
-                  <InlineFeedback
-                    tone={modalFeedback.tone}
-                    message={modalFeedback.message}
-                    className="mt-4"
-                  />
-                ) : null}
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="reagendar-fecha">Fecha</Label>
@@ -819,7 +775,6 @@ export const AdminReservasSection = () => {
                     disabled={saving}
                     onClick={() => {
                       setActionMode(null);
-                      setModalFeedback(null);
                     }}
                   >
                     Cancelar

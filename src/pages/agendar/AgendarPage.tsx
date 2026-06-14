@@ -60,6 +60,7 @@ import {
   isBookableDateTime,
   SAME_DAY_BOOKING_LEAD_MESSAGE,
 } from "@/lib/bookingTimeRules";
+import { useToast } from "@/hooks/useToast";
 import brandLogo from "@/assets/logo_cquezadaskin.png";
 
 type AuthMode = "login" | "register";
@@ -232,6 +233,7 @@ const getAuthErrorMessage = (error: unknown, fallback: string) => {
 };
 
 export const AgendarPage: React.FC = () => {
+  const toast = useToast();
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [authForm, setAuthForm] = useState<AuthForm>({
     nombre: "",
@@ -257,7 +259,6 @@ export const AgendarPage: React.FC = () => {
   );
   const [checkingSession, setCheckingSession] = useState(Boolean(getClientToken()));
   const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
 
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [servicesLoading, setServicesLoading] = useState(true);
@@ -268,8 +269,6 @@ export const AgendarPage: React.FC = () => {
   const [timesError, setTimesError] = useState<string | null>(null);
 
   const [bookingLoading, setBookingLoading] = useState(false);
-  const [bookingError, setBookingError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   useEffect(() => {
@@ -393,7 +392,6 @@ export const AgendarPage: React.FC = () => {
               ? formatRut(value)
             : value,
       }));
-      setAuthError(null);
     },
     []
   );
@@ -401,8 +399,6 @@ export const AgendarPage: React.FC = () => {
   const setBookingField = useCallback(
     <K extends keyof BookingForm>(field: K, value: BookingForm[K]) => {
       setBookingForm((prev) => ({ ...prev, [field]: value }));
-      setBookingError(null);
-      setSuccessMessage(null);
     },
     []
   );
@@ -413,34 +409,32 @@ export const AgendarPage: React.FC = () => {
 
     const email = authForm.email.trim();
     if (!isValidEmail(email)) {
-      setAuthError(EMAIL_ERROR_MESSAGE);
+      toast.warning({ title: "Correo invalido", description: EMAIL_ERROR_MESSAGE });
       return;
     }
 
     const phoneDigits = normalizePhoneDigits(authForm.telefono);
     if (authMode === "register" && !isValidChileanMobile(phoneDigits)) {
       setAuthForm((prev) => ({ ...prev, telefono: phoneDigits }));
-      setAuthError(PHONE_ERROR_MESSAGE);
+      toast.warning({ title: "Telefono invalido", description: PHONE_ERROR_MESSAGE });
       return;
     }
 
     const rut = formatRut(authForm.rut);
     if (authMode === "register") {
       if (!rut) {
-        setAuthError(RUT_REQUIRED_MESSAGE);
+        toast.warning({ title: "RUT requerido", description: RUT_REQUIRED_MESSAGE });
         return;
       }
 
       if (!isValidRut(rut)) {
         setAuthForm((prev) => ({ ...prev, rut }));
-        setAuthError(RUT_ERROR_MESSAGE);
+        toast.warning({ title: "RUT invalido", description: RUT_ERROR_MESSAGE });
         return;
       }
     }
 
     setAuthLoading(true);
-    setAuthError(null);
-    setSuccessMessage(null);
 
     try {
       const payload = {
@@ -471,14 +465,15 @@ export const AgendarPage: React.FC = () => {
       setClient(profile);
       setStoredClient(profile);
     } catch (error) {
-      setAuthError(
-        getAuthErrorMessage(
+      toast.error({
+        title: "No pudimos continuar",
+        description: getAuthErrorMessage(
           error,
           authMode === "register"
             ? REGISTER_FALLBACK_ERROR
-            : "No pudimos iniciar la sesión del cliente."
-        )
-      );
+            : "No pudimos iniciar la sesion del cliente."
+        ),
+      });
     } finally {
       setAuthLoading(false);
     }
@@ -489,9 +484,6 @@ export const AgendarPage: React.FC = () => {
     setClient(null);
     setClientTokenState(null);
     setAuthMode("login");
-    setAuthError(null);
-    setBookingError(null);
-    setSuccessMessage(null);
     setAvailableTimes([]);
     setTimesError(null);
     setBookingForm({
@@ -507,13 +499,14 @@ export const AgendarPage: React.FC = () => {
     if (!canSubmitBooking || bookingLoading) return;
 
     if (!isBookableDateTime(bookingForm.fecha, bookingForm.hora)) {
-      setBookingError(SAME_DAY_BOOKING_LEAD_MESSAGE);
+      toast.warning({
+        title: "Horario no disponible",
+        description: SAME_DAY_BOOKING_LEAD_MESSAGE,
+      });
       return;
     }
 
     setBookingLoading(true);
-    setBookingError(null);
-    setSuccessMessage(null);
 
     try {
       await createReserva({
@@ -522,7 +515,10 @@ export const AgendarPage: React.FC = () => {
         hora: bookingForm.hora,
         duracion_min: Number(bookingForm.duracionMin),
       });
-      setSuccessMessage(FINAL_SUCCESS_MESSAGE);
+      toast.success({
+        title: "Solicitud enviada",
+        description: FINAL_SUCCESS_MESSAGE,
+      });
       setBookingForm((prev) => ({ ...prev, hora: "" }));
       try {
         const horas = await getDisponibilidadPorFecha(bookingForm.fecha, {
@@ -546,17 +542,19 @@ export const AgendarPage: React.FC = () => {
           setAvailableTimes([]);
         }
       }
-      setBookingError(
-        getErrorStatus(error) === 409
-          ? getErrorMessage(
-              error,
-              "Ese horario acaba de ser tomado. Selecciona otra hora disponible."
-            )
-          : getErrorMessage(
-              error,
-              "No pudimos enviar tu solicitud. Revisa tu conexión e intenta nuevamente."
-            )
-      );
+      toast.error({
+        title: "No pudimos enviar la solicitud",
+        description:
+          getErrorStatus(error) === 409
+            ? getErrorMessage(
+                error,
+                "Ese horario acaba de ser tomado. Selecciona otra hora disponible."
+              )
+            : getErrorMessage(
+                error,
+                "No pudimos enviar tu solicitud. Revisa tu conexion e intenta nuevamente."
+              ),
+      });
     } finally {
       setBookingLoading(false);
     }
@@ -694,7 +692,6 @@ export const AgendarPage: React.FC = () => {
                     className="rounded-md"
                     onClick={() => {
                       setAuthMode("login");
-                      setAuthError(null);
                     }}
                   >
                     Ingresar
@@ -705,7 +702,6 @@ export const AgendarPage: React.FC = () => {
                     className="rounded-md"
                     onClick={() => {
                       setAuthMode("register");
-                      setAuthError(null);
                     }}
                   >
                     Registro
@@ -815,13 +811,6 @@ export const AgendarPage: React.FC = () => {
                     required
                   />
                 </div>
-
-                {authError ? (
-                  <Alert variant="destructive">
-                    <AlertTitle>No pudimos continuar</AlertTitle>
-                    <AlertDescription>{authError}</AlertDescription>
-                  </Alert>
-                ) : null}
 
                 {authMode === "register" ? (
                   <div className="space-y-3 rounded-lg border border-white/10 bg-[#111414]/70 p-4">
@@ -1076,18 +1065,6 @@ export const AgendarPage: React.FC = () => {
                 </div>
               ) : null}
 
-              {successMessage ? (
-                <Alert className="rounded-lg border-[#00D1C1]/25 bg-[#00D1C1]/10">
-                  <CheckCircle className="h-5 w-5 text-[#00D1C1]" />
-                  <div className="ml-3">
-                    <AlertTitle>Solicitud enviada</AlertTitle>
-                    <AlertDescription className="text-[#CFFCF8]">
-                      {successMessage}
-                    </AlertDescription>
-                  </div>
-                </Alert>
-              ) : null}
-
               {bookingLoading ? (
                 <Alert className="rounded-lg border-[#00D1C1]/25 bg-[#00D1C1]/10">
                   <Clock className="h-5 w-5 text-[#00D1C1]" />
@@ -1097,13 +1074,6 @@ export const AgendarPage: React.FC = () => {
                       {BOOKING_LOADING_MESSAGE}
                     </AlertDescription>
                   </div>
-                </Alert>
-              ) : null}
-
-              {bookingError ? (
-                <Alert variant="destructive">
-                  <AlertTitle>No pudimos enviar la solicitud</AlertTitle>
-                  <AlertDescription>{bookingError}</AlertDescription>
                 </Alert>
               ) : null}
 

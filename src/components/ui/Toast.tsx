@@ -3,18 +3,24 @@ import { AlertTriangle, CheckCircle2, Info, X, XCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type NotificationToastVariant = "success" | "error" | "warning" | "info";
+export type ToastType = "success" | "error" | "warning" | "info";
 
-type NotificationToastProps = {
-  variant: NotificationToastVariant;
+export type ToastMessage = {
+  id: string;
+  type: ToastType;
   title: string;
-  description: string;
+  description?: string;
   duration?: number;
-  onClose: () => void;
+  dismissible?: boolean;
 };
 
-const variantStyles: Record<
-  NotificationToastVariant,
+type ToastProps = {
+  toast: ToastMessage;
+  onClose: (id: string) => void;
+};
+
+const styles: Record<
+  ToastType,
   {
     border: string;
     glow: string;
@@ -48,67 +54,62 @@ const variantStyles: Record<
   },
 };
 
-export function NotificationToast({
-  variant,
-  title,
-  description,
-  duration = 4000,
-  onClose,
-}: NotificationToastProps) {
+export function Toast({ toast, onClose }: ToastProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const style = styles[toast.type];
+  const duration = toast.duration ?? 3000;
+  const dismissible = toast.dismissible ?? true;
 
   useEffect(() => {
     const enterTimer = window.setTimeout(() => setIsVisible(true), 20);
     const exitTimer = window.setTimeout(() => setIsVisible(false), duration);
-    const closeTimer = window.setTimeout(() => onClose(), duration + 220);
+    const closeTimer = window.setTimeout(() => onClose(toast.id), duration + 220);
 
     return () => {
       window.clearTimeout(enterTimer);
       window.clearTimeout(exitTimer);
       window.clearTimeout(closeTimer);
     };
-  }, [description, duration, onClose, title, variant]);
+  }, [duration, onClose, toast.id]);
 
   const handleClose = () => {
     setIsVisible(false);
-    window.setTimeout(onClose, 180);
+    window.setTimeout(() => onClose(toast.id), 180);
   };
-
-  const styles = variantStyles[variant];
 
   return (
     <div
-      aria-live="polite"
+      role={toast.type === "error" ? "alert" : "status"}
+      aria-live={toast.type === "error" ? "assertive" : "polite"}
       aria-atomic="true"
-      className="pointer-events-none fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] max-w-[22rem] -translate-x-1/2 sm:left-auto sm:right-6 sm:top-6 sm:w-[22rem] sm:translate-x-0"
+      className={cn(
+        "pointer-events-auto grid grid-cols-[2.25rem_1fr_auto] gap-3 rounded-xl border bg-[#0A0F10]/90 p-3.5 text-white backdrop-blur-xl transition-all duration-200 ease-out",
+        style.border,
+        style.glow,
+        isVisible
+          ? "translate-y-0 opacity-100"
+          : "-translate-y-3 opacity-0 sm:translate-x-3 sm:translate-y-0"
+      )}
     >
       <div
-        role="status"
         className={cn(
-          "pointer-events-auto grid grid-cols-[2.25rem_1fr_auto] gap-3 rounded-xl border bg-[#0A0F10]/88 p-3.5 text-white backdrop-blur-xl transition-all duration-200 ease-out",
-          styles.border,
-          styles.glow,
-          isVisible
-            ? "translate-y-0 opacity-100"
-            : "-translate-y-3 opacity-0 sm:translate-x-3 sm:translate-y-0"
+          "flex h-9 w-9 items-center justify-center rounded-full border",
+          style.iconWrap
         )}
       >
-        <div
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-full border",
-            styles.iconWrap
-          )}
-        >
-          {styles.icon}
-        </div>
+        {style.icon}
+      </div>
 
-        <div className="min-w-0 pt-0.5">
-          <p className="text-sm font-semibold leading-5 text-white">{title}</p>
+      <div className="min-w-0 pt-0.5">
+        <p className="text-sm font-semibold leading-5 text-white">{toast.title}</p>
+        {toast.description ? (
           <p className="mt-1 text-sm leading-5 text-[#D6D6D6]">
-            {description}
+            {toast.description}
           </p>
-        </div>
+        ) : null}
+      </div>
 
+      {dismissible ? (
         <button
           type="button"
           aria-label="Cerrar notificacion"
@@ -117,7 +118,11 @@ export function NotificationToast({
         >
           <X className="h-3.5 w-3.5" />
         </button>
-      </div>
+      ) : (
+        <span aria-hidden="true" />
+      )}
     </div>
   );
 }
+
+export default Toast;

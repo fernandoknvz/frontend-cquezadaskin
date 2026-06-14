@@ -5,8 +5,8 @@ import { AppModal } from "@/components/ui/AppModal";
 import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Label } from "@/components/ui/label";
-import { NotificationToast } from "@/components/ui/notification-toast";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/useToast";
 import {
   deleteValoracionAdmin,
   listValoracionesAdmin,
@@ -16,11 +16,6 @@ import {
 } from "@/services/adminValoracionesApi";
 
 type EstadoFiltro = "todos" | "pendiente" | "aprobada" | "rechazada";
-type AdminNotification = {
-  variant: "success" | "error" | "warning" | "info";
-  title: string;
-  description: string;
-};
 type ModalFeedback = {
   tone: "success" | "error" | "info";
   message: string;
@@ -56,22 +51,30 @@ const wait = (milliseconds: number) =>
   new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
 export const AdminValoracionesSection = () => {
+  const toast = useToast();
   const [valoraciones, setValoraciones] = useState<ValoracionAdmin[]>([]);
   const [selected, setSelected] = useState<ValoracionAdmin | null>(null);
   const [filtro, setFiltro] = useState<EstadoFiltro>("todos");
   const [respuesta, setRespuesta] = useState("");
   const [loading, setLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [notification, setNotification] = useState<AdminNotification | null>(
-    null
-  );
   const [modalFeedback, setModalFeedback] = useState<ModalFeedback>(null);
 
-  const clearNotification = useCallback(() => setNotification(null), []);
+  const clearNotification = useCallback(() => toast.clear(), [toast]);
 
-  const showToast = useCallback((notificationData: AdminNotification) => {
-    setNotification(notificationData);
-  }, []);
+  const showToast = useCallback(
+    (notificationData: {
+      variant: "success" | "error" | "warning" | "info";
+      title: string;
+      description: string;
+    }) => {
+      toast.showToast(notificationData.variant, {
+        title: notificationData.title,
+        description: notificationData.description,
+      });
+    },
+    [toast]
+  );
 
   const showError = useCallback(
     (description: string) => {
@@ -311,16 +314,6 @@ export const AdminValoracionesSection = () => {
           Actualizar lista
         </Button>
       </div>
-
-      {notification ? (
-        <NotificationToast
-          key={`${notification.variant}-${notification.title}-${notification.description}`}
-          variant={notification.variant}
-          title={notification.title}
-          description={notification.description}
-          onClose={clearNotification}
-        />
-      ) : null}
 
       <div className="mt-5 flex flex-wrap gap-2">
         {(["todos", "pendiente", "aprobada", "rechazada"] as EstadoFiltro[]).map(

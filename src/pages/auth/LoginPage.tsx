@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useToast } from "@/hooks/useToast";
 import { requestPasswordReset } from "@/services/authApi";
 
 export default function LoginPage() {
   const { login, user, token, loading: authLoading } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const [identifier, setIdentifier] = useState("");
@@ -17,9 +19,6 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [resetMessage, setResetMessage] = useState<string | null>(null);
-  const [resetError, setResetError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "forgot">("login");
 
   const from =
@@ -30,17 +29,23 @@ export default function LoginPage() {
     event.preventDefault();
     const trimmedIdentifier = identifier.trim();
     if (!trimmedIdentifier || !password) {
-      setError("Ingresa email o usuario y contraseña.");
+      toast.warning({
+        title: "Faltan datos",
+        description: "Ingresa email o usuario y contrasena.",
+      });
       return;
     }
 
     setLoading(true);
-    setError(null);
     try {
       await login(trimmedIdentifier, password, remember);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Credenciales incorrectas");
+      toast.error({
+        title: "No pudimos iniciar sesion",
+        description:
+          err instanceof Error ? err.message : "Credenciales incorrectas",
+      });
     } finally {
       setLoading(false);
     }
@@ -49,18 +54,26 @@ export default function LoginPage() {
   const handleResetSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setResetLoading(true);
-    setResetMessage(null);
-    setResetError(null);
     try {
       const email = resetEmail.trim();
       if (!email) {
-        setResetError("Ingresa tu correo para continuar.");
+        toast.warning({
+          title: "Falta el correo",
+          description: "Ingresa tu correo para continuar.",
+        });
         return;
       }
       const response = await requestPasswordReset(email);
-      setResetMessage(response.message ?? "Revisa tu correo para continuar.");
+      toast.success({
+        title: "Correo enviado",
+        description: response.message ?? "Revisa tu correo para continuar.",
+      });
     } catch (err) {
-      setResetError(err instanceof Error ? err.message : "Error al enviar correo");
+      toast.error({
+        title: "No se pudo enviar el correo",
+        description:
+          err instanceof Error ? err.message : "Error al enviar correo",
+      });
     } finally {
       setResetLoading(false);
     }
@@ -106,12 +119,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {error ? (
-              <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-xs text-red-300">
-                {error}
-              </div>
-            ) : null}
-
             <Button
               className="w-full rounded-2xl h-12 bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
               disabled={loading}
@@ -133,8 +140,6 @@ export default function LoginPage() {
               className="text-sm text-[#00D1C1] underline underline-offset-4 hover:text-[#20E0D0]"
               onClick={() => {
                 setMode("forgot");
-                setResetMessage(null);
-                setResetError(null);
               }}
             >
               ¿Olvidaste tu contraseña?
@@ -153,16 +158,6 @@ export default function LoginPage() {
                 autoComplete="email"
               />
             </div>
-
-            {resetError ? (
-              <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-xs text-red-300">
-                {resetError}
-              </div>
-            ) : resetMessage ? (
-              <div className="rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-xs text-[#00D1C1]">
-                {resetMessage}
-              </div>
-            ) : null}
 
             <Button
               className="w-full rounded-2xl h-12 bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
