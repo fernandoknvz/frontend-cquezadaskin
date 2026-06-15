@@ -6,6 +6,7 @@ import { Check, CalendarDays, MessageCircle, Building2, Users, Sparkles } from "
 import skincareHeroImg from "@/assets/cquezadaskin-hero.png";
 import { listServices, type ServiceItem } from "@/services/servicesApi";
 import { listServiceCategories, type ServiceCategory } from "@/services/categoriesApi";
+import { resolveImageUrl } from "@/lib/resolveImageUrl";
 
 type Service = {
   title: string; // etiqueta (Tratamiento / Plan / Beneficio)
@@ -453,7 +454,7 @@ function mapServiceItemToCard(service: ServiceItem, context: "especiales" | "emp
     subtitle: service.subtitulo?.trim() || service.nombre,
     description: service.descripcion ?? "",
     bullets: service.beneficios ?? [],
-    image: service.imagen_url || skincareHeroImg,
+    image: resolveImageUrl(service.imagen_url, "/img/banner.jpg"),
     ctaPrimary: { label, to },
     ctaSecondary:
       secondaryLabel && secondaryUrl ? { label: secondaryLabel, to: secondaryUrl } : undefined,

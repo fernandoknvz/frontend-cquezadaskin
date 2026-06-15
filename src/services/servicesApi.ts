@@ -1,4 +1,3 @@
-import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import { apiFetch } from "@/services/apiClient";
 
 export type ServiceItem = {
@@ -54,7 +53,7 @@ const mapService = (item: any): ServiceItem => ({
   subtitulo: item.subtitulo ?? null,
   descripcion: item.descripcion ?? "",
   beneficios: parseBenefits(item.beneficios),
-  imagen_url: resolveImageUrl(item.imagen_url),
+  imagen_url: item.imagen_url ?? item.image_url ?? item.imagenUrl ?? item.imagen ?? "",
   precio: Number(item.precio ?? 0),
   activo: item.activo === undefined ? true : Boolean(Number(item.activo)),
   orden: Number(item.orden ?? 0),
