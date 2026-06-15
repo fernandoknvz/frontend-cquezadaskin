@@ -1,4 +1,4 @@
-import { apiFetch } from "@/services/apiClient";
+import { apiFetch, resolveApiAssetUrl } from "@/services/apiClient";
 
 export type ServiceItem = {
   id: number;
@@ -52,7 +52,7 @@ const mapService = (item: any): ServiceItem => ({
   subtitulo: item.subtitulo ?? null,
   descripcion: item.descripcion ?? "",
   beneficios: parseBenefits(item.beneficios),
-  imagen_url: item.imagen_url ?? "",
+  imagen_url: resolveApiAssetUrl(item.imagen_url),
   precio: Number(item.precio ?? 0),
   activo: item.activo === undefined ? true : Boolean(Number(item.activo)),
   orden: Number(item.orden ?? 0),

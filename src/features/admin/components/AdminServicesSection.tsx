@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { resolveApiAssetUrl } from "@/services/apiClient";
 import {
   type AdminService,
   type AdminServicePayload,
@@ -80,6 +81,8 @@ export const AdminServicesSection = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [form, setForm] = useState<ServiceFormState>(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -113,6 +116,14 @@ export const AdminServicesSection = () => {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const handleChange = (field: keyof ServiceFormState, value: string | boolean) => {
     setForm((prev) => ({
       ...prev,
@@ -122,9 +133,21 @@ export const AdminServicesSection = () => {
 
   const resetForm = () => {
     setForm(emptyForm);
+    setImageFile(null);
+    setImagePreview("");
     setFormOpen(false);
     setMessage(null);
     setError(null);
+  };
+
+  const handleImageChange = (file: File | null) => {
+    setImageFile(file);
+    setImagePreview((prev) => {
+      if (prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev);
+      }
+      return file ? URL.createObjectURL(file) : "";
+    });
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -153,6 +176,7 @@ export const AdminServicesSection = () => {
         cta_primary_url: form.cta_primary_url.trim() || null,
         cta_secondary_label: form.cta_secondary_label.trim() || null,
         cta_secondary_url: form.cta_secondary_url.trim() || null,
+        imagen: imageFile,
       };
 
       if (form.id) {
@@ -171,10 +195,14 @@ export const AdminServicesSection = () => {
 
   const handleEdit = (service: AdminService) => {
     setForm(mapToForm(service));
+    setImageFile(null);
+    setImagePreview("");
     setFormOpen(true);
     setMessage(null);
     setError(null);
   };
+
+  const currentImagePreview = imagePreview || resolveApiAssetUrl(form.imagen_url);
 
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm("Eliminar este servicio?");
@@ -287,12 +315,29 @@ export const AdminServicesSection = () => {
               placeholder="Mejora la circulacion&#10;Reduce estres&#10;..."
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="service-image">Imagen URL</Label>
+          <div className="grid gap-2 md:col-span-2">
+            <Label htmlFor="service-image-file">Imagen</Label>
             <Input
-              id="service-image"
+              id="service-image-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => handleImageChange(event.target.files?.[0] ?? null)}
+            />
+            {currentImagePreview ? (
+              <img
+                src={currentImagePreview}
+                alt={form.nombre ? `Imagen de ${form.nombre}` : "Imagen del servicio"}
+                className="h-36 w-full rounded-2xl border border-white/10 object-cover"
+              />
+            ) : null}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="service-image-url">Imagen URL</Label>
+            <Input
+              id="service-image-url"
               value={form.imagen_url}
               onChange={(event) => handleChange("imagen_url", event.target.value)}
+              placeholder="Opcional si subes una imagen"
             />
           </div>
           <div className="grid gap-2">

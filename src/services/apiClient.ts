@@ -5,8 +5,19 @@ const API_BASE_URL = String(rawApiUrl).replace(/\/$/, "").endsWith("/api")
   ? String(rawApiUrl).replace(/\/$/, "")
   : `${String(rawApiUrl).replace(/\/$/, "")}/api`;
 
+const API_ASSET_BASE_URL = API_BASE_URL.replace(/\/api$/, "");
+
 const normalizePath = (path: string) =>
   path.startsWith("/") ? path : `/${path}`;
+
+export const resolveApiAssetUrl = (url?: string | null) => {
+  const value = String(url ?? "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value) || value.startsWith("data:") || value.startsWith("blob:")) {
+    return value;
+  }
+  return `${API_ASSET_BASE_URL}${normalizePath(value)}`;
+};
 
 const getRequestErrorMessage = (
   status: number,
@@ -50,14 +61,17 @@ export async function apiFetch<T>(
   let response: Response;
 
   try {
+    const isFormData = requestOptions.body instanceof FormData;
+    const headers = {
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(requestOptions.headers ?? {}),
+    };
+
     response = await fetch(`${API_BASE_URL}${normalizePath(path)}`, {
       ...requestOptions,
       credentials: requestOptions.credentials ?? "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(requestOptions.headers ?? {}),
-      },
+      headers,
     });
   } catch {
     throw new Error("No se pudo conectar con el servidor");

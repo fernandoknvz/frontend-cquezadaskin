@@ -20,7 +20,9 @@ export type AdminService = {
   cta_secondary_url?: string | null;
 };
 
-export type AdminServicePayload = Omit<AdminService, "id">;
+export type AdminServicePayload = Omit<AdminService, "id"> & {
+  imagen?: File | null;
+};
 
 const parseBenefits = (value: any): string[] => {
   if (Array.isArray(value)) {
@@ -72,10 +74,49 @@ export const listServicesAdmin = async () => {
   return data.map(mapService);
 };
 
+const appendIfValue = (formData: FormData, key: string, value: unknown) => {
+  if (value === undefined || value === null) return;
+  if (Array.isArray(value)) {
+    formData.append(key, value.join("\n"));
+    return;
+  }
+  if (typeof value === "boolean") {
+    formData.append(key, value ? "1" : "0");
+    return;
+  }
+  formData.append(key, String(value));
+};
+
+const servicePayloadToFormData = (
+  payload: Partial<AdminServicePayload>,
+  methodOverride?: "PUT" | "PATCH"
+) => {
+  const formData = new FormData();
+  if (methodOverride) {
+    formData.append("_method", methodOverride);
+  }
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (key === "imagen") return;
+    appendIfValue(formData, key, value);
+  });
+
+  if (payload.imagen) {
+    formData.append("imagen", payload.imagen);
+  }
+
+  return formData;
+};
+
+const hasImageFile = (payload: Partial<AdminServicePayload>) =>
+  payload.imagen instanceof File;
+
 export const createServiceAdmin = (payload: AdminServicePayload) =>
   apiFetch<{ id: number | string }>("/servicios", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: hasImageFile(payload)
+      ? servicePayloadToFormData(payload)
+      : JSON.stringify(payload),
   });
 
 export const updateServiceAdmin = (
@@ -83,8 +124,10 @@ export const updateServiceAdmin = (
   payload: Partial<AdminServicePayload>
 ) =>
   apiFetch<{ message: string }>(`/servicios/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(payload),
+    method: hasImageFile(payload) ? "POST" : "PUT",
+    body: hasImageFile(payload)
+      ? servicePayloadToFormData(payload, "PATCH")
+      : JSON.stringify(payload),
   });
 
 export const deleteServiceAdmin = (id: string) =>
