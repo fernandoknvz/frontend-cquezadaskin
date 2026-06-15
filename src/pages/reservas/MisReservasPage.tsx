@@ -476,7 +476,7 @@ export const MisReservasPage = () => {
       );
       showSuccess(
         "Solicitud enviada",
-        "Tu solicitud de reagendamiento fue enviada correctamente."
+        "Solicitud de reagendamiento enviada. Quedara pendiente de confirmacion."
       );
       closeActionPanel();
       await loadPortal();
