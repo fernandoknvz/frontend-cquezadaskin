@@ -92,5 +92,13 @@ export async function apiFetch<T>(
   }
 
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+
+  const raw = await response.text();
+  if (!raw) return undefined as T;
+
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return raw as T;
+  }
 }

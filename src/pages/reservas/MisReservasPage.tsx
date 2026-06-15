@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AppModal } from "@/components/ui/AppModal";
 import {
   Card,
   CardContent,
@@ -480,6 +481,17 @@ export const MisReservasPage = () => {
       closeActionPanel();
       await loadPortal();
     } catch (err) {
+      if (isUnauthorizedError(err)) {
+        clearClientSession();
+        setToken(null);
+        closeActionPanel();
+        showError(
+          "Sesion expirada. Ingresa nuevamente para reagendar tu reserva."
+        );
+        navigate("/agendar");
+        return;
+      }
+
       showError(
         getErrorMessage(
           err,
@@ -660,18 +672,33 @@ export const MisReservasPage = () => {
           />
 
           {selectedReserva && actionMode ? (
-            <ActionPanel
-              mode={actionMode}
-              reserva={selectedReserva}
-              cancelForm={cancelForm}
-              reagendarForm={reagendarForm}
-              saving={savingAction}
-              onCancelFormChange={setCancelForm}
-              onReagendarFormChange={setReagendarForm}
-              onClose={closeActionPanel}
-              onSubmitCancel={handleCancelarReserva}
-              onSubmitReagendar={handleReagendarReserva}
-            />
+            <AppModal
+              open
+              title={
+                actionMode === "cancelar"
+                  ? "Cancelar reserva"
+                  : "Reagendar reserva"
+              }
+              description="Revisa los datos actuales y confirma el cambio."
+              onOpenChange={(open) => {
+                if (!open && !savingAction) {
+                  closeActionPanel();
+                }
+              }}
+            >
+              <ActionPanel
+                mode={actionMode}
+                reserva={selectedReserva}
+                cancelForm={cancelForm}
+                reagendarForm={reagendarForm}
+                saving={savingAction}
+                onCancelFormChange={setCancelForm}
+                onReagendarFormChange={setReagendarForm}
+                onClose={closeActionPanel}
+                onSubmitCancel={handleCancelarReserva}
+                onSubmitReagendar={handleReagendarReserva}
+              />
+            </AppModal>
           ) : null}
         </div>
       )}
