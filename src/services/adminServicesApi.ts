@@ -13,6 +13,7 @@ export type AdminService = {
   orden?: number;
   categoria_id?: number | null;
   mostrar_servicios?: boolean;
+  mostrar_especiales?: boolean;
   mostrar_empresas?: boolean;
   cta_primary_label?: string | null;
   cta_primary_url?: string | null;
@@ -62,6 +63,7 @@ const mapService = (item: any): AdminService => ({
   orden: Number(item.orden ?? 0),
   categoria_id: item.categoria_id ?? null,
   mostrar_servicios: Boolean(Number(item.mostrar_servicios ?? 0)),
+  mostrar_especiales: Boolean(Number(item.mostrar_especiales ?? 0)),
   mostrar_empresas: Boolean(Number(item.mostrar_empresas ?? 0)),
   cta_primary_label: item.cta_primary_label ?? null,
   cta_primary_url: item.cta_primary_url ?? null,

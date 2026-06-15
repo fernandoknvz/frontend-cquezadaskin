@@ -7,6 +7,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import {
   type AdminHomeContent,
   type AdminHomeContentPayload,
@@ -39,17 +40,23 @@ const mapToForm = (item: AdminHomeContent): HomeContentFormState => ({
   video_embed: item.video_embed ?? "",
 });
 
-const buildPayload = (form: HomeContentFormState): AdminHomeContentPayload => ({
+const buildPayload = (
+  form: HomeContentFormState,
+  imageFile: File | null
+): AdminHomeContentPayload => ({
   titulo: form.titulo.trim(),
   subtitulo: form.subtitulo.trim(),
   imagen_url: form.imagen_url.trim(),
   video_embed: form.video_embed.trim(),
+  imagen: imageFile,
 });
 
 export const AdminHomeContentSection = () => {
   const [items, setItems] = useState<AdminHomeContent[]>([]);
   const [form, setForm] = useState<HomeContentFormState>(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +80,14 @@ export const AdminHomeContentSection = () => {
     loadItems();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const handleChange = (
     field: keyof HomeContentFormState,
     value: string
@@ -85,9 +100,21 @@ export const AdminHomeContentSection = () => {
 
   const resetForm = () => {
     setForm(emptyForm);
+    setImageFile(null);
+    setImagePreview("");
     setFormOpen(false);
     setMessage(null);
     setError(null);
+  };
+
+  const handleImageChange = (file: File | null) => {
+    setImageFile(file);
+    setImagePreview((prev) => {
+      if (prev.startsWith("blob:")) {
+        URL.revokeObjectURL(prev);
+      }
+      return file ? URL.createObjectURL(file) : "";
+    });
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -95,7 +122,7 @@ export const AdminHomeContentSection = () => {
     setError(null);
     setMessage(null);
     try {
-      const payload = buildPayload(form);
+      const payload = buildPayload(form, imageFile);
       if (form.id) {
         await updateHomeContentAdmin(form.id, payload);
         setMessage("Contenido actualizado");
@@ -103,8 +130,7 @@ export const AdminHomeContentSection = () => {
         await createHomeContentAdmin(payload);
         setMessage("Contenido creado");
       }
-      setForm(emptyForm);
-      setFormOpen(false);
+      resetForm();
       await loadItems();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar contenido");
@@ -113,10 +139,14 @@ export const AdminHomeContentSection = () => {
 
   const handleEdit = (item: AdminHomeContent) => {
     setForm(mapToForm(item));
+    setImageFile(null);
+    setImagePreview("");
     setFormOpen(true);
     setMessage(null);
     setError(null);
   };
+
+  const currentImagePreview = imagePreview || resolveImageUrl(form.imagen_url, "");
 
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm("Eliminar este contenido?");
@@ -182,8 +212,24 @@ export const AdminHomeContentSection = () => {
               id="home-image"
               value={form.imagen_url}
               onChange={(event) => handleChange("imagen_url", event.target.value)}
-              required
+              placeholder="Opcional si subes una imagen"
             />
+          </div>
+          <div className="grid gap-2 md:col-span-2">
+            <Label htmlFor="home-image-file">Imagen principal / Hero</Label>
+            <Input
+              id="home-image-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => handleImageChange(event.target.files?.[0] ?? null)}
+            />
+            {currentImagePreview ? (
+              <img
+                src={currentImagePreview}
+                alt={form.titulo ? `Imagen de ${form.titulo}` : "Imagen principal"}
+                className="h-44 w-full rounded-2xl border border-white/10 object-cover"
+              />
+            ) : null}
           </div>
           <div className="grid gap-2 md:col-span-2">
             <Label htmlFor="home-subtitle">Subtitulo</Label>

@@ -117,19 +117,23 @@ const STATIC_CATEGORIES: Category[] = [
 
 export const BusinessServicesPage: React.FC = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
-  const [services, setServices] = useState<ServiceItem[]>([]);
+  const [specialServices, setSpecialServices] = useState<ServiceItem[]>([]);
+  const [businessServices, setBusinessServices] = useState<ServiceItem[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [servicesData, categoriesData] = await Promise.all([
-          listServices(),
+        const [specialServicesData, businessServicesData, categoriesData] = await Promise.all([
+          listServices("especiales"),
+          listServices("empresas"),
           listServiceCategories(),
         ]);
-        setServices(servicesData);
+        setSpecialServices(specialServicesData);
+        setBusinessServices(businessServicesData);
         setCategories(categoriesData);
       } catch {
-        setServices([]);
+        setSpecialServices([]);
+        setBusinessServices([]);
         setCategories([]);
       }
     };
@@ -137,70 +141,23 @@ export const BusinessServicesPage: React.FC = () => {
     loadData();
   }, []);
 
-  const dynamicCategories = useMemo(() => {
-    const visible = services.filter(
+  const specialCategories = useMemo(() => {
+    const visible = specialServices.filter(
+      (service) => service.activo !== false && service.mostrar_especiales
+    );
+    return buildDynamicCategories(visible, categories, "especiales");
+  }, [categories, specialServices]);
+
+  const businessCategories = useMemo(() => {
+    const visible = businessServices.filter(
       (service) => service.activo !== false && service.mostrar_empresas
     );
-    if (visible.length === 0) {
-      return null;
-    }
+    return buildDynamicCategories(visible, categories, "empresas");
+  }, [businessServices, categories]);
 
-    const categoryMap = new Map<number, ServiceCategory>();
-    categories
-      .filter((cat) => cat.activo !== false)
-      .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-      .forEach((cat) => categoryMap.set(cat.id, cat));
+  const hasDynamicContent = Boolean(specialCategories || businessCategories);
 
-    const grouped = new Map<number, ServiceItem[]>();
-    const withoutCategory: ServiceItem[] = [];
-
-    visible.forEach((service) => {
-      const categoryId = service.categoria_id;
-      if (categoryId && categoryMap.has(categoryId)) {
-        const list = grouped.get(categoryId) ?? [];
-        list.push(service);
-        grouped.set(categoryId, list);
-      } else {
-        withoutCategory.push(service);
-      }
-    });
-
-    const iconPool = [Building2, Sparkles, Users];
-    const result: Category[] = [];
-
-    categoryMap.forEach((cat, id) => {
-      const items = grouped.get(id);
-      if (!items || items.length === 0) return;
-      const Icon = iconPool[result.length % iconPool.length] ?? Building2;
-      result.push({
-        id: String(id),
-        name: cat.nombre,
-        description:
-          cat.descripcion ??
-          "Experiencias de bienestar pensadas para equipos, eventos y beneficios corporativos.",
-        icon: <Icon className="h-4 w-4" />,
-        items: items
-          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-          .map((service) => mapServiceItemToCard(service, "empresas")),
-      });
-    });
-
-    if (withoutCategory.length > 0) {
-      result.push({
-        id: "otros",
-        name: "Otros servicios",
-        description: "Opciones corporativas adicionales disponibles.",
-        icon: <Sparkles className="h-4 w-4" />,
-        items: withoutCategory
-          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-          .map((service) => mapServiceItemToCard(service, "empresas")),
-      });
-    }
-
-    return result.length > 0 ? result : null;
-  }, [categories, services]);
-
-  const categoriesToRender = dynamicCategories ?? STATIC_CATEGORIES;
+  const categoriesToRender = specialCategories ?? businessCategories ?? STATIC_CATEGORIES;
 
   return (
     <section className="mx-auto w-[92%] 2xl:w-[80%]">
@@ -216,10 +173,19 @@ export const BusinessServicesPage: React.FC = () => {
             </p>
           </header>
 
-          <div className="mt-10 space-y-12 sm:space-y-14">
-            {categoriesToRender.map((cat) => (
-              <CategoryBlock key={cat.id} category={cat} />
-            ))}
+          <div className="mt-10 space-y-14">
+            {hasDynamicContent ? (
+              <>
+                {specialCategories ? (
+                  <ServiceSection title="Especiales" categories={specialCategories} />
+                ) : null}
+                {businessCategories ? (
+                  <ServiceSection title="Empresas" categories={businessCategories} />
+                ) : null}
+              </>
+            ) : (
+              <ServiceSection categories={categoriesToRender} />
+            )}
           </div>
 
           <div className="mt-12 rounded-2xl border border-white/10 bg-[#121212]/80 p-4 text-sm text-[#C9C9C9] sm:rounded-3xl sm:p-6">
@@ -266,6 +232,83 @@ export const BusinessServicesPage: React.FC = () => {
     </section>
   );
 };
+
+function buildDynamicCategories(
+  visible: ServiceItem[],
+  categories: ServiceCategory[],
+  context: "especiales" | "empresas"
+) {
+    if (visible.length === 0) {
+      return null;
+    }
+
+    const categoryMap = new Map<number, ServiceCategory>();
+    categories
+      .filter((cat) => cat.activo !== false)
+      .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+      .forEach((cat) => categoryMap.set(cat.id, cat));
+
+    const grouped = new Map<number, ServiceItem[]>();
+    const withoutCategory: ServiceItem[] = [];
+
+    visible.forEach((service) => {
+      const categoryId = service.categoria_id;
+      if (categoryId && categoryMap.has(categoryId)) {
+        const list = grouped.get(categoryId) ?? [];
+        list.push(service);
+        grouped.set(categoryId, list);
+      } else {
+        withoutCategory.push(service);
+      }
+    });
+
+    const iconPool = [Building2, Sparkles, Users];
+    const result: Category[] = [];
+
+    categoryMap.forEach((cat, id) => {
+      const items = grouped.get(id);
+      if (!items || items.length === 0) return;
+      const Icon = iconPool[result.length % iconPool.length] ?? Building2;
+      result.push({
+        id: String(id),
+        name: cat.nombre,
+        description:
+          cat.descripcion ??
+          "Experiencias de bienestar pensadas para equipos, eventos y beneficios corporativos.",
+        icon: <Icon className="h-4 w-4" />,
+        items: items
+          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+          .map((service) => mapServiceItemToCard(service, context)),
+      });
+    });
+
+    if (withoutCategory.length > 0) {
+      result.push({
+        id: "otros",
+        name: "Otros servicios",
+        description: "Opciones corporativas adicionales disponibles.",
+        icon: <Sparkles className="h-4 w-4" />,
+        items: withoutCategory
+          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+          .map((service) => mapServiceItemToCard(service, context)),
+      });
+    }
+
+    return result.length > 0 ? result : null;
+}
+
+function ServiceSection({ title, categories }: { title?: string; categories: Category[] }) {
+  return (
+    <div className="space-y-12 sm:space-y-14">
+      {title ? (
+        <h2 className="text-2xl font-semibold text-white sm:text-3xl">{title}</h2>
+      ) : null}
+      {categories.map((cat) => (
+        <CategoryBlock key={`${title ?? "section"}-${cat.id}`} category={cat} />
+      ))}
+    </div>
+  );
+}
 
 function CategoryBlock({ category }: { category: Category }) {
   return (
@@ -393,10 +436,10 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
 
 export default BusinessServicesPage;
 
-function mapServiceItemToCard(service: ServiceItem, context: "servicios" | "empresas"): Service {
+function mapServiceItemToCard(service: ServiceItem, context: "especiales" | "empresas"): Service {
   const label =
     service.cta_primary_label ||
-    (context === "empresas" ? "Cotizar ahora" : "Agendar");
+    (context === "empresas" ? "Cotizar ahora" : "Consultar especial");
   const to =
     service.cta_primary_url || (context === "empresas" ? "/empresas" : "/contacto");
   const secondaryLabel =

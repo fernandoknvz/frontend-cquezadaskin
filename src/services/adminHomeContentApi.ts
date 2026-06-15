@@ -12,7 +12,9 @@ export type AdminHomeContent = {
 export type AdminHomeContentPayload = Omit<
   AdminHomeContent,
   "id" | "actualizado_en"
->;
+> & {
+  imagen?: File | null;
+};
 
 const mapHomeContent = (item: any): AdminHomeContent => ({
   id: String(item.id),
@@ -28,10 +30,41 @@ export const listHomeContentAdmin = async () => {
   return data.map(mapHomeContent);
 };
 
+const appendIfValue = (formData: FormData, key: string, value: unknown) => {
+  if (value === undefined || value === null) return;
+  formData.append(key, String(value));
+};
+
+const homePayloadToFormData = (
+  payload: Partial<AdminHomeContentPayload>,
+  methodOverride?: "PUT" | "PATCH"
+) => {
+  const formData = new FormData();
+  if (methodOverride) {
+    formData.append("_method", methodOverride);
+  }
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (key === "imagen") return;
+    appendIfValue(formData, key, value);
+  });
+
+  if (payload.imagen) {
+    formData.append("imagen", payload.imagen);
+  }
+
+  return formData;
+};
+
+const hasImageFile = (payload: Partial<AdminHomeContentPayload>) =>
+  payload.imagen instanceof File;
+
 export const createHomeContentAdmin = (payload: AdminHomeContentPayload) =>
   apiFetch<{ id: number | string }>("/home-content", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: hasImageFile(payload)
+      ? homePayloadToFormData(payload)
+      : JSON.stringify(payload),
   });
 
 export const updateHomeContentAdmin = (
@@ -39,8 +72,10 @@ export const updateHomeContentAdmin = (
   payload: Partial<AdminHomeContentPayload>
 ) =>
   apiFetch<{ success: boolean }>(`/home-content?id=${id}`, {
-    method: "PUT",
-    body: JSON.stringify(payload),
+    method: hasImageFile(payload) ? "POST" : "PUT",
+    body: hasImageFile(payload)
+      ? homePayloadToFormData(payload, "PATCH")
+      : JSON.stringify(payload),
   });
 
 export const deleteHomeContentAdmin = (id: string) =>

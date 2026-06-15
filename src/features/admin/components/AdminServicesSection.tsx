@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { resolveApiAssetUrl } from "@/services/apiClient";
+import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import {
   type AdminService,
   type AdminServicePayload,
@@ -30,6 +30,7 @@ type ServiceFormState = {
   activo: boolean;
   categoria_id: string;
   mostrar_servicios: boolean;
+  mostrar_especiales: boolean;
   mostrar_empresas: boolean;
   cta_primary_label: string;
   cta_primary_url: string;
@@ -49,6 +50,7 @@ const emptyForm: ServiceFormState = {
   activo: true,
   categoria_id: "",
   mostrar_servicios: false,
+  mostrar_especiales: false,
   mostrar_empresas: false,
   cta_primary_label: "",
   cta_primary_url: "",
@@ -69,6 +71,7 @@ const mapToForm = (service: AdminService): ServiceFormState => ({
   activo: Boolean(service.activo),
   categoria_id: service.categoria_id ? String(service.categoria_id) : "",
   mostrar_servicios: Boolean(service.mostrar_servicios),
+  mostrar_especiales: Boolean(service.mostrar_especiales),
   mostrar_empresas: Boolean(service.mostrar_empresas),
   cta_primary_label: service.cta_primary_label ?? "",
   cta_primary_url: service.cta_primary_url ?? "",
@@ -171,6 +174,7 @@ export const AdminServicesSection = () => {
         activo: form.activo,
         categoria_id: form.categoria_id ? Number(form.categoria_id) : null,
         mostrar_servicios: form.mostrar_servicios,
+        mostrar_especiales: form.mostrar_especiales,
         mostrar_empresas: form.mostrar_empresas,
         cta_primary_label: form.cta_primary_label.trim() || null,
         cta_primary_url: form.cta_primary_url.trim() || null,
@@ -202,7 +206,7 @@ export const AdminServicesSection = () => {
     setError(null);
   };
 
-  const currentImagePreview = imagePreview || resolveApiAssetUrl(form.imagen_url);
+  const currentImagePreview = imagePreview || resolveImageUrl(form.imagen_url, "");
 
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm("Eliminar este servicio?");
@@ -330,6 +334,9 @@ export const AdminServicesSection = () => {
                 className="h-36 w-full rounded-2xl border border-white/10 object-cover"
               />
             ) : null}
+            <p className="text-xs text-[#A8A8A8]">
+              Si no subes imagen, se usara una imagen por defecto.
+            </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="service-image-url">Imagen URL</Label>
@@ -377,6 +384,14 @@ export const AdminServicesSection = () => {
               onChange={(event) => handleChange("mostrar_servicios", event.target.checked)}
             />
             Mostrar en Servicios
+          </label>
+          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+            <input
+              type="checkbox"
+              checked={form.mostrar_especiales}
+              onChange={(event) => handleChange("mostrar_especiales", event.target.checked)}
+            />
+            Mostrar en Especiales
           </label>
           <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
             <input

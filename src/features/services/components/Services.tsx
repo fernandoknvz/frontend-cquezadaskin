@@ -34,7 +34,7 @@ export const Services: React.FC = () => {
   useEffect(() => {
     const loadServices = async () => {
       try {
-        const data = await listServices();
+        const data = await listServices("servicios");
         setServices(data);
       } catch {
         setServices([]);

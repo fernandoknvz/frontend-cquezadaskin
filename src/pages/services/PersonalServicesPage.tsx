@@ -58,7 +58,7 @@ export const PersonalServicesPage: React.FC = () => {
     const loadData = async () => {
       try {
         const [servicesData, categoriesData] = await Promise.all([
-          listServices(),
+          listServices("servicios"),
           listServiceCategories(),
         ]);
         setServices(servicesData);

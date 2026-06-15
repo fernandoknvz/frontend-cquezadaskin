@@ -1,3 +1,4 @@
+import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import { apiFetch } from "@/services/apiClient";
 
 export type HomeContentItem = {
@@ -12,7 +13,7 @@ const mapItem = (item: any): HomeContentItem => ({
   id: Number(item.id),
   titulo: item.titulo ?? "",
   subtitulo: item.subtitulo ?? "",
-  imagen_url: item.imagen_url ?? "",
+  imagen_url: resolveImageUrl(item.imagen_url, "/img/banner.jpg"),
   video_embed: item.video_embed ?? "",
 });
 
