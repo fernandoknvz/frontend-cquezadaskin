@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { siteConfig } from "@/config/site";
+import { sendContactRequest } from "@/services/contactApi";
 import {
   Building2,
   User,
@@ -25,6 +26,7 @@ import {
   Phone,
   MessageSquare,
   CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 
 // Types
@@ -58,12 +60,24 @@ const useFormNavigation = () => {
 
 const useSuccessMessage = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const showSuccess = useCallback(
-    (message: string) => setSuccessMessage(message),
+    (message: string) => {
+      setErrorMessage(null);
+      setSuccessMessage(message);
+    },
+    []
+  );
+  const showError = useCallback(
+    (message: string) => {
+      setSuccessMessage(null);
+      setErrorMessage(message);
+    },
     []
   );
   const clearSuccess = useCallback(() => setSuccessMessage(null), []);
-  return { successMessage, showSuccess, clearSuccess };
+  const clearError = useCallback(() => setErrorMessage(null), []);
+  return { successMessage, errorMessage, showSuccess, showError, clearSuccess, clearError };
 };
 
 // Small UI helper
@@ -180,7 +194,7 @@ const ModeSelector: React.FC<{
 
 // Company Form
 const CompanyForm: React.FC<{
-  onSubmit: (data: CompanyFormData) => Promise<void>;
+  onSubmit: (data: CompanyFormData) => Promise<boolean>;
   isLoading: boolean;
 }> = ({ onSubmit, isLoading }) => {
   const [formData, setFormData] = useState<CompanyFormData>({
@@ -209,7 +223,16 @@ const CompanyForm: React.FC<{
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit || isLoading) return;
-    await onSubmit(formData);
+    const success = await onSubmit(formData);
+    if (success) {
+      setFormData({
+        companyName: "",
+        contactName: "",
+        email: "",
+        phone: "",
+        message: "",
+      });
+    }
   };
 
   return (
@@ -352,6 +375,30 @@ const CompanyForm: React.FC<{
   );
 };
 
+// Error Alert
+const ErrorAlert: React.FC<{ message: string; onClose: () => void }> = ({
+  message,
+  onClose,
+}) => (
+  <div className="mt-8">
+    <Alert className="rounded-2xl border-red-200 bg-red-50">
+      <AlertCircle className="h-5 w-5 text-red-600" />
+      <div className="ml-3">
+        <AlertTitle className="text-red-800">No pudimos enviar la consulta</AlertTitle>
+        <AlertDescription className="text-red-700">{message}</AlertDescription>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        className="ml-auto h-8 rounded-xl px-3 text-red-700 hover:bg-red-100"
+        onClick={onClose}
+      >
+        Cerrar
+      </Button>
+    </Alert>
+  </div>
+);
+
 // Success Alert
 const SuccessAlert: React.FC<{ message: string; onClose: () => void }> = ({
   message,
@@ -380,7 +427,8 @@ export const ContactPage: React.FC = () => {
   const navigate = useNavigate();
   const { mode, setMode, isSubmitting, setIsSubmitting, resetMode, goHome } =
     useFormNavigation();
-  const { successMessage, showSuccess } = useSuccessMessage();
+  const { successMessage, errorMessage, showSuccess, showError, clearError } =
+    useSuccessMessage();
 
   const AGENDAR_PATH = "/agendar";
 
@@ -388,13 +436,38 @@ export const ContactPage: React.FC = () => {
     navigate(AGENDAR_PATH);
   }, [navigate, AGENDAR_PATH]);
 
-  const handleCompanySubmit = async () => {
+  const handleCompanySubmit = async (data: CompanyFormData) => {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    showSuccess(
-      "Solicitud enviada. Te contactaremos para coordinar los detalles."
-    );
-    setIsSubmitting(false);
+    clearError();
+
+    try {
+      const response = await sendContactRequest({
+        asunto: data.companyName.trim(),
+        nombre: data.contactName.trim(),
+        email: data.email.trim(),
+        telefono: data.phone.trim(),
+        mensaje: data.message.trim(),
+      });
+
+      if (!response?.success) {
+        showError(response?.message ?? "No pudimos enviar tu consulta en este momento.");
+        return false;
+      }
+
+      showSuccess(
+        response.message || "Solicitud enviada. Te contactaremos para coordinar los detalles."
+      );
+      return true;
+    } catch (error) {
+      showError(
+        error instanceof Error
+          ? error.message
+          : "No pudimos enviar tu consulta en este momento."
+      );
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -439,6 +512,10 @@ export const ContactPage: React.FC = () => {
           </>
         ) : (
           <>
+            {errorMessage ? (
+              <ErrorAlert message={errorMessage} onClose={clearError} />
+            ) : null}
+
             {/* Selector o Form */}
             {!mode ? (
               <ModeSelector
