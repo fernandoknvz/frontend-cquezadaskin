@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { siteConfig } from "@/config/site";
 import type { NavItem } from "./Navbar";
-import brandLogo from "@/assets/oficial_logo.png";
+import { NavbarBrand } from "./NavbarBrand";
 
 type Props = {
   items: NavItem[];
@@ -19,34 +19,7 @@ export const MobileNavbar: React.FC<Props> = ({ items, compact = false }) => {
 
   return (
     <>
-      <Link to="/" className="flex min-w-0 items-center gap-2">
-        <div
-          className={[
-            "flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--brand-100)] bg-white/82 p-1 shadow-[var(--shadow-soft)] transition-all duration-300",
-            compact ? "h-9 w-9" : "h-10 w-10",
-          ].join(" ")}
-        >
-          <img src={brandLogo} alt="" className="h-full w-full object-contain object-center" />
-        </div>
-        <div className="min-w-0 leading-tight">
-          <div
-            className={[
-              "brand-wordmark truncate font-semibold leading-none text-[var(--brand-900)] transition-all duration-300",
-              compact ? "text-[0.95rem]" : "text-base",
-            ].join(" ")}
-          >
-            CQUEZADASKIN
-          </div>
-          <div
-            className={[
-              "truncate text-[11px] text-[var(--brand-700)] transition-all duration-300",
-              compact ? "opacity-80" : "opacity-100",
-            ].join(" ")}
-          >
-            Facial y corporal
-          </div>
-        </div>
-      </Link>
+      <NavbarBrand compact={compact} />
 
       <div className="flex items-center gap-2">
         <Button
@@ -77,19 +50,7 @@ export const MobileNavbar: React.FC<Props> = ({ items, compact = false }) => {
 
           <SheetContent side="right" className="w-[min(88vw,340px)] border-l border-[#ead3c7] bg-[#fffaf7] p-0 text-[#3b302c]">
             <div className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-[var(--brand-100)] bg-white/82 p-1 shadow-[var(--shadow-soft)]">
-                  <img src={brandLogo} alt="" className="h-full w-full object-contain object-center" />
-                </div>
-                <div>
-                  <div className="brand-wordmark text-lg font-semibold leading-none text-[var(--brand-900)]">
-                    CQUEZADASKIN
-                  </div>
-                  <div className="text-xs text-[#7d6a61]">
-                    Home studio en {siteConfig.address}
-                  </div>
-                </div>
-              </div>
+              <NavbarBrand />
 
               <div className="mt-4 rounded-2xl border border-[#ead3c7] bg-white p-3 text-sm text-[#6d554b]">
                 Tratamientos faciales y corporales en un espacio profesional,

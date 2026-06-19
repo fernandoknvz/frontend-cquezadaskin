@@ -1,29 +1,33 @@
 import React from "react";
-import relajanteImg from "@/assets/services/relajante.jpg";
-import constanzaImg from "@/assets/oficial_ceo.jpeg";
-
-const studioImg = "/img/oficial_hero.jpeg";
+import workingLampImg from "@/assets/skinspace-working-lamp.jpeg";
+import deviceImg from "@/assets/skinspace-device.jpeg";
+import productsImg from "@/assets/skinspace-products.jpeg";
+import glovesProfileImg from "@/assets/skinspace-gloves-profile.jpeg";
 
 const collageImages = [
   {
-    src: studioImg,
-    alt: "Cabina de estética preparada para tratamientos faciales",
-    className: "md:col-span-2 md:row-span-2",
+    src: workingLampImg,
+    alt: "Constanza trabajando bajo lámpara profesional",
+    figureClassName: "lg:aspect-[1.18/1]",
+    imageClassName: "object-contain object-center",
   },
   {
-    src: "/img/oficial_hero.jpeg",
-    alt: "Constanza Quezada preparando un tratamiento",
-    className: "",
+    src: deviceImg,
+    alt: "Constanza sosteniendo un dispositivo profesional de skincare",
+    figureClassName: "lg:aspect-[0.78/1]",
+    imageClassName: "object-contain object-center",
   },
   {
-    src: relajanteImg,
-    alt: "Tratamiento corporal en ambiente profesional",
-    className: "",
+    src: productsImg,
+    alt: "Productos skincare profesionales en bandeja clínica",
+    figureClassName: "lg:aspect-[1.08/1]",
+    imageClassName: "object-contain object-center",
   },
   {
-    src: constanzaImg,
-    alt: "Retrato profesional de Constanza Quezada",
-    className: "md:col-span-2",
+    src: glovesProfileImg,
+    alt: "Constanza con guantes en perfil lateral",
+    figureClassName: "lg:aspect-[1/1]",
+    imageClassName: "object-contain object-center",
   },
 ];
 
@@ -42,19 +46,22 @@ export const SkinSpaceCollage: React.FC = () => {
           </p>
         </div>
 
-        <div className="mt-10 grid auto-rows-[15rem] grid-cols-1 gap-4 sm:auto-rows-[18rem] md:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
           {collageImages.map((image) => (
             <figure
               key={image.alt}
               className={[
-                "group overflow-hidden rounded-[1.25rem] border border-white/70 bg-white shadow-[0_22px_70px_rgba(80,55,45,0.12)]",
-                image.className,
+                "group flex min-h-[22rem] overflow-hidden rounded-[1.25rem] border border-white/75 bg-[#f8f2ee] shadow-[0_22px_70px_rgba(80,55,45,0.12)] sm:min-h-[28rem] lg:min-h-0",
+                image.figureClassName,
               ].join(" ")}
             >
               <img
                 src={image.src}
                 alt={image.alt}
-                className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.03]"
+                className={[
+                  "h-full w-full transition duration-500 group-hover:scale-[1.01]",
+                  image.imageClassName,
+                ].join(" ")}
                 loading="lazy"
               />
             </figure>
