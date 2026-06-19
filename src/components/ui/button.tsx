@@ -5,15 +5,15 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold transition-all duration-200 hover:scale-[1.015] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 disabled:hover:scale-100 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-[#00D1C1] focus-visible:ring-[#00D1C1]/35 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold transition-all duration-200 hover:scale-[1.015] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 disabled:hover:scale-100 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-[#c69a86] focus-visible:ring-[#c69a86]/35 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-[0_0_28px_rgba(0,209,193,0.12)] hover:bg-[#20E0D0]",
+        default: "bg-primary text-primary-foreground shadow-[0_14px_34px_rgba(198,154,134,0.22)] hover:bg-[#e8c2b5]",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border border-[#00D1C1]/45 bg-[#0B0F0F] text-white shadow-xs hover:border-[#20E0D0] hover:bg-[#00D1C1]/10 hover:text-[#20E0D0]",
+          "border border-[#c69a86]/45 bg-white text-[#4b3932] shadow-xs hover:border-[#b98975] hover:bg-[#f8eee8] hover:text-[#7f594b]",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:

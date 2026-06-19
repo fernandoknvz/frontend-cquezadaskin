@@ -67,9 +67,9 @@ export default function AdminPage() {
           <h1 className="premium-heading text-4xl font-semibold sm:text-5xl">
             Panel administrador
           </h1>
-          <p className="mt-2 text-sm text-[#D6D6D6]">
+          <p className="mt-2 text-sm text-[#6d554b]">
             Bienvenido{" "}
-            <span className="font-semibold text-[#00D1C1]">
+            <span className="font-semibold text-[#c69a86]">
               {user?.username}
             </span>
             . Rol: {user?.rol}
@@ -80,10 +80,10 @@ export default function AdminPage() {
             <Link to="/">Ver sitio</Link>
           </Button>
           <Button
-            className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            className="rounded-2xl bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
             onClick={handleLogout}
           >
-            Cerrar sesion
+            Cerrar sesión
           </Button>
         </div>
       </div>
@@ -208,14 +208,14 @@ function AdminCard({
       className="premium-card premium-card-hover premium-focus min-h-28 min-w-0 rounded-2xl p-4 text-left hover:-translate-y-1 sm:rounded-3xl sm:p-6"
     >
       <div className="flex items-center gap-3">
-        <span className="rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-[#00D1C1]">
+        <span className="rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-3 text-[#c69a86]">
           {icon}
         </span>
         <div className="min-w-0">
           <h2 className="premium-section-title text-xl font-semibold sm:text-2xl">
             {title}
           </h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">{description}</p>
+          <p className="mt-1 text-sm text-[#6d554b]">{description}</p>
         </div>
       </div>
     </button>

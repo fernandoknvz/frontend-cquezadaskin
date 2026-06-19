@@ -73,7 +73,7 @@ const getClienteEmail = (reserva: ReservaAdmin) =>
 const getEstadoClass = (estado: string) => {
   const normalized = estado.toLowerCase();
   if (normalized === "confirmada" || normalized === "completada") {
-    return "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+    return "border-[#c69a86]/30 bg-[#c69a86]/10 text-[#e8c2b5]";
   }
   if (normalized === "cancelada") {
     return "border-red-400/30 bg-red-500/10 text-red-200";
@@ -81,7 +81,7 @@ const getEstadoClass = (estado: string) => {
   if (normalized === "reagendada") {
     return "border-amber-300/30 bg-amber-400/10 text-amber-200";
   }
-  return "border-white/10 bg-[#0B0F0F] text-[#D6D6D6]";
+  return "border-white/10 bg-[#fffaf7] text-[#6d554b]";
 };
 
 const initialFilters: ReservasFilters = {
@@ -268,7 +268,7 @@ export const AdminReservasSection = () => {
           <h2 className="premium-section-title text-2xl font-semibold sm:text-3xl">
             Reservas
           </h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">
+          <p className="mt-1 text-sm text-[#6d554b]">
             Filtra, revisa y actualiza solicitudes de reserva.
           </p>
         </div>
@@ -288,7 +288,7 @@ export const AdminReservasSection = () => {
         onSubmit={handleFilterSubmit}
       >
         <div className="relative min-w-0 sm:col-span-2 xl:col-span-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8E8E8E]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8e7a71]" />
           <Input
             value={filters.search ?? ""}
             onChange={(event) => setFilter("search", event.target.value)}
@@ -299,7 +299,7 @@ export const AdminReservasSection = () => {
         <select
           value={filters.estado ?? ""}
           onChange={(event) => setFilter("estado", event.target.value)}
-          className="h-11 w-full rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
+          className="h-11 w-full rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70"
         >
           <option value="">Todos los estados</option>
           {ESTADOS_RESERVA.map((estado) => (
@@ -322,7 +322,7 @@ export const AdminReservasSection = () => {
         />
         <Button
           type="submit"
-          className="w-full rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+          className="w-full rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
         >
           Filtrar
         </Button>
@@ -330,25 +330,25 @@ export const AdminReservasSection = () => {
 
       <div className="mt-6 grid gap-3 lg:hidden">
         {loading ? (
-          <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]">
+          <p className="rounded-2xl border border-white/10 bg-[#fffaf7] p-4 text-sm text-[#a8968d]">
             Cargando...
           </p>
         ) : reservas.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]">
+          <p className="rounded-2xl border border-white/10 bg-[#fffaf7] p-4 text-sm text-[#a8968d]">
             No hay reservas para los filtros seleccionados
           </p>
         ) : (
           reservas.map((reserva) => (
             <article
               key={reserva.id}
-              className="min-w-0 rounded-2xl border border-white/10 bg-[#111414]/70 p-4"
+              className="min-w-0 rounded-2xl border border-white/10 bg-[#ffffff]/70 p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="break-words text-base font-semibold text-white">
                     {reserva.cliente_nombre ?? "Cliente sin nombre"}
                   </h3>
-                  <p className="mt-1 break-words text-sm text-[#D6D6D6]">
+                  <p className="mt-1 break-words text-sm text-[#6d554b]">
                     {reserva.servicio_nombre ?? "Servicio sin nombre"}
                   </p>
                 </div>
@@ -361,13 +361,13 @@ export const AdminReservasSection = () => {
                 </span>
               </div>
 
-              <div className="mt-3 grid gap-1 text-sm text-[#D6D6D6]">
+              <div className="mt-3 grid gap-1 text-sm text-[#6d554b]">
                 <p>
                   {formatDate(reserva.fecha)} · {getReservaTimeRange(reserva)}
                 </p>
                 <p className="break-words">{getClienteEmail(reserva) || "Sin correo"}</p>
-                <p className="break-words text-[#A8A8A8]">
-                  {reserva.cliente_telefono ?? "Sin telefono"}
+                <p className="break-words text-[#a8968d]">
+                  {reserva.cliente_telefono ?? "Sin teléfono"}
                 </p>
               </div>
 
@@ -417,7 +417,7 @@ export const AdminReservasSection = () => {
       <div className="mt-6 hidden overflow-hidden rounded-2xl border border-white/10 lg:block">
         <div className="overflow-x-auto">
           <table className="min-w-[940px] w-full border-collapse text-left text-sm">
-            <thead className="bg-[#0B0F0F] text-xs uppercase tracking-[0.14em] text-[#8E8E8E]">
+            <thead className="bg-[#fffaf7] text-xs uppercase tracking-[0.14em] text-[#8e7a71]">
               <tr>
                 <th className="px-4 py-3">Cliente</th>
                 <th className="px-4 py-3">Servicio</th>
@@ -430,31 +430,31 @@ export const AdminReservasSection = () => {
             <tbody className="divide-y divide-white/10">
               {loading ? (
                 <tr>
-                  <td className="px-4 py-6 text-[#A8A8A8]" colSpan={6}>
+                  <td className="px-4 py-6 text-[#a8968d]" colSpan={6}>
                     Cargando...
                   </td>
                 </tr>
               ) : reservas.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-[#A8A8A8]" colSpan={6}>
+                  <td className="px-4 py-6 text-[#a8968d]" colSpan={6}>
                     No hay reservas para los filtros seleccionados
                   </td>
                 </tr>
               ) : (
                 reservas.map((reserva) => (
-                  <tr key={reserva.id} className="bg-[#111414]/50">
+                  <tr key={reserva.id} className="bg-[#ffffff]/50">
                     <td className="px-4 py-4">
                       <p className="font-semibold text-white">
                         {reserva.cliente_nombre ?? "Cliente sin nombre"}
                       </p>
-                      <p className="text-xs text-[#8E8E8E]">ID {reserva.id}</p>
+                      <p className="text-xs text-[#8e7a71]">ID {reserva.id}</p>
                     </td>
-                    <td className="px-4 py-4 text-[#D6D6D6]">
+                    <td className="px-4 py-4 text-[#6d554b]">
                       {reserva.servicio_nombre ?? "Servicio sin nombre"}
                     </td>
-                    <td className="px-4 py-4 text-[#D6D6D6]">
+                    <td className="px-4 py-4 text-[#6d554b]">
                       <p>{formatDate(reserva.fecha)}</p>
-                      <p className="text-xs text-[#8E8E8E]">
+                      <p className="text-xs text-[#8e7a71]">
                         {getReservaTimeRange(reserva)}
                       </p>
                     </td>
@@ -467,9 +467,9 @@ export const AdminReservasSection = () => {
                         {reserva.estado}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-[#D6D6D6]">
+                    <td className="px-4 py-4 text-[#6d554b]">
                       <p>{getClienteEmail(reserva) || "Sin correo"}</p>
-                      <p className="text-xs text-[#8E8E8E]">
+                      <p className="text-xs text-[#8e7a71]">
                         {reserva.cliente_telefono ?? "Sin teléfono"}
                       </p>
                     </td>
@@ -518,7 +518,7 @@ export const AdminReservasSection = () => {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 text-sm text-[#A8A8A8] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div className="mt-4 flex flex-col gap-3 text-sm text-[#a8968d] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <span>
           Página {pagination.page} de {pagination.totalPages} · {pagination.total} registros
         </span>
@@ -569,10 +569,10 @@ export const AdminReservasSection = () => {
           <div className="premium-card min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <h3 className="text-xl font-semibold text-[#00D1C1]">
+                <h3 className="text-xl font-semibold text-[#c69a86]">
                   Reserva #{selectedReserva.id}
                 </h3>
-                <p className="mt-1 break-words text-sm text-[#D6D6D6]">
+                <p className="mt-1 break-words text-sm text-[#6d554b]">
                   {selectedReserva.cliente_nombre} · {selectedReserva.servicio_nombre}
                 </p>
               </div>
@@ -590,9 +590,9 @@ export const AdminReservasSection = () => {
             </div>
 
             {detailLoading ? (
-              <p className="mt-4 text-sm text-[#A8A8A8]">Cargando detalle...</p>
+              <p className="mt-4 text-sm text-[#a8968d]">Cargando detalle...</p>
             ) : (
-              <div className="mt-5 grid gap-3 break-words text-sm text-[#D6D6D6]">
+              <div className="mt-5 grid gap-3 break-words text-sm text-[#6d554b]">
                 <p>Fecha: {formatDate(selectedReserva.fecha)}</p>
                 <p>Hora: {getReservaTimeRange(selectedReserva)}</p>
                 <p>
@@ -619,7 +619,7 @@ export const AdminReservasSection = () => {
             {!actionMode ? (
               <div>
                 <div className="flex items-center gap-2">
-                  <CalendarClock className="h-5 w-5 text-[#00D1C1]" />
+                  <CalendarClock className="h-5 w-5 text-[#c69a86]" />
                   <h3 className="text-xl font-semibold text-white">
                     Acciones de reserva
                   </h3>
@@ -664,7 +664,7 @@ export const AdminReservasSection = () => {
                           estado: event.target.value,
                         }))
                       }
-                      className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
+                      className="h-11 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70"
                     >
                       {ESTADOS_RESERVA.map((estado) => (
                         <option key={estado} value={estado}>
@@ -691,7 +691,7 @@ export const AdminReservasSection = () => {
                 <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
                   <Button
                     type="submit"
-                    className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                    className="rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
                     disabled={saving}
                   >
                     {saving ? "Guardando..." : "Confirmar"}
@@ -764,7 +764,7 @@ export const AdminReservasSection = () => {
                 <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
                   <Button
                     type="submit"
-                    className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                    className="rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
                     disabled={saving}
                   >
                     {saving ? "Guardando..." : "Guardar reagendamiento"}

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -162,11 +162,11 @@ export const AdminInstagramSection = () => {
   };
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-[#121212]/90 p-6">
+    <section className="rounded-3xl border border-white/10 bg-[#ffffff]/90 p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="premium-section-title text-3xl font-semibold">Instagram</h2>
-          <p className="mt-1 text-sm text-[#8E8E8E]">
+          <p className="mt-1 text-sm text-[#8e7a71]">
             Pega enlaces de <b>post</b> o <b>reel</b>. Si Instagram bloquea el
             embed, la web mostrará un botón para abrirlo.
           </p>
@@ -187,7 +187,7 @@ export const AdminInstagramSection = () => {
               placeholder="https://www.instagram.com/p/... o https://www.instagram.com/reel/..."
               required
             />
-            <p className="text-xs text-[#8E8E8E]">
+            <p className="text-xs text-[#8e7a71]">
               Tip: no pegues el link del perfil (ej: instagram.com/cquezadaskin/)
               porque no se embebe.
             </p>
@@ -205,7 +205,7 @@ export const AdminInstagramSection = () => {
             />
           </div>
 
-          <label className="mt-8 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+          <label className="mt-8 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
             <input
               type="checkbox"
               checked={form.activo}
@@ -240,14 +240,14 @@ export const AdminInstagramSection = () => {
       </form>
 
       <div className="mt-8 grid gap-3">
-        <h3 className="text-lg font-semibold text-[#00D1C1]">
+        <h3 className="text-lg font-semibold text-[#c69a86]">
           Posts existentes
         </h3>
 
         {loading ? (
-          <p className="text-sm text-[#8E8E8E]">Cargando posts...</p>
+          <p className="text-sm text-[#8e7a71]">Cargando posts...</p>
         ) : posts.length === 0 ? (
-          <p className="text-sm text-[#8E8E8E]">Sin posts.</p>
+          <p className="text-sm text-[#8e7a71]">Sin posts.</p>
         ) : (
           posts.map((post) => (
             <div
@@ -255,10 +255,10 @@ export const AdminInstagramSection = () => {
               className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 p-3"
             >
               <div className="min-w-0">
-                <p className="font-medium text-[#00D1C1]">
+                <p className="font-medium text-[#c69a86]">
                   Orden {post.orden} | {post.activo ? "Activo" : "Inactivo"}
                 </p>
-                <p className="text-xs text-[#8E8E8E] break-all">
+                <p className="text-xs text-[#8e7a71] break-all">
                   {post.embed_url}
                 </p>
               </div>
@@ -327,14 +327,14 @@ const PublicInstagramSection = () => {
   }, []);
 
   return (
-    <section className="rounded-2xl border border-[#00D1C1]/20 bg-[#0B0F0F]/92 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.48),0_0_54px_rgba(0,209,193,0.10)] backdrop-blur sm:rounded-[2rem] sm:p-7">
+    <section className="rounded-2xl border border-[#c69a86]/20 bg-[#fffaf7]/92 p-4 shadow-[0_24px_90px_rgba(0,0,0,0.48),0_0_54px_rgba(198,154,134,0.10)] backdrop-blur sm:rounded-[2rem] sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="premium-kicker">Contenido real</p>
           <h2 className="premium-section-title mt-2 text-3xl font-semibold sm:text-5xl">
             Instagram
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#D6D6D6] sm:text-base">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#6d554b] sm:text-base">
             Tratamientos, resultados y contenido real desde nuestro estudio.
           </p>
         </div>
@@ -354,7 +354,7 @@ const PublicInstagramSection = () => {
           {[0, 1, 2].map((item) => (
             <div
               key={item}
-              className="min-h-[360px] animate-pulse rounded-2xl border border-white/10 bg-[#111414]/80 sm:min-h-[520px] sm:rounded-3xl"
+              className="min-h-[360px] animate-pulse rounded-2xl border border-white/10 bg-[#ffffff]/80 sm:min-h-[520px] sm:rounded-3xl"
             />
           ))}
         </div>
@@ -364,7 +364,7 @@ const PublicInstagramSection = () => {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : posts.length === 0 ? (
-        <p className="mt-4 text-sm text-[#8E8E8E]">No hay posts activos.</p>
+        <p className="mt-4 text-sm text-[#8e7a71]">No hay posts activos.</p>
       ) : (
         <motion.div
           className="mt-8 grid grid-cols-1 items-start gap-6 md:grid-cols-2 xl:grid-cols-3 xl:gap-8"
@@ -390,7 +390,7 @@ function InstagramPostCard({ post }: { post: InstagramPost }) {
 
   return (
     <motion.article
-      className="group overflow-hidden rounded-2xl border border-white/10 bg-[#111414]/88 shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition-colors duration-300 hover:border-[#00D1C1]/55 hover:shadow-[0_0_46px_rgba(0,209,193,0.16)] sm:rounded-3xl"
+      className="group overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff]/88 shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition-colors duration-300 hover:border-[#c69a86]/55 hover:shadow-[0_0_46px_rgba(198,154,134,0.16)] sm:rounded-3xl"
       variants={{
         hidden: { opacity: 0, y: 18 },
         visible: {
@@ -404,14 +404,14 @@ function InstagramPostCard({ post }: { post: InstagramPost }) {
     >
       <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#00D1C1]/35 bg-[#00D1C1]/10 text-[#00D1C1] shadow-[0_0_24px_rgba(0,209,193,0.14)]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#c69a86]/35 bg-[#c69a86]/10 text-[#c69a86] shadow-[0_0_24px_rgba(198,154,134,0.14)]">
             <Instagram className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">
               {siteConfig.instagramHandle}
             </p>
-            <p className="text-xs text-[#A8A8A8]">
+            <p className="text-xs text-[#a8968d]">
               {kind} desde el estudio
             </p>
           </div>
@@ -428,22 +428,22 @@ function InstagramPostCard({ post }: { post: InstagramPost }) {
         </Button>
       </div>
 
-      <div className="relative bg-[#050505]">
+      <div className="relative bg-[#fffaf7]">
         {isReel ? (
-          <div className="pointer-events-none absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-[#050505]/70 text-white shadow-[0_0_24px_rgba(0,0,0,0.35)] backdrop-blur">
+          <div className="pointer-events-none absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-[#fffaf7]/70 text-white shadow-[0_0_24px_rgba(0,0,0,0.35)] backdrop-blur">
             <Play className="ml-0.5 h-4 w-4 fill-current" />
           </div>
         ) : null}
         <div className="mx-auto aspect-[4/5] w-full overflow-hidden">
           <iframe
             src={toEmbedUrl(post.embed_url)}
-            title={`Instagram ${kind} CQuezadaSkin`}
+            title={`Instagram ${kind} CQUEZADASKIN`}
             width="100%"
             height="100%"
             frameBorder="0"
             scrolling="no"
             allowTransparency
-            className="h-full w-full bg-[#050505]"
+            className="h-full w-full bg-[#fffaf7]"
             style={{ border: 0, overflow: "hidden" }}
           />
         </div>
@@ -453,13 +453,13 @@ function InstagramPostCard({ post }: { post: InstagramPost }) {
       <div className="flex items-center justify-between gap-3 p-4">
         <div>
           <p className="text-sm font-semibold text-white">
-            CQuezadaSkin
+            CQUEZADASKIN
           </p>
-          <p className="text-xs text-[#A8A8A8]">
+          <p className="text-xs text-[#a8968d]">
             Explora resultados, tips y momentos reales.
           </p>
         </div>
-        <span className="rounded-full border border-[#00D1C1]/30 bg-[#00D1C1]/10 px-3 py-1 text-xs font-semibold text-[#20E0D0]">
+        <span className="rounded-full border border-[#c69a86]/30 bg-[#c69a86]/10 px-3 py-1 text-xs font-semibold text-[#e8c2b5]">
           {kind}
         </span>
       </div>
@@ -472,10 +472,10 @@ const EventPage = () => {
     <main className="mx-auto w-[92%] max-w-7xl py-10 sm:py-14">
       <div className="mb-8 max-w-3xl">
         <h1 className="premium-heading text-4xl font-semibold text-white min-[390px]:text-5xl sm:text-6xl">
-          CQuezada<span className="text-[#00D1C1]">Skin</span> en Instagram
+          <span className="brand-wordmark">CQUEZADASKIN</span> en Instagram
         </h1>
-        <p className="mt-3 text-base leading-relaxed text-[#D6D6D6] sm:text-lg">
-          Explora resultados, tips y momentos reales de CQuezadaSkin.
+        <p className="mt-3 text-base leading-relaxed text-[#6d554b] sm:text-lg">
+          Explora resultados, tips y momentos reales de CQUEZADASKIN.
         </p>
       </div>
 

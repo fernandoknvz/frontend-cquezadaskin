@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Components
@@ -97,12 +97,12 @@ function ClickableCard({
   return (
     <Card
       className={[
-        "rounded-2xl border-white/10 bg-[#121212]/80 backdrop-blur sm:rounded-3xl",
+        "rounded-2xl border-white/10 bg-[#ffffff]/80 backdrop-blur sm:rounded-3xl",
         "transition-all duration-300",
         disabled
           ? "opacity-60 pointer-events-none"
           : "cursor-pointer hover:shadow-lg hover:-translate-y-1",
-        "group focus-within:ring-2 focus-within:ring-[#00D1C1]/30",
+        "group focus-within:ring-2 focus-within:ring-[#c69a86]/30",
       ].join(" ")}
       role="button"
       tabIndex={0}
@@ -115,7 +115,7 @@ function ClickableCard({
     >
       <CardHeader>
         <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-2xl shadow-sm bg-gradient-to-br from-[#181818] to-[#1F1F1F] flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="h-12 w-12 rounded-2xl shadow-sm bg-gradient-to-br from-[#f8eee8] to-[#1F1F1F] flex items-center justify-center group-hover:scale-110 transition-transform">
             {icon}
           </div>
           <div className="flex-1 min-w-0">
@@ -126,7 +126,7 @@ function ClickableCard({
       </CardHeader>
 
       <CardContent>
-        <ul className="space-y-2 text-sm text-[#B8B8B8]">
+        <ul className="space-y-2 text-sm text-[#7d6a61]">
           {bullets.map((b) => (
             <li key={b} className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -155,7 +155,7 @@ const ModeSelector: React.FC<{
     <ClickableCard
       title="Consultas especiales"
       description="Consultas sobre tratamientos, evaluaciones o disponibilidad especial."
-      icon={<Building2 className="h-6 w-6 text-[#00D1C1]" />}
+      icon={<Building2 className="h-6 w-6 text-[#c69a86]" />}
       bullets={[
         "Orientación personalizada",
         "Respuesta cercana",
@@ -169,7 +169,7 @@ const ModeSelector: React.FC<{
     <ClickableCard
       title="Agenda online"
       description="Reserva limpiezas faciales, microneedling y tratamientos corporales."
-      icon={<User className="h-6 w-6 text-[#00D1C1]" />}
+      icon={<User className="h-6 w-6 text-[#c69a86]" />}
       bullets={["Facial y corporal", `Home studio en ${siteConfig.address}`, "Horarios disponibles"]}
       cta="Agendar sesión"
       onClick={onGoAgendar}
@@ -213,7 +213,7 @@ const CompanyForm: React.FC<{
   };
 
   return (
-    <Card className="mt-8 rounded-2xl border-white/10 bg-[#121212]/90 backdrop-blur sm:mt-10 sm:rounded-3xl">
+    <Card className="mt-8 rounded-2xl border-white/10 bg-[#ffffff]/90 backdrop-blur sm:mt-10 sm:rounded-3xl">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -222,8 +222,8 @@ const CompanyForm: React.FC<{
               Completa el formulario y te contactaremos para coordinar los detalles.
             </CardDescription>
           </div>
-          <div className="h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-br from-[#181818] to-[#1F1F1F] flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-[#00D1C1]" />
+          <div className="h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-br from-[#f8eee8] to-[#1F1F1F] flex items-center justify-center">
+            <Building2 className="h-6 w-6 text-[#c69a86]" />
           </div>
         </div>
       </CardHeader>
@@ -293,7 +293,7 @@ const CompanyForm: React.FC<{
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleChange("phone")(e.target.value)}
-                placeholder="+56 9 1234 5678"
+                placeholder="+56 9 4962 8081"
                 className="rounded-2xl border-white/10 h-12"
                 disabled={isLoading}
               />
@@ -310,14 +310,14 @@ const CompanyForm: React.FC<{
               id="message"
               value={formData.message}
               onChange={(e) => handleChange("message")(e.target.value)}
-              placeholder="Cuéntanos qué tratamiento buscas, fecha tentativa o cualquier duda que tengas."
+              placeholder="CuÉntanos quÉ tratamiento buscas, fecha tentativa o cualquier duda que tengas."
               className="rounded-2xl border-white/10 min-h-[140px] resize-none"
               disabled={isLoading}
             />
           </div>
 
           <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-[#B8B8B8] space-y-1">
+            <div className="text-sm text-[#7d6a61] space-y-1">
               <p className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 Respuesta en 24-48 horas hábiles
@@ -330,7 +330,7 @@ const CompanyForm: React.FC<{
 
             <Button
               type="submit"
-              className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#00D1C1] to-[#20E0D0] px-8 shadow-sm hover:from-[#20E0D0] hover:to-[#35CFC3] sm:w-auto"
+              className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#c69a86] to-[#e8c2b5] px-8 shadow-sm hover:from-[#e8c2b5] hover:to-[#f1d5cc] sm:w-auto"
               disabled={!canSubmit || isLoading}
             >
               {isLoading ? (
@@ -404,9 +404,9 @@ export const ContactPage: React.FC = () => {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <header className="max-w-2xl">
             <h1 className="text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
-              Contacto CQuezadaSkin
+              Contacto <span className="brand-wordmark">CQUEZADASKIN</span>
             </h1>
-            <p className="mt-3 text-lg text-[#C9C9C9]">
+            <p className="mt-3 text-lg text-[#6d554b]">
               Agenda tu tratamiento o envíanos una consulta. Estamos aquí para ayudarte.
             </p>
           </header>
@@ -414,7 +414,7 @@ export const ContactPage: React.FC = () => {
           {mode && (
             <Button
               variant="outline"
-              className="rounded-2xl border-white/10 bg-[#121212]/90 hover:bg-[#121212] shadow-sm w-full sm:w-auto"
+              className="rounded-2xl border-white/10 bg-[#ffffff]/90 hover:bg-[#ffffff] shadow-sm w-full sm:w-auto"
               onClick={resetMode}
               disabled={isSubmitting}
             >
@@ -451,17 +451,17 @@ export const ContactPage: React.FC = () => {
             )}
 
             {/* Footer note */}
-            <div className="mt-14 text-center text-sm text-[#8E8E8E]">
+            <div className="mt-14 text-center text-sm text-[#8e7a71]">
               <p>
-                ¿Necesitas ayuda? Escrí­benos a{" "}
+                ¿Necesitas ayuda? Escríbenos a{" "}
                 <a
                 href={`mailto:${siteConfig.email}`}
-                  className="text-[#00D1C1] hover:underline"
+                  className="text-[#c69a86] hover:underline"
                 >
                   {siteConfig.email}
                 </a>{" "}
                 o llama al{" "}
-                <a href={siteConfig.phoneHref} className="text-[#00D1C1] hover:underline">
+                <a href={siteConfig.phoneHref} className="text-[#c69a86] hover:underline">
                   {siteConfig.phone}
                 </a>
               </p>

@@ -93,7 +93,7 @@ export const mapValoracionPublica = (item: unknown): ValoracionPublica => {
     id: toStringOrNull(record.id) ?? "",
     nombre_mostrado:
       toStringOrNull(record.nombre_mostrado ?? record.nombre ?? record.name) ??
-      "Cliente CQuezadaSkin",
+      "Cliente CQUEZADASKIN",
     comentario: toStringOrNull(record.comentario ?? record.comment) ?? "",
     puntuacion: Math.min(
       5,
@@ -122,7 +122,7 @@ export const mapValoracionCliente = (item: unknown): ValoracionCliente => {
     cita_id: toStringOrNull(record.cita_id),
     nombre_mostrado:
       toStringOrNull(record.nombre_mostrado ?? record.nombre ?? record.name) ??
-      "Cliente CQuezadaSkin",
+      "Cliente CQUEZADASKIN",
     comentario: toStringOrNull(record.comentario ?? record.comment) ?? "",
     puntuacion: Math.min(
       5,

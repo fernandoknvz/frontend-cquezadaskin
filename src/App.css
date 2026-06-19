@@ -52,24 +52,34 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #050505;
-  --foreground: #f5f5f5;
-  --card: #111414;
-  --card-foreground: #ffffff;
-  --popover: #111414;
-  --popover-foreground: #ffffff;
-  --primary: #00d1c1;
-  --primary-foreground: #03110f;
-  --secondary: #151a1a;
-  --secondary-foreground: #ffffff;
-  --muted: #151a1a;
-  --muted-foreground: #d6d6d6;
-  --accent: #082522;
-  --accent-foreground: #ffffff;
+  --brand-900: #3f3e43;
+  --brand-800: #605e66;
+  --brand-700: #7e7c84;
+  --brand-600: #9d9ba3;
+  --brand-500: #bdbbc3;
+  --brand-100: #dedce2;
+  --brand-050: #f3f2f3;
+  --brand-white: #ffffff;
+  --shadow-soft: 0 18px 54px rgba(63, 62, 67, 0.1);
+  --shadow-panel: 0 26px 86px rgba(63, 62, 67, 0.14);
+  --background: #f3f2f3;
+  --foreground: #3f3e43;
+  --card: #ffffff;
+  --card-foreground: #3f3e43;
+  --popover: #ffffff;
+  --popover-foreground: #3f3e43;
+  --primary: #605e66;
+  --primary-foreground: #ffffff;
+  --secondary: #dedce2;
+  --secondary-foreground: #3f3e43;
+  --muted: #eeedf0;
+  --muted-foreground: #7e7c84;
+  --accent: #bdbbc3;
+  --accent-foreground: #3f3e43;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.16);
-  --ring: #00d1c1;
+  --border: rgba(96, 94, 102, 0.2);
+  --input: rgba(96, 94, 102, 0.24);
+  --ring: #7e7c84;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -126,54 +136,226 @@
   body {
     @apply bg-background text-foreground;
     background:
-      radial-gradient(circle at 76% 8%, rgba(0, 209, 193, 0.16), transparent 30rem),
-      radial-gradient(circle at 12% 22%, rgba(32, 224, 208, 0.08), transparent 26rem),
-      linear-gradient(180deg, #050505 0%, #0a0a0a 48%, #050505 100%);
+      linear-gradient(180deg, #f7f6f7 0%, #eeedf0 48%, #fbfbfb 100%);
   }
 }
 
 @layer components {
   .premium-panel {
-    @apply border border-white/10 bg-[#111414]/95 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur;
+    @apply border border-[var(--brand-100)] bg-white/95 text-[var(--brand-900)] shadow-[var(--shadow-panel)] backdrop-blur;
   }
 
   .premium-card {
-    @apply min-w-0 break-words border border-white/10 bg-[#151A1A]/85 text-white shadow-[0_18px_60px_rgba(0,0,0,0.35)] transition;
+    @apply min-w-0 break-words border border-[var(--brand-100)] bg-white/90 text-[var(--brand-900)] shadow-[var(--shadow-soft)] transition;
   }
 
   .premium-card-hover {
-    @apply hover:border-[#00D1C1]/55 hover:shadow-[0_0_40px_rgba(0,209,193,0.16)];
+    @apply hover:border-[var(--brand-700)]/55 hover:shadow-[0_22px_70px_rgba(63,62,67,0.16)];
   }
 
   .premium-kicker {
-    @apply text-sm font-semibold uppercase tracking-[0.18em] text-[#00D1C1];
+    @apply text-sm font-semibold uppercase tracking-[0.18em] text-[var(--brand-700)];
   }
 
   .premium-muted {
-    @apply text-[#D6D6D6];
+    @apply text-[var(--brand-700)];
   }
 
   .premium-heading {
-    color: #ffffff;
+    color: var(--brand-900);
     font-family: "Cormorant Garamond", Georgia, serif;
     letter-spacing: 0;
   }
 
   .premium-section-title {
-    color: #00D1C1;
+    color: var(--brand-800);
     font-family: "Cormorant Garamond", Georgia, serif;
     letter-spacing: 0;
   }
 
   .premium-focus {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D1C1]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505];
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-700)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-050)];
   }
 
   .premium-input {
-    @apply border-white/10 bg-[#0B0F0F] text-white placeholder:text-[#A8A8A8] focus-visible:border-[#00D1C1]/70 focus-visible:ring-[#00D1C1]/30;
+    @apply border-[var(--brand-100)] bg-white text-[var(--brand-900)] placeholder:text-[var(--brand-600)] focus-visible:border-[var(--brand-700)]/70 focus-visible:ring-[var(--brand-700)]/30;
   }
 
   .touch-target {
     @apply min-h-11;
+  }
+
+  .text-white,
+  [class*="text-[#F5F5F5]"] {
+    color: #3f3e43 !important;
+  }
+
+  [class*="text-[#CFFCF8]"],
+  [class*="text-[#D6D6D6]"],
+  [class*="text-[#C9C9C9]"],
+  [class*="text-[#B8B8B8]"],
+  [class*="text-[#A8A8A8]"],
+  [class*="text-[#8E8E8E]"] {
+    color: #7e7c84 !important;
+  }
+
+  [class*="text-[#00D1C1]"],
+  [class*="text-[#20E0D0]"],
+  [class*="fill-[#00D1C1]"] {
+    color: #605e66 !important;
+    fill: #605e66 !important;
+  }
+
+  [class*="bg-[#050505]"],
+  [class*="bg-[#0A0F10]"],
+  [class*="bg-[#0B0F0F]"],
+  [class*="bg-[#111111]"],
+  [class*="bg-[#111414]"],
+  [class*="bg-[#121212]"],
+  [class*="bg-[#151A1A]"],
+  [class*="bg-[#181818]"],
+  [class*="bg-[#061817]"] {
+    background-color: rgba(255, 255, 255, 0.92) !important;
+  }
+
+  [class*="bg-[#00D1C1]"],
+  [class*="from-[#00D1C1]"],
+  [class*="to-[#20E0D0]"] {
+    background-color: #605e66 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+  }
+
+  [class*="bg-[#00D1C1]/10"],
+  [class*="bg-[#00D1C1]/12"] {
+    background-color: #eeedf0 !important;
+  }
+
+  [class*="hover:bg-[#20E0D0]"]:hover,
+  [class*="hover:from-[#20E0D0]"]:hover,
+  [class*="hover:to-[#35CFC3]"]:hover,
+  [class*="hover:bg-[#00D1C1]/10"]:hover {
+    background-color: #7e7c84 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+  }
+
+  [class*="border-white/10"],
+  [class*="border-white/15"],
+  [class*="border-white/20"],
+  [class*="border-[#00D1C1]"] {
+    border-color: #dedce2 !important;
+  }
+
+  [class*="focus:border-[#00D1C1]"]:focus,
+  [class*="focus-visible:border-[#00D1C1]"]:focus-visible {
+    border-color: #7e7c84 !important;
+  }
+
+  [class*="focus:ring-[#00D1C1]"]:focus,
+  [class*="focus-visible:ring-[#00D1C1]"]:focus-visible,
+  [class*="focus-within:ring-[#00D1C1]"]:focus-within {
+    --tw-ring-color: rgba(126, 124, 132, 0.35) !important;
+  }
+
+  [class*="accent-[#00D1C1]"] {
+    accent-color: #605e66 !important;
+  }
+
+  [class*="shadow-[0_0_"],
+  [class*="rgba(0,209,193"] {
+    box-shadow: 0 18px 50px rgba(63, 62, 67, 0.1) !important;
+  }
+
+  [class*="bg-[radial-gradient"],
+  [class*="bg-gradient-to-br"],
+  [class*="from-slate"],
+  [class*="to-slate"] {
+    background-image: linear-gradient(135deg, #f7f6f7 0%, #eeedf0 100%) !important;
+  }
+
+  [class*="text-[#3b302c]"],
+  [class*="text-[#4b3932]"] {
+    color: #3f3e43 !important;
+  }
+
+  [class*="text-[#5f4a42]"],
+  [class*="text-[#6d554b]"],
+  [class*="text-[#7d6a61]"],
+  [class*="text-[#8e7a71]"],
+  [class*="text-[#a8968d]"] {
+    color: #7e7c84 !important;
+  }
+
+  [class*="text-[#9b6f5f]"],
+  [class*="text-[#b98975]"],
+  [class*="text-[#c69a86]"],
+  [class*="text-[#e8c2b5]"],
+  [class*="fill-[#b98975]"],
+  [class*="fill-[#c69a86]"] {
+    color: #605e66 !important;
+    fill: #605e66 !important;
+  }
+
+  [class*="bg-[#fffaf7]"],
+  [class*="bg-[#fbf0ea]"],
+  [class*="bg-[#f8eee8]"] {
+    background-color: #f3f2f3 !important;
+  }
+
+  [class*="bg-[#ead3c7]"],
+  [class*="bg-[#f1d5cc]"],
+  [class*="bg-[#c69a86]"] {
+    background-color: #605e66 !important;
+    color: #ffffff !important;
+  }
+
+  [class*="bg-[#c69a86]/10"],
+  [class*="bg-[#c69a86]/12"],
+  [class*="bg-[#f1d5cc]/"] {
+    background-color: rgba(222, 220, 226, 0.55) !important;
+    color: #3f3e43 !important;
+  }
+
+  [class*="hover:bg-[#e8c2b5]"]:hover,
+  [class*="hover:bg-[#f8eee8]"]:hover,
+  [class*="hover:from-[#e8c2b5]"]:hover,
+  [class*="hover:to-[#f1d5cc]"]:hover {
+    background-color: #7e7c84 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+  }
+
+  [class*="border-[#ead3c7]"],
+  [class*="border-[#d9b8a8]"],
+  [class*="border-[#e2c3b6]"],
+  [class*="border-[#c69a86]"] {
+    border-color: #dedce2 !important;
+  }
+
+  [class*="hover:border-[#b98975]"]:hover,
+  [class*="hover:border-[#c69a86]"]:hover {
+    border-color: #7e7c84 !important;
+  }
+
+  [class*="focus-visible:ring-[#c69a86]"],
+  [class*="focus:ring-[#c69a86]"],
+  [class*="focus-within:ring-[#c69a86]"] {
+    --tw-ring-color: rgba(126, 124, 132, 0.35) !important;
+  }
+
+  [class*="focus-visible:border-[#c69a86]"],
+  [class*="focus:border-[#c69a86]"],
+  [class*="focus-within:border-[#c69a86]"] {
+    border-color: #7e7c84 !important;
+  }
+
+  [class*="accent-[#c69a86]"] {
+    accent-color: #605e66 !important;
+  }
+
+  [class*="bg-[#25D366]"] {
+    background-color: #25d366 !important;
+    color: #ffffff !important;
   }
 }

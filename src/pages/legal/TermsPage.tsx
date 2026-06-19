@@ -1,4 +1,4 @@
-﻿import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -18,7 +18,7 @@ export default function TermsPage() {
         <Button
           type="button"
           variant="outline"
-          className="rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#121212]/90 hover:bg-[#121212]"
+          className="rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#ffffff]/90 hover:bg-[#ffffff]"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -29,12 +29,12 @@ export default function TermsPage() {
           <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">
             Términos y Condiciones
           </h1>
-          <p className="mt-3 text-lg text-[#C9C9C9]">
+          <p className="mt-3 text-lg text-[#6d554b]">
             Reglas de uso del sitio y del sistema de reservas.
           </p>
         </header>
 
-        <Card className="mt-10 rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#121212]/90 shadow-sm">
+        <Card className="mt-10 rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#ffffff]/90 shadow-sm">
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
@@ -43,16 +43,16 @@ export default function TermsPage() {
                   Ultima actualizacion: marzo 2026
                 </CardDescription>
               </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#181818]">
-                <FileText className="h-6 w-6 text-[#00D1C1]" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f8eee8]">
+                <FileText className="h-6 w-6 text-[#c69a86]" />
               </div>
             </div>
           </CardHeader>
 
-          <CardContent className="max-w-none space-y-4 text-[#C9C9C9] [&_a]:text-[#00D1C1] [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-white [&_li]:ml-5 [&_li]:list-disc [&_strong]:text-white">
+          <CardContent className="max-w-none space-y-4 text-[#6d554b] [&_a]:text-[#c69a86] [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-white [&_li]:ml-5 [&_li]:list-disc [&_strong]:text-white">
             <h2>1. Uso del sitio</h2>
             <p>
-              El sitio web de CQuezadaSkin permite a los usuarios agendar
+              El sitio web de CQUEZADASKIN permite a los usuarios agendar
               tratamientos faciales y corporales, solicitar servicios y obtener
               informacion sobre las atenciones ofrecidas.
             </p>
@@ -65,12 +65,12 @@ export default function TermsPage() {
             <p>
               Una vez enviada la solicitud, el usuario recibirá una confirmación
               de recepcion. La reserva quedara en estado solicitada y sera
-              posteriormente confirmada por CQuezadaSkin.
+              posteriormente confirmada por CQUEZADASKIN.
             </p>
 
             <h2>3. Confirmacion y contacto</h2>
             <p>
-              CQuezadaSkin podra contactar al cliente via correo electronico,
+              CQUEZADASKIN podra contactar al cliente via correo electronico,
               teléfono o WhatsApp para coordinar detalles del servicio. La
               confirmación final se realizará de forma manual.
             </p>
@@ -84,7 +84,7 @@ export default function TermsPage() {
             <h2>5. Pagos</h2>
             <p>
               El sitio web no procesa pagos en linea. Las condiciones de pago
-              seran coordinadas directamente entre el cliente y CQuezadaSkin.
+              seran coordinadas directamente entre el cliente y CQUEZADASKIN.
             </p>
 
             <h2>6. Responsabilidad del usuario</h2>
@@ -97,23 +97,23 @@ export default function TermsPage() {
             <h2>7. Lugar de atencion</h2>
             <p>
               Los servicios se realizan en home studio en Quilpué, salvo que
-              CQuezadaSkin indique expresamente otra modalidad.
+              CQUEZADASKIN indique expresamente otra modalidad.
             </p>
 
             <h2>8. Modificaciones</h2>
             <p>
-              CQuezadaSkin se reserva el derecho de modificar estos terminos en
+              CQUEZADASKIN se reserva el derecho de modificar estos términos en
               cualquier momento. Las modificaciones seran publicadas en el sitio
               web.
             </p>
 
             <h2>9. Legislacion aplicable</h2>
             <p>
-              Estos terminos se rigen por la legislacion vigente en la Republica
+              Estos términos se rigen por la legislación vigente en la República
               de Chile.
             </p>
 
-            <p className="mt-8 text-sm text-[#B8B8B8]">
+            <p className="mt-8 text-sm text-[#7d6a61]">
               Tambien puedes revisar la{" "}
               <Link to="/privacidad">Política de Privacidad</Link>.
             </p>

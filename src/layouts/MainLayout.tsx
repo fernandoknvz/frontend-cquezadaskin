@@ -12,11 +12,11 @@ export const MainLayout = () => {
       <div className="min-h-screen flex flex-col">
         <ScrollToTop />
 
-        <header className="sticky top-0 z-50 w-full">
+        <header className="fixed inset-x-0 top-0 z-50 w-full">
           <Navbar />
         </header>
 
-        <main id="main-content" className="flex-1">
+        <main id="main-content" className="flex-1 pt-16">
           <div className="w-full 2xl:w-[80%] 2xl:px-0 2xl:mx-auto">
             <PageTransition />
           </div>

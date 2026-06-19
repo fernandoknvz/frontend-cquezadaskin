@@ -1,6 +1,6 @@
 import { resolveApiAssetUrl } from "@/services/apiClient";
 
-export const DEFAULT_SERVICE_IMAGE = "/img/banner.jpg";
+export const DEFAULT_SERVICE_IMAGE = "/img/oficial_hero.jpeg";
 
 export const resolveImageUrl = (
   imagenUrl?: string | null,

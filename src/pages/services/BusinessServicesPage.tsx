@@ -1,12 +1,13 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, CalendarDays, MessageCircle, Building2, Users, Sparkles } from "lucide-react";
+import { Check, CalendarCheck2, CalendarDays, MessageCircle, Building2, Users, Sparkles } from "lucide-react";
 
-import skincareHeroImg from "@/assets/cquezadaskin-hero.png";
 import { listServices, type ServiceItem } from "@/services/servicesApi";
 import { listServiceCategories, type ServiceCategory } from "@/services/categoriesApi";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
+
+const skincareHeroImg = "/img/oficial_hero.jpeg";
 
 type Service = {
   title: string; // etiqueta (Tratamiento / Plan / Beneficio)
@@ -168,7 +169,7 @@ export const BusinessServicesPage: React.FC = () => {
             <h1 className="mb-4 text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
               Atenciones especiales
             </h1>
-            <p className="mt-2 text-base text-[#C9C9C9] sm:text-lg">
+            <p className="mt-2 text-base text-[#6d554b] sm:text-lg">
               Skincare para grupos, activaciones y beneficios para colaboradores. Cotiza por jornada,
               cantidad de personas y tipo de tratamiento.
             </p>
@@ -189,13 +190,13 @@ export const BusinessServicesPage: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-12 rounded-2xl border border-white/10 bg-[#121212]/80 p-4 text-sm text-[#C9C9C9] sm:rounded-3xl sm:p-6">
+          <div className="mt-12 rounded-2xl border border-white/10 bg-[#ffffff]/80 p-4 text-sm text-[#6d554b] sm:rounded-3xl sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
               <div
                 className="mt-0.5 rounded-2xl p-2"
                 style={{ backgroundColor: "rgba(246,231,223,0.85)" }}
               >
-                <CalendarDays className="h-4 w-4" style={{ color: "#00D1C1" }} />
+                <CalendarDays className="h-4 w-4" style={{ color: "var(--brand-800)" }} />
               </div>
               <div>
                 <div className="font-semibold text-white">Cómo coordinamos</div>
@@ -207,7 +208,7 @@ export const BusinessServicesPage: React.FC = () => {
                   <Button
                     asChild
                     className="w-full rounded-2xl shadow-sm sm:w-auto"
-                    style={{ backgroundColor: "#00D1C1", color: "white" }}
+                    style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
                   >
                     <Link to="/empresas" className="gap-2">
                       <Building2 className="h-4 w-4" />
@@ -217,7 +218,7 @@ export const BusinessServicesPage: React.FC = () => {
                   <Button
                     asChild
                     variant="outline"
-                    className="w-full rounded-2xl border-white/10 bg-[#121212]/80 hover:bg-[#121212] sm:w-auto"
+                    className="w-full rounded-2xl border-white/10 bg-[#ffffff]/80 hover:bg-[#ffffff] sm:w-auto"
                   >
                     <Link to="/contacto" className="gap-2">
                       <MessageCircle className="h-4 w-4" />
@@ -324,7 +325,7 @@ function CategoryBlock({ category }: { category: Category }) {
 
         <div className="min-w-0">
           <h2 className="text-2xl font-semibold text-white">{category.name}</h2>
-          <p className="mt-1 text-[#C9C9C9] max-w-3xl">{category.description}</p>
+          <p className="mt-1 text-[#6d554b] max-w-3xl">{category.description}</p>
         </div>
       </div>
 
@@ -348,7 +349,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
     >
       {/* Imagen */}
       <div className="media relative">
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#121212]/75 shadow-[0_10px_30px_rgba(0,0,0,0.08)] sm:rounded-3xl">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff]/75 shadow-[0_10px_30px_rgba(0,0,0,0.08)] sm:rounded-3xl">
           <div className="aspect-[4/3] w-full">
             <img
               src={service.image}
@@ -370,7 +371,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
           className="pointer-events-none absolute -inset-6 -z-10 rounded-[2.5rem] blur-2xl opacity-50"
           style={{
             background:
-              "linear-gradient(135deg, rgba(201,130,97,0.28) 0%, rgba(232,163,147,0.22) 40%, rgba(164,165,141,0.22) 100%)",
+              "linear-gradient(135deg, rgba(96,94,102,0.22) 0%, rgba(157,155,163,0.2) 48%, rgba(222,220,226,0.3) 100%)",
           }}
         />
       </div>
@@ -388,13 +389,13 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
           {service.subtitle}
         </h3>
 
-        <p className="mt-3 text-[#C9C9C9] leading-relaxed">{service.description}</p>
+        <p className="mt-3 text-[#6d554b] leading-relaxed">{service.description}</p>
 
         {service.bullets.length > 0 ? (
           <ul className="mt-5 space-y-2">
             {service.bullets.map((b) => (
-              <li key={b} className="flex items-start gap-2 text-sm text-[#C9C9C9]">
-                <Check className="h-4 w-4 mt-0.5" style={{ color: "#00D1C1" }} />
+              <li key={b} className="flex items-start gap-2 text-sm text-[#6d554b]">
+                <Check className="h-4 w-4 mt-0.5" style={{ color: "var(--brand-800)" }} />
                 <span>{b}</span>
               </li>
             ))}
@@ -405,10 +406,10 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
           <Button
             asChild
             className="w-full rounded-2xl shadow-sm sm:w-auto"
-            style={{ backgroundColor: "#00D1C1", color: "white" }}
+            style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
           >
             <Link to={service.ctaPrimary.to} className="gap-2">
-              <CalendarDays className="h-4 w-4" />
+              <CalendarCheck2 className="h-4 w-4" />
               {service.ctaPrimary.label}
             </Link>
           </Button>
@@ -417,7 +418,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
             <Button
               asChild
               variant="outline"
-              className="w-full rounded-2xl border-white/10 bg-[#121212]/80 hover:bg-[#121212] sm:w-auto"
+              className="w-full rounded-2xl border-white/10 bg-[#ffffff]/80 hover:bg-[#ffffff] sm:w-auto"
             >
               <Link to={service.ctaSecondary.to} className="gap-2">
                 <MessageCircle className="h-4 w-4" />
@@ -427,7 +428,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
           )}
         </div>
 
-        <div className="mt-3 text-xs text-[#8E8E8E]">
+        <div className="mt-3 text-xs text-[#8e7a71]">
           * Horarios y disponibilidad pueden variar según agenda.
         </div>
       </div>
@@ -454,7 +455,7 @@ function mapServiceItemToCard(service: ServiceItem, context: "especiales" | "emp
     subtitle: service.subtitulo?.trim() || service.nombre,
     description: service.descripcion ?? "",
     bullets: service.beneficios ?? [],
-    image: resolveImageUrl(service.imagen_url, "/img/banner.jpg"),
+    image: resolveImageUrl(service.imagen_url, "/img/oficial_hero.jpeg"),
     ctaPrimary: { label, to },
     ctaSecondary:
       secondaryLabel && secondaryUrl ? { label: secondaryLabel, to: secondaryUrl } : undefined,

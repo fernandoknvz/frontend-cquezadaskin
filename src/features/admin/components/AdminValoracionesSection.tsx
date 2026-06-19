@@ -39,7 +39,7 @@ const normalizeEstado = (estado?: string | null) => {
 const getEstadoClass = (estado?: string | null) => {
   const normalized = normalizeEstado(estado);
   if (normalized === "aprobada") {
-    return "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+    return "border-[#c69a86]/30 bg-[#c69a86]/10 text-[#e8c2b5]";
   }
   if (normalized === "rechazada") {
     return "border-red-400/30 bg-red-500/10 text-red-200";
@@ -306,7 +306,7 @@ export const AdminValoracionesSection = () => {
           <h2 className="premium-section-title text-3xl font-semibold">
             Valoraciones
           </h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">
+          <p className="mt-1 text-sm text-[#6d554b]">
             Modera testimonios, visibilidad y respuestas publicas.
           </p>
         </div>
@@ -333,9 +333,9 @@ export const AdminValoracionesSection = () => {
 
       <div className="mt-6 grid gap-4">
         {loading ? (
-          <p className="text-sm text-[#A8A8A8]">Cargando valoraciones...</p>
+          <p className="text-sm text-[#a8968d]">Cargando valoraciones...</p>
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-[#A8A8A8]">
+          <p className="text-sm text-[#a8968d]">
             No hay valoraciones para este filtro.
           </p>
         ) : (
@@ -359,11 +359,11 @@ export const AdminValoracionesSection = () => {
                       {estadoLabels[normalizeEstado(valoracion.estado)] ??
                         valoracion.estado}
                     </span>
-                    <span className="rounded-full border border-white/10 bg-[#0B0F0F] px-3 py-1 text-xs text-[#B8B8B8]">
+                    <span className="rounded-full border border-white/10 bg-[#fffaf7] px-3 py-1 text-xs text-[#7d6a61]">
                       {valoracion.visible ? "Visible" : "Oculta"}
                     </span>
                   </div>
-                  <p className="mt-4 line-clamp-2 text-sm leading-7 text-[#D6D6D6]">
+                  <p className="mt-4 line-clamp-2 text-sm leading-7 text-[#6d554b]">
                     {valoracion.comentario}
                   </p>
                 </div>
@@ -405,14 +405,14 @@ export const AdminValoracionesSection = () => {
                   {estadoLabels[normalizeEstado(selected.estado)] ??
                     selected.estado}
                 </span>
-                <span className="rounded-full border border-white/10 bg-[#0B0F0F] px-3 py-1 text-xs text-[#B8B8B8]">
+                <span className="rounded-full border border-white/10 bg-[#fffaf7] px-3 py-1 text-xs text-[#7d6a61]">
                   {selected.visible ? "Visible" : "Oculta"}
                 </span>
               </div>
-              <p className="mt-4 text-sm leading-7 text-[#D6D6D6]">
+              <p className="mt-4 text-sm leading-7 text-[#6d554b]">
                 {selected.comentario}
               </p>
-              <div className="mt-4 grid gap-1 text-xs text-[#8E8E8E] sm:grid-cols-2">
+              <div className="mt-4 grid gap-1 text-xs text-[#8e7a71] sm:grid-cols-2">
                 <span>Cliente: {selected.cliente_nombre ?? "Sin dato"}</span>
                 <span>Correo: {selected.cliente_correo ?? "Sin dato"}</span>
                 <span>Cita: {selected.cita_id ?? "Sin asociar"}</span>
@@ -450,7 +450,7 @@ export const AdminValoracionesSection = () => {
               </Button>
               <Button
                 type="button"
-                className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+                className="rounded-2xl bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
                 onClick={() => handleEstado(selected, "aprobada")}
                 disabled={savingId === String(selected.id)}
               >
@@ -507,7 +507,7 @@ function StarRating({ value }: { value: number }) {
         <Star
           key={index}
           className={`h-4 w-4 ${
-            index < value ? "fill-[#00D1C1] text-[#00D1C1]" : "text-[#3A3A3A]"
+            index < value ? "fill-[#c69a86] text-[#c69a86]" : "text-[#3A3A3A]"
           }`}
         />
       ))}

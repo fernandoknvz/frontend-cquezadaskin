@@ -1,32 +1,48 @@
 ﻿import React from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Menu, CalendarDays, Phone } from "lucide-react";
+import { Menu, CalendarCheck2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { siteConfig } from "@/config/site";
 import type { NavItem } from "./Navbar";
-import brandLogo from "@/assets/logo_cquezadaskin.png";
+import brandLogo from "@/assets/oficial_logo.png";
 
 type Props = {
   items: NavItem[];
+  compact?: boolean;
 };
 
-export const MobileNavbar: React.FC<Props> = ({ items }) => {
+export const MobileNavbar: React.FC<Props> = ({ items, compact = false }) => {
   const [open, setOpen] = React.useState(false);
   const closeSheet = React.useCallback(() => setOpen(false), []);
 
   return (
     <>
       <Link to="/" className="flex min-w-0 items-center gap-2">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#00D1C1]/35 bg-[#0B0F0F] shadow-[0_0_28px_rgba(0,209,193,0.14)]">
-          <img src={brandLogo} alt="" className="h-full w-full object-cover object-center" />
+        <div
+          className={[
+            "flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--brand-100)] bg-white/82 p-1 shadow-[var(--shadow-soft)] transition-all duration-300",
+            compact ? "h-9 w-9" : "h-10 w-10",
+          ].join(" ")}
+        >
+          <img src={brandLogo} alt="" className="h-full w-full object-contain object-center" />
         </div>
         <div className="min-w-0 leading-tight">
-          <div className="font-display truncate text-base font-semibold leading-none text-white">
-            CQuezada<span className="text-[#00D1C1]">Skin</span>
+          <div
+            className={[
+              "brand-wordmark truncate font-semibold leading-none text-[var(--brand-900)] transition-all duration-300",
+              compact ? "text-[0.95rem]" : "text-base",
+            ].join(" ")}
+          >
+            CQUEZADASKIN
           </div>
-          <div className="truncate text-[11px] text-[#B8B8B8]">
+          <div
+            className={[
+              "truncate text-[11px] text-[var(--brand-700)] transition-all duration-300",
+              compact ? "opacity-80" : "opacity-100",
+            ].join(" ")}
+          >
             Facial y corporal
           </div>
         </div>
@@ -36,10 +52,13 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
         <Button
           asChild
           size="sm"
-          className="rounded-2xl bg-[#00D1C1] px-3 font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+          className={[
+            "rounded-2xl bg-[#f1d5cc] px-3 font-semibold text-[#4b3932] transition-all duration-300 hover:bg-[#e8c2b5]",
+            compact ? "h-9" : "h-10",
+          ].join(" ")}
         >
           <Link to="/agendar" className="gap-2" aria-label="Reservar una hora">
-            <CalendarDays className="h-4 w-4" />
+            <CalendarCheck2 className="h-4 w-4" />
             <span className="hidden min-[390px]:inline">Reservar</span>
           </Link>
         </Button>
@@ -49,30 +68,30 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-2xl border-white/10 bg-[#111414] text-white hover:bg-[#00D1C1]/10"
+              className="rounded-2xl border-[#d9b8a8] bg-white text-[#4b3932] hover:bg-[#f8eee8]"
               aria-label="Abrir menu"
             >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="right" className="w-[min(88vw,340px)] border-l border-white/10 bg-[#050505] p-0 text-white">
+          <SheetContent side="right" className="w-[min(88vw,340px)] border-l border-[#ead3c7] bg-[#fffaf7] p-0 text-[#3b302c]">
             <div className="p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#00D1C1]/35 bg-[#0B0F0F] shadow-[0_0_28px_rgba(0,209,193,0.14)]">
-                  <img src={brandLogo} alt="" className="h-full w-full object-cover object-center" />
+                <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-[var(--brand-100)] bg-white/82 p-1 shadow-[var(--shadow-soft)]">
+                  <img src={brandLogo} alt="" className="h-full w-full object-contain object-center" />
                 </div>
                 <div>
-                  <div className="font-display text-lg font-semibold leading-none text-white">
-                    CQuezada<span className="text-[#00D1C1]">Skin</span>
+                  <div className="brand-wordmark text-lg font-semibold leading-none text-[var(--brand-900)]">
+                    CQUEZADASKIN
                   </div>
-                  <div className="text-xs text-[#B8B8B8]">
+                  <div className="text-xs text-[#7d6a61]">
                     Home studio en {siteConfig.address}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/10 bg-[#111414] p-3 text-sm text-[#D6D6D6]">
+              <div className="mt-4 rounded-2xl border border-[#ead3c7] bg-white p-3 text-sm text-[#6d554b]">
                 Tratamientos faciales y corporales en un espacio profesional,
                 sobrio y fácil de agendar.
               </div>
@@ -90,8 +109,8 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
                   className={({ isActive }) =>
                     [
                       "block min-h-11 rounded-xl px-4 py-3 text-sm font-medium transition",
-                      "text-[#D6D6D6] hover:bg-[#00D1C1]/10 hover:text-white",
-                      isActive ? "bg-[#00D1C1]/10 text-[#00D1C1]" : "",
+                      "text-[#6d554b] hover:bg-[#f8eee8] hover:text-[#3b302c]",
+                      isActive ? "bg-[#f8eee8] text-[#9b6f5f]" : "",
                     ].join(" ")
                   }
                 >
@@ -105,10 +124,10 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
             <div className="space-y-3 p-5">
               <Button
                 asChild
-                className="w-full rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                className="w-full rounded-2xl bg-[#f1d5cc] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
               >
                 <Link to="/agendar" className="gap-2" onClick={closeSheet}>
-                  <CalendarDays className="h-4 w-4" />
+                  <CalendarCheck2 className="h-4 w-4" />
                   Reservar ahora
                 </Link>
               </Button>
@@ -116,7 +135,7 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
               <Button
                 asChild
                 variant="outline"
-                className="w-full rounded-2xl border-white/10 bg-[#111414] text-white hover:bg-[#00D1C1]/10"
+                className="w-full rounded-2xl border-[#d9b8a8] bg-white text-[#4b3932] hover:bg-[#f8eee8]"
               >
                 <a href={siteConfig.phoneHref} className="gap-2">
                   <Phone className="h-4 w-4" />
@@ -124,7 +143,7 @@ export const MobileNavbar: React.FC<Props> = ({ items }) => {
                 </a>
               </Button>
 
-              <div className="text-xs text-[#8E8E8E]">
+              <div className="text-xs text-[#7d6a61]">
                 Horario: {siteConfig.schedule}
               </div>
             </div>

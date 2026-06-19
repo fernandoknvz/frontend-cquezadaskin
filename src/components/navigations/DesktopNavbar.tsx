@@ -1,20 +1,21 @@
 ﻿import React from "react";
 import { NavLink, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Phone, CalendarDays } from "lucide-react";
+import { Phone, CalendarCheck2 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import type { NavItem } from "./Navbar";
 import { NavbarBrand } from "./NavbarBrand";
 
 type Props = {
   items: NavItem[];
+  compact?: boolean;
 };
 
-export const DesktopNavbar: React.FC<Props> = ({ items }) => {
+export const DesktopNavbar: React.FC<Props> = ({ items, compact = false }) => {
   return (
     <>
       {/* Brand */}
-      <NavbarBrand />
+      <NavbarBrand compact={compact} />
 
       {/* Nav */}
       <nav className="flex items-center gap-1" aria-label="Navegación principal">
@@ -25,12 +26,13 @@ export const DesktopNavbar: React.FC<Props> = ({ items }) => {
             end={item.to === "/"}
             className={({ isActive }) =>
               [
-                "rounded-xl px-3 py-2 text-sm font-medium transition",
-                "text-[#D6D6D6]",
-                "hover:bg-[#00D1C1]/10 hover:text-white",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D1C1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]",
+                "rounded-xl px-3 text-sm font-medium transition",
+                compact ? "py-1.5" : "py-2",
+                "text-[#6d554b]",
+                "hover:bg-[#f8eee8] hover:text-[#3b302c]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c69a86] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf7]",
                 isActive
-                  ? "bg-[#00D1C1]/10 text-[#00D1C1]"
+                  ? "bg-[#f8eee8] text-[#9b6f5f]"
                   : "",
               ].join(" ")
             }
@@ -44,7 +46,7 @@ export const DesktopNavbar: React.FC<Props> = ({ items }) => {
       <div className="flex items-center gap-2">
         <a
           href={siteConfig.phoneHref}
-          className="hidden lg:inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#D6D6D6] transition hover:bg-[#00D1C1]/10 hover:text-white"
+          className="hidden lg:inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#6d554b] transition hover:bg-[#f8eee8] hover:text-[#3b302c]"
           aria-label={`Llamar a ${siteConfig.name}`}
         >
           <Phone className="h-4 w-4" />
@@ -53,18 +55,21 @@ export const DesktopNavbar: React.FC<Props> = ({ items }) => {
 
         <Button
           asChild
-          className="rounded-2xl shadow-sm"
+          className={[
+            "rounded-2xl shadow-sm transition-all duration-300",
+            compact ? "h-9 px-3" : "h-10 px-4",
+          ].join(" ")}
           style={{
-            backgroundColor: "#00D1C1",
-            color: "#03110f",
+            backgroundColor: "var(--brand-800)",
+            color: "var(--brand-white)",
           }}
         >
           <Link
             to="/agendar"
-            className="gap-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#20E0D0] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
+            className="gap-2 font-semibold hover:bg-[#e8c2b5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c69a86] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf7]"
             aria-label="Reservar una hora"
           >
-            <CalendarDays className="h-4 w-4" />
+            <CalendarCheck2 className="h-4 w-4" />
             Reservar
           </Link>
         </Button>

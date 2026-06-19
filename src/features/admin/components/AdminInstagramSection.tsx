@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppModal } from "@/components/ui/AppModal";
@@ -134,7 +134,7 @@ export const AdminInstagramSection = () => {
           <h2 className="premium-section-title text-3xl font-semibold">
             Instagram embeds
           </h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">
+          <p className="mt-1 text-sm text-[#6d554b]">
             Agrega URLs de embeds para el carrusel o grilla.
           </p>
         </div>
@@ -185,7 +185,7 @@ export const AdminInstagramSection = () => {
               step="1"
             />
           </div>
-          <label className="mt-8 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+          <label className="mt-8 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
             <input
               type="checkbox"
               checked={form.activo}
@@ -221,13 +221,13 @@ export const AdminInstagramSection = () => {
       </AppModal>
 
       <div className="mt-8 grid gap-3">
-        <h3 className="text-lg font-semibold text-[#00D1C1]">
+        <h3 className="text-lg font-semibold text-[#c69a86]">
           Posts existentes
         </h3>
         {loading ? (
-          <p className="text-sm text-[#A8A8A8]">Cargando posts...</p>
+          <p className="text-sm text-[#a8968d]">Cargando posts...</p>
         ) : posts.length === 0 ? (
-          <p className="text-sm text-[#A8A8A8]">Sin posts.</p>
+          <p className="text-sm text-[#a8968d]">Sin posts.</p>
         ) : (
           posts.map((post) => (
             <div
@@ -235,10 +235,10 @@ export const AdminInstagramSection = () => {
               className="premium-card premium-card-hover flex flex-wrap items-center justify-between gap-3 rounded-2xl p-3"
             >
               <div>
-                <p className="font-medium text-[#00D1C1]">
+                <p className="font-medium text-[#c69a86]">
                   Orden {post.orden} | {post.activo ? "Activo" : "Inactivo"}
                 </p>
-                <p className="text-xs text-[#D6D6D6] break-all">
+                <p className="text-xs text-[#6d554b] break-all">
                   {post.embed_url}
                 </p>
               </div>

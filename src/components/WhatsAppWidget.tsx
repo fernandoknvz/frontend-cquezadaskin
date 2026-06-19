@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarDays, Send, X } from "lucide-react";
+import { CalendarCheck2, Send, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 
@@ -15,7 +15,7 @@ type Props = {
 
 export default function WhatsAppWidget({
   phoneNumber = siteConfig.whatsapp,
-  defaultMessage = "¡Hola! Me gustaría agendar una hora con CQuezadaSkin.",
+  defaultMessage = "¡Hola! Me gustaría agendar una hora con CQUEZADASKIN.",
   position = "bottom-right",
   maxLift = 280,
   liftDistanceFromBottom = 800,
@@ -112,8 +112,8 @@ export default function WhatsAppWidget({
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="
               w-72 max-w-[calc(100vw-2rem)]
-              rounded-2xl border border-[#00D1C1]/30
-              bg-[#121212] shadow-lg
+              rounded-2xl border border-[#d9b8a8]
+              bg-white shadow-lg
               p-4
             "
             role="dialog"
@@ -121,10 +121,10 @@ export default function WhatsAppWidget({
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-white">
+                <div className="text-sm font-semibold text-[#3b302c]">
                   ¿En qué podemos ayudarte?
                 </div>
-                <div className="mt-0.5 text-xs text-[#B8B8B8]">
+                <div className="mt-0.5 text-xs text-[#7d6a61]">
                   Escribe y te respondemos rápido.
                 </div>
               </div>
@@ -133,10 +133,10 @@ export default function WhatsAppWidget({
                 onClick={() => setIsOpen(false)}
                 className="
                   rounded-full p-2
-                  text-[#8E8E8E] hover:text-red-300
-                  hover:bg-[#00D1C1]/10
+                  text-[#8e7a71] hover:text-red-500
+                  hover:bg-[#f8eee8]
                   transition
-                  focus:outline-none focus:ring-2 focus:ring-[#00D1C1]
+                  focus:outline-none focus:ring-2 focus:ring-[#c69a86]
                 "
                 aria-label="Cerrar"
               >
@@ -151,11 +151,11 @@ export default function WhatsAppWidget({
               rows={3}
               className="
                 mt-3 w-full resize-none
-                rounded-xl border border-white/10
-                bg-[#121212] px-3 py-2
-                text-sm text-[#F5F5F5]
-                placeholder:text-[#A8A8A8]
-                focus:outline-none focus:ring-2 focus:ring-[#00D1C1]
+                rounded-xl border border-[#ead3c7]
+                bg-[#fffaf7] px-3 py-2
+                text-sm text-[#3b302c]
+                placeholder:text-[#a8968d]
+                focus:outline-none focus:ring-2 focus:ring-[#c69a86]
               "
             />
 
@@ -163,18 +163,18 @@ export default function WhatsAppWidget({
               onClick={handleSendMessage}
               className="
                 mt-3 w-full inline-flex items-center justify-center gap-2
-                rounded-xl bg-[#00D1C1] py-2
-                text-sm font-semibold text-white
+                rounded-xl bg-[#f1d5cc] py-2
+                text-sm font-semibold text-[#4b3932]
                 shadow-sm
-                hover:bg-[#20E0D0] transition
-                focus:outline-none focus:ring-4 focus:ring-[#00D1C1]/25
+                hover:bg-[#e8c2b5] transition
+                focus:outline-none focus:ring-4 focus:ring-[#c69a86]/25
               "
             >
               <Send className="h-4 w-4" />
               Enviar mensaje
             </button>
 
-            <div className="mt-2 text-[11px] text-[#8E8E8E]">
+            <div className="mt-2 text-[11px] text-[#7d6a61]">
               * Se abrirá WhatsApp en una pestaña nueva.
             </div>
           </motion.div>
@@ -186,12 +186,12 @@ export default function WhatsAppWidget({
         className="
           group relative h-12 w-12 rounded-full sm:h-16 sm:w-16
           border border-white/10
-          bg-[#00D1C1] text-[#03110f]
-          shadow-[0_14px_34px_rgba(0,0,0,0.38),0_0_18px_rgba(0,209,193,0.22)]
+          bg-[#f1d5cc] text-[#4b3932]
+          shadow-[0_14px_34px_rgba(80,55,45,0.22),0_0_18px_rgba(198,154,134,0.22)]
           flex items-center justify-center
           transition-[background-color,box-shadow,border-color]
-          hover:bg-[#20E0D0] hover:border-[#20E0D0]/80 hover:shadow-[0_16px_40px_rgba(0,0,0,0.42),0_0_20px_rgba(0,209,193,0.4)]
-          focus:outline-none focus:ring-4 focus:ring-[#00D1C1]/30
+          hover:bg-[#e8c2b5] hover:border-[#c69a86]/80 hover:shadow-[0_16px_40px_rgba(80,55,45,0.24),0_0_20px_rgba(198,154,134,0.34)]
+          focus:outline-none focus:ring-4 focus:ring-[#c69a86]/30
         "
         aria-label="Agendar cita"
         initial={{ opacity: 0, scale: 0.86, y: 10 }}
@@ -200,10 +200,10 @@ export default function WhatsAppWidget({
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.96 }}
       >
-        <span className="pointer-events-none absolute right-[4.75rem] hidden whitespace-nowrap rounded-full border border-[#00D1C1]/25 bg-[#0B0F0F]/95 px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.32)] backdrop-blur group-hover:block">
+        <span className="pointer-events-none absolute right-[4.75rem] hidden whitespace-nowrap rounded-full border border-[#d9b8a8] bg-white/95 px-3 py-1.5 text-xs font-semibold text-[#4b3932] shadow-[0_10px_30px_rgba(80,55,45,0.18)] backdrop-blur group-hover:block">
           Agendar cita
         </span>
-        <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8" strokeWidth={2.2} />
+        <CalendarCheck2 className="h-6 w-6 sm:h-8 sm:w-8" strokeWidth={2.1} />
       </motion.a>
 
       <motion.button
@@ -225,7 +225,7 @@ export default function WhatsAppWidget({
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.96 }}
       >
-        <span className="pointer-events-none absolute right-[4.75rem] hidden whitespace-nowrap rounded-full border border-[#25D366]/25 bg-[#0B0F0F]/95 px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.32)] backdrop-blur group-hover:block">
+        <span className="pointer-events-none absolute right-[4.75rem] hidden whitespace-nowrap rounded-full border border-[#25D366]/25 bg-[#fffaf7]/95 px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.32)] backdrop-blur group-hover:block">
           Escribir por WhatsApp
         </span>
         <FaWhatsapp className="h-7 w-7 sm:h-9 sm:w-9" aria-hidden="true" />

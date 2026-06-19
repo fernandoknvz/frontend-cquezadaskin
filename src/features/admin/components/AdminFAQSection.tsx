@@ -152,13 +152,13 @@ export const AdminFAQSection = () => {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="premium-section-title text-3xl font-semibold">FAQ</h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">
+          <p className="mt-1 text-sm text-[#6d554b]">
             Gestiona las preguntas frecuentes visibles en el sitio.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
-            className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            className="rounded-2xl bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
             onClick={() => {
               setForm(emptyForm);
               setFormOpen(true);
@@ -221,7 +221,7 @@ export const AdminFAQSection = () => {
               onChange={(event) => handleChange("orden", event.target.value)}
             />
           </div>
-          <label className="inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+          <label className="inline-flex items-center gap-2 text-sm text-[#7d6a61]">
             <input
               type="checkbox"
               checked={form.activo}
@@ -234,7 +234,7 @@ export const AdminFAQSection = () => {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="submit"
-            className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            className="rounded-2xl bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
             disabled={saving}
           >
             {saving
@@ -253,7 +253,7 @@ export const AdminFAQSection = () => {
       </AppModal>
 
       {message ? (
-        <div className="mt-4 rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-sm text-[#00D1C1]">
+        <div className="mt-4 rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-3 text-sm text-[#c69a86]">
           {message}
         </div>
       ) : null}
@@ -265,9 +265,9 @@ export const AdminFAQSection = () => {
 
       <div className="mt-6 grid gap-3">
         {loading ? (
-          <p className="text-sm text-[#A8A8A8]">Cargando FAQ...</p>
+          <p className="text-sm text-[#a8968d]">Cargando FAQ...</p>
         ) : faqs.length === 0 ? (
-          <p className="text-sm text-[#A8A8A8]">
+          <p className="text-sm text-[#a8968d]">
             No hay preguntas frecuentes registradas.
           </p>
         ) : (
@@ -279,22 +279,22 @@ export const AdminFAQSection = () => {
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-[#00D1C1]">
+                    <h3 className="font-semibold text-[#c69a86]">
                       {faq.pregunta}
                     </h3>
-                    <span className="rounded-full border border-white/10 bg-[#0B0F0F] px-2 py-1 text-xs text-[#B8B8B8]">
+                    <span className="rounded-full border border-white/10 bg-[#fffaf7] px-2 py-1 text-xs text-[#7d6a61]">
                       {faq.activo === false ? "Oculta" : "Visible"}
                     </span>
                     {faq.categoria ? (
-                      <span className="rounded-full border border-white/10 bg-[#0B0F0F] px-2 py-1 text-xs text-[#B8B8B8]">
+                      <span className="rounded-full border border-white/10 bg-[#fffaf7] px-2 py-1 text-xs text-[#7d6a61]">
                         {faq.categoria}
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-[#D6D6D6]">
+                  <p className="mt-2 text-sm leading-6 text-[#6d554b]">
                     {faq.respuesta}
                   </p>
-                  <p className="mt-2 text-xs text-[#8E8E8E]">
+                  <p className="mt-2 text-xs text-[#8e7a71]">
                     Orden {faq.orden ?? 0}
                   </p>
                 </div>

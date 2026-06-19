@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     } catch (err) {
       toast.error({
-        title: "No pudimos iniciar sesion",
+        title: "No pudimos iniciar sesión",
         description:
           err instanceof Error ? err.message : "Credenciales incorrectas",
       });
@@ -90,7 +90,7 @@ export default function LoginPage() {
     <div className="mx-auto max-w-md px-4 py-12">
       <div className="premium-panel rounded-3xl p-8">
         <h1 className="premium-heading text-3xl font-semibold text-white">Acceso admin</h1>
-        <p className="mt-1 text-sm text-[#D6D6D6]">
+        <p className="mt-1 text-sm text-[#6d554b]">
           Ingresa con tus credenciales para continuar.
         </p>
 
@@ -120,13 +120,13 @@ export default function LoginPage() {
             </div>
 
             <Button
-              className="w-full rounded-2xl h-12 bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+              className="w-full rounded-2xl h-12 bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
               disabled={loading}
             >
               {loading ? "Ingresando..." : "Ingresar"}
             </Button>
 
-            <label className="flex items-center gap-2 text-sm text-[#B8B8B8]">
+            <label className="flex items-center gap-2 text-sm text-[#7d6a61]">
               <input
                 type="checkbox"
                 checked={remember}
@@ -137,7 +137,7 @@ export default function LoginPage() {
 
             <button
               type="button"
-              className="text-sm text-[#00D1C1] underline underline-offset-4 hover:text-[#20E0D0]"
+              className="text-sm text-[#c69a86] underline underline-offset-4 hover:text-[#e8c2b5]"
               onClick={() => {
                 setMode("forgot");
               }}
@@ -160,7 +160,7 @@ export default function LoginPage() {
             </div>
 
             <Button
-              className="w-full rounded-2xl h-12 bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+              className="w-full rounded-2xl h-12 bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
               disabled={resetLoading}
             >
               {resetLoading ? "Enviando..." : "Enviar correo de recuperación"}
@@ -168,7 +168,7 @@ export default function LoginPage() {
 
             <button
               type="button"
-              className="text-sm text-[#00D1C1] underline underline-offset-4 hover:text-[#20E0D0]"
+              className="text-sm text-[#c69a86] underline underline-offset-4 hover:text-[#e8c2b5]"
               onClick={() => setMode("login")}
             >
               Volver al inicio de sesión

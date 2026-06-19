@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
   url: string;
@@ -107,19 +107,19 @@ export const InstagramEmbedSafe: React.FC<Props> = ({ url, className }) => {
     return (
       <div
         className={[
-          "w-full rounded-3xl border border-white/10 bg-[#121212]/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)]",
+          "w-full rounded-3xl border border-white/10 bg-[#ffffff]/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)]",
           className ?? "",
         ].join(" ")}
       >
         <div className="text-sm font-semibold text-white">
           Video / publicación
         </div>
-        <div className="mt-1 text-xs text-[#B8B8B8] break-all">{openUrl}</div>
+        <div className="mt-1 text-xs text-[#7d6a61] break-all">{openUrl}</div>
         <a
           href={openUrl}
           target="_blank"
           rel="noreferrer"
-          className="mt-3 inline-flex items-center justify-center rounded-2xl border border-white/10 bg-[#121212]/80 px-3 py-2 text-xs font-medium text-[#C9C9C9] hover:bg-[#121212] hover:text-white"
+          className="mt-3 inline-flex items-center justify-center rounded-2xl border border-white/10 bg-[#ffffff]/80 px-3 py-2 text-xs font-medium text-[#6d554b] hover:bg-[#ffffff] hover:text-white"
         >
           Abrir en Instagram
         </a>
@@ -131,7 +131,7 @@ export const InstagramEmbedSafe: React.FC<Props> = ({ url, className }) => {
     <div
       ref={containerRef}
       className={[
-        "w-full overflow-hidden rounded-3xl border border-white/10 bg-[#121212]/80 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.06)]",
+        "w-full overflow-hidden rounded-3xl border border-white/10 bg-[#ffffff]/80 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.06)]",
         className ?? "",
       ].join(" ")}
     >

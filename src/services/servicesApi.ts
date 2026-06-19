@@ -21,6 +21,17 @@ export type ServiceItem = {
   cta_secondary_url?: string | null;
 };
 
+const toBoolean = (value: any, fallback: boolean) => {
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+
+  const normalized = String(value).trim().toLowerCase();
+  if (["1", "true", "si", "sí", "yes", "y"].includes(normalized)) return true;
+  if (["0", "false", "no", "n"].includes(normalized)) return false;
+  return fallback;
+};
+
 const parseBenefits = (value: any): string[] => {
   if (Array.isArray(value)) {
     return value.map((item) => String(item)).filter((item) => item.trim().length > 0);
@@ -55,12 +66,18 @@ const mapService = (item: any): ServiceItem => ({
   beneficios: parseBenefits(item.beneficios),
   imagen_url: item.imagen_url ?? item.image_url ?? item.imagenUrl ?? item.imagen ?? "",
   precio: Number(item.precio ?? 0),
-  activo: item.activo === undefined ? true : Boolean(Number(item.activo)),
+  activo: toBoolean(item.activo, true),
   orden: Number(item.orden ?? 0),
   categoria_id: item.categoria_id ?? null,
-  mostrar_servicios: Boolean(Number(item.mostrar_servicios ?? 0)),
-  mostrar_especiales: Boolean(Number(item.mostrar_especiales ?? 0)),
-  mostrar_empresas: Boolean(Number(item.mostrar_empresas ?? 0)),
+  mostrar_servicios: toBoolean(
+    item.mostrar_servicios ?? item.mostrar_home ?? item.visible_servicios ?? item.visible,
+    true
+  ),
+  mostrar_especiales: toBoolean(
+    item.mostrar_especiales ?? item.visible_especiales ?? item.visible,
+    false
+  ),
+  mostrar_empresas: toBoolean(item.mostrar_empresas ?? item.visible_empresas ?? item.visible, false),
   cta_primary_label: item.cta_primary_label ?? null,
   cta_primary_url: item.cta_primary_url ?? null,
   cta_secondary_label: item.cta_secondary_label ?? null,
@@ -69,18 +86,39 @@ const mapService = (item: any): ServiceItem => ({
 
 export type ServiceSection = "servicios" | "especiales" | "empresas";
 
+const pickServices = (response: any): any[] => {
+  if (Array.isArray(response)) return response;
+  if (!response || typeof response !== "object") return [];
+
+  const candidates = [
+    response.data,
+    response.servicios,
+    response.services,
+    response.items,
+    response.results,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) return candidate;
+    if (candidate && typeof candidate === "object") {
+      if (Array.isArray(candidate.data)) return candidate.data;
+      if (Array.isArray(candidate.servicios)) return candidate.servicios;
+      if (Array.isArray(candidate.items)) return candidate.items;
+      if (Array.isArray(candidate.results)) return candidate.results;
+    }
+  }
+
+  return [];
+};
+
 export const listServices = async (section?: ServiceSection) => {
   const query = section
-    ? `/servicios?public=1&seccion=${encodeURIComponent(section)}`
+    ? `/servicios?public=1&section=${encodeURIComponent(section)}&seccion=${encodeURIComponent(
+        section
+      )}`
     : "/servicios?public=1";
-  const response = await apiFetch<any[] | { data?: any[]; servicios?: any[] }>(
-    query,
-    {
-      skipAuth: true,
-    }
-  );
-  const data = Array.isArray(response)
-    ? response
-    : response.data ?? response.servicios ?? [];
-  return data.map(mapService);
+  const response = await apiFetch<any>(query, {
+    skipAuth: true,
+  });
+  return pickServices(response).map(mapService);
 };

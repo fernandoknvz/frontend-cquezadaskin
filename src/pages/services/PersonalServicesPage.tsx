@@ -2,13 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, CalendarDays, MessageCircle, Sparkles, Heart } from "lucide-react";
+import { Check, CalendarCheck2, MessageCircle, Sparkles, Heart } from "lucide-react";
 
-import skincareHeroImg from "@/assets/cquezadaskin-hero.png";
 import { listServices, type ServiceItem } from "@/services/servicesApi";
 import { listServiceCategories, type ServiceCategory } from "@/services/categoriesApi";
 import { REAL_SERVICE_CATEGORIES } from "@/features/services/data/realServices";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
+
+const skincareHeroImg = "/img/oficial_hero.jpeg";
 
 type Service = {
   title: string;
@@ -199,19 +200,19 @@ export const PersonalServicesPage: React.FC = () => {
   return (
     <section className="mx-auto w-[92%] max-w-[1180px] py-10 sm:py-14">
       <header className="max-w-3xl scroll-mt-32">
-        <p className="text-sm font-semibold uppercase tracking-wide text-[#00D1C1]">
+        <p className="text-sm font-semibold uppercase tracking-wide text-[#c69a86]">
           Servicios
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
-          Tratamientos reales CQuezadaSkin
+          Tratamientos reales CQUEZADASKIN
         </h1>
-        <p className="mt-3 text-base text-[#C9C9C9] sm:text-lg">
+        <p className="mt-3 text-base text-[#6d554b] sm:text-lg">
           Explora la carta de tratamientos faciales, corporales, lash & brows,
           fibroblast y camuflajes estéticos en Quilpué.
         </p>
       </header>
 
-      <div className="sticky top-16 z-40 -mx-4 mt-8 border-y border-white/10 bg-[#050505]/86 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-2xl sm:border sm:bg-[#050505]/78">
+      <div className="sticky top-16 z-40 -mx-4 mt-8 border-y border-white/10 bg-[#fffaf7]/86 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-2xl sm:border sm:bg-[#fffaf7]/78">
         <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {filterOptions.map((option) => {
             const active = selectedCategory === option.id;
@@ -221,10 +222,10 @@ export const PersonalServicesPage: React.FC = () => {
                 type="button"
                 onClick={() => handleCategoryClick(option.id)}
                 className={[
-                  "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D1C1]/50",
+                  "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c69a86]/50",
                   active
-                    ? "border-[#00D1C1]/60 bg-[#00D1C1]/12 text-[#20E0D0] shadow-[0_0_24px_rgba(0,209,193,0.14)]"
-                    : "border-white/10 bg-[#111414]/80 text-[#D6D6D6] hover:border-[#00D1C1]/40 hover:text-white",
+                    ? "border-[#c69a86]/60 bg-[#c69a86]/12 text-[#e8c2b5] shadow-[0_0_24px_rgba(198,154,134,0.14)]"
+                    : "border-white/10 bg-[#ffffff]/80 text-[#6d554b] hover:border-[#c69a86]/40 hover:text-white",
                 ].join(" ")}
               >
                 {option.name}
@@ -263,7 +264,7 @@ function CategoryBlock({
       className="scroll-mt-36"
     >
       <div className="flex items-start gap-3">
-        <div className="inline-flex items-center justify-center rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-2 text-[#00D1C1] shadow-[0_0_24px_rgba(0,209,193,0.10)]">
+        <div className="inline-flex items-center justify-center rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-2 text-[#c69a86] shadow-[0_0_24px_rgba(198,154,134,0.10)]">
           {category.icon}
         </div>
 
@@ -271,7 +272,7 @@ function CategoryBlock({
           <h2 className="premium-section-title text-2xl font-semibold min-[390px]:text-3xl">
             {category.name}
           </h2>
-          <p className="mt-2 max-w-3xl text-base leading-relaxed text-[#D6D6D6]">
+          <p className="mt-2 max-w-3xl text-base leading-relaxed text-[#6d554b]">
             {category.description}
           </p>
         </div>
@@ -314,7 +315,7 @@ function ServiceRow({ service }: { service: Service }) {
       transition={{ duration: 0.22, ease: "easeOut" }}
     >
       <div className="content flex h-full flex-col">
-        <div className="inline-flex w-fit items-center rounded-full border border-[#00D1C1]/25 bg-[#00D1C1]/10 px-3 py-1 text-xs font-semibold text-[#20E0D0]">
+        <div className="inline-flex w-fit items-center rounded-full border border-[#c69a86]/25 bg-[#c69a86]/10 px-3 py-1 text-xs font-semibold text-[#e8c2b5]">
           {service.title}
         </div>
 
@@ -322,15 +323,15 @@ function ServiceRow({ service }: { service: Service }) {
           {service.subtitle}
         </h3>
 
-        <p className="mt-3 flex-1 text-sm leading-7 text-[#D6D6D6]">
+        <p className="mt-3 flex-1 text-sm leading-7 text-[#6d554b]">
           {service.description}
         </p>
 
         {service.bullets.length > 0 ? (
           <ul className="mt-5 space-y-2">
             {service.bullets.map((bullet) => (
-              <li key={bullet} className="flex items-start gap-2 text-sm text-[#C9C9C9]">
-                <Check className="mt-0.5 h-4 w-4 text-[#00D1C1]" />
+              <li key={bullet} className="flex items-start gap-2 text-sm text-[#6d554b]">
+                <Check className="mt-0.5 h-4 w-4 text-[#c69a86]" />
                 <span>{bullet}</span>
               </li>
             ))}
@@ -340,10 +341,10 @@ function ServiceRow({ service }: { service: Service }) {
         <div className="mt-auto flex flex-col gap-3 pt-6">
           <Button
             asChild
-            className="w-full rounded-2xl bg-[#00D1C1] text-[#03110f] shadow-sm hover:bg-[#20E0D0]"
+            className="w-full rounded-2xl bg-[#f1d5cc] text-[#4b3932] shadow-sm hover:bg-[#e8c2b5]"
           >
             <Link to={service.ctaPrimary.to} className="gap-2">
-              <CalendarDays className="h-4 w-4" />
+              <CalendarCheck2 className="h-4 w-4" />
               {service.ctaPrimary.label}
             </Link>
           </Button>
@@ -362,7 +363,7 @@ function ServiceRow({ service }: { service: Service }) {
           )}
         </div>
 
-        <div className="mt-3 text-xs leading-relaxed text-[#A8A8A8]">
+        <div className="mt-3 text-xs leading-relaxed text-[#a8968d]">
           * Disponibilidad sujeta a evaluación y agenda.
         </div>
       </div>
@@ -389,7 +390,7 @@ function mapServiceItemToCard(service: ServiceItem, context: "servicios" | "empr
     subtitle: service.subtitulo?.trim() || service.nombre,
     description: service.descripcion ?? "",
     bullets: service.beneficios ?? [],
-    image: resolveImageUrl(service.imagen_url, "/img/banner.jpg"),
+    image: resolveImageUrl(service.imagen_url, "/img/oficial_hero.jpeg"),
     ctaPrimary: { label, to },
     ctaSecondary:
       secondaryLabel && secondaryUrl ? { label: secondaryLabel, to: secondaryUrl } : undefined,

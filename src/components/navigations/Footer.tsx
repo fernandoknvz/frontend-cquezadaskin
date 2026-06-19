@@ -7,33 +7,33 @@ import NavbarBrand from "./NavbarBrand";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full border-t border-white/10 bg-[#050505]">
+    <footer className="w-full border-t border-[#ead3c7] bg-[#fffaf7]">
       <div className="w-full px-4 py-10 2xl:mx-auto 2xl:w-[80%] 2xl:px-0">
         <div className="mx-auto grid gap-10 md:grid-cols-3 lg:w-[90%] 2xl:w-[80%]">
           <div className="md:col-span-1">
             <NavbarBrand />
 
-            <p className="mt-4 text-sm leading-relaxed text-[#B8B8B8]">
+            <p className="mt-4 text-sm leading-relaxed text-[#6d554b]">
               Tratamientos faciales y corporales en home studio, con una
               experiencia profesional, limpia y enfocada en tu piel.
             </p>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-white">Ayuda</h4>
+            <h4 className="text-sm font-semibold text-[#3b302c]">Ayuda</h4>
             <ul className="mt-4 space-y-2 text-sm">
               <li>
-                <Link className="text-[#B8B8B8] hover:text-[#00D1C1]" to="/contacto">
+                <Link className="text-[#6d554b] hover:text-[#9b6f5f]" to="/contacto">
                   Contacto
                 </Link>
               </li>
               <li>
-                <Link className="text-[#B8B8B8] hover:text-[#00D1C1]" to="/agendar">
+                <Link className="text-[#6d554b] hover:text-[#9b6f5f]" to="/agendar">
                   Reservas
                 </Link>
               </li>
               <li>
-                <Link className="text-[#B8B8B8] hover:text-[#00D1C1]" to="/servicios">
+                <Link className="text-[#6d554b] hover:text-[#9b6f5f]" to="/servicios">
                   Servicios
                 </Link>
               </li>
@@ -41,22 +41,22 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-white">Contacto</h4>
-            <div className="mt-4 space-y-3 text-sm text-[#B8B8B8]">
+            <h4 className="text-sm font-semibold text-[#3b302c]">Contacto</h4>
+            <div className="mt-4 space-y-3 text-sm text-[#6d554b]">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-[#00D1C1]" />
+                <Phone className="h-4 w-4 text-[#b98975]" />
                 <a className="hover:text-white" href={siteConfig.phoneHref}>
                   {siteConfig.phone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-[#00D1C1]" />
+                <Mail className="h-4 w-4 text-[#b98975]" />
                 <a className="hover:text-white" href={`mailto:${siteConfig.email}`}>
                   {siteConfig.email}
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Instagram className="h-4 w-4 text-[#00D1C1]" />
+                <Instagram className="h-4 w-4 text-[#b98975]" />
                 <a
                   className="hover:text-white"
                   href={siteConfig.instagram}
@@ -67,25 +67,25 @@ export const Footer: React.FC = () => {
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-[#00D1C1]" />
+                <MapPin className="h-4 w-4 text-[#b98975]" />
                 <span>{siteConfig.address}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <Separator className="my-8 bg-white/10" />
+        <Separator className="my-8 bg-[#ead3c7]" />
 
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <p className="text-xs text-[#8E8E8E]">
+          <p className="text-xs text-[#7d6a61]">
             © {new Date().getFullYear()} {siteConfig.name}. Sistema Web de
             Agendamiento creado por Fernando Olguea Desarrollador de Software.
           </p>
           <div className="flex gap-4 text-xs">
-            <Link className="text-[#8E8E8E] hover:text-[#00D1C1]" to="/privacidad">
+            <Link className="text-[#7d6a61] hover:text-[#9b6f5f]" to="/privacidad">
               Privacidad
             </Link>
-            <Link className="text-[#8E8E8E] hover:text-[#00D1C1]" to="/terminos">
+            <Link className="text-[#7d6a61] hover:text-[#9b6f5f]" to="/terminos">
               Términos
             </Link>
           </div>

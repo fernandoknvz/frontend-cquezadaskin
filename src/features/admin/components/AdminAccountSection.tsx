@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ export const AdminAccountSection = () => {
           <h2 className="premium-section-title text-3xl font-semibold">
             Cuenta administrativa
           </h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">
+          <p className="mt-1 text-sm text-[#6d554b]">
             Actualiza tu correo y contraseña de acceso.
           </p>
         </div>
@@ -103,8 +103,8 @@ export const AdminAccountSection = () => {
       </div>
 
       {account ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-[#00D1C1]/35 bg-[#00D1C1]/10 p-3 text-sm text-[#D6D6D6]">
-          Sesión iniciada como <strong className="text-[#00D1C1]">{account.username}</strong> ({account.rol})
+        <div className="mt-4 rounded-2xl border border-dashed border-[#c69a86]/35 bg-[#c69a86]/10 p-3 text-sm text-[#6d554b]">
+          Sesión iniciada como <strong className="text-[#c69a86]">{account.username}</strong> ({account.rol})
         </div>
       ) : null}
 
@@ -121,7 +121,7 @@ export const AdminAccountSection = () => {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="account-current-password">Contrasena actual</Label>
+            <Label htmlFor="account-current-password">Contraseña actual</Label>
             <Input
               id="account-current-password"
               type="password"

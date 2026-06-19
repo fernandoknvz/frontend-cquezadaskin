@@ -165,7 +165,7 @@ const isDisponible = (item: DisponibilidadAdmin) =>
 const getEstadoClass = (estado: string) => {
   const normalized = estado.toLowerCase();
   if (normalized === "confirmada" || normalized === "completada") {
-    return "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+    return "border-[#c69a86]/30 bg-[#c69a86]/10 text-[#e8c2b5]";
   }
   if (normalized === "cancelada") {
     return "border-red-400/30 bg-red-500/10 text-red-200";
@@ -176,7 +176,7 @@ const getEstadoClass = (estado: string) => {
   if (normalized === "solicitada") {
     return "border-sky-300/30 bg-sky-400/10 text-sky-200";
   }
-  return "border-white/10 bg-[#0B0F0F] text-[#D6D6D6]";
+  return "border-white/10 bg-[#fffaf7] text-[#6d554b]";
 };
 
 const getDisponibilidadClass = (item: DisponibilidadAdmin) =>
@@ -184,7 +184,7 @@ const getDisponibilidadClass = (item: DisponibilidadAdmin) =>
     ? "border-amber-300/35 bg-amber-400/10 text-amber-200"
     : isBloqueo(item)
     ? "border-red-400/30 bg-red-500/10 text-red-200"
-    : "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+    : "border-[#c69a86]/30 bg-[#c69a86]/10 text-[#e8c2b5]";
 
 const getDisponibilidadStatusLabel = (
   item: DisponibilidadAdmin,
@@ -696,7 +696,7 @@ export const AdminCalendarioSection = () => {
       const errorMessage = getAvailabilitySaveErrorMessage(
         err,
         !editingDisponibilidad
-          ? "El endpoint de creacion masiva aun no esta disponible en backend."
+          ? "El endpoint de creación masiva aún no está disponible en backend."
           : undefined
       );
       showToast({
@@ -777,7 +777,7 @@ export const AdminCalendarioSection = () => {
     if (validation.error) {
       showToast({
         variant: "error",
-        title: "Rango invalido",
+        title: "Rango inválido",
         description: validation.error,
       });
       return;
@@ -886,7 +886,7 @@ export const AdminCalendarioSection = () => {
           <h2 className="premium-section-title text-2xl font-semibold sm:text-3xl">
             Calendario
           </h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">
+          <p className="mt-1 text-sm text-[#6d554b]">
             Gestiona reservas, disponibilidad y bloqueos sin mezclar horarios libres con citas reales.
           </p>
         </div>
@@ -894,7 +894,7 @@ export const AdminCalendarioSection = () => {
           <Button
             type="button"
             variant={mode === "dia" ? "default" : "outline"}
-            className={mode === "dia" ? "bg-[#00D1C1] text-[#03110f]" : ""}
+            className={mode === "dia" ? "bg-[#c69a86] text-[#4b3932]" : ""}
             onClick={() => setMode("dia")}
           >
             Vista dia
@@ -902,7 +902,7 @@ export const AdminCalendarioSection = () => {
           <Button
             type="button"
             variant={mode === "semana" ? "default" : "outline"}
-            className={mode === "semana" ? "bg-[#00D1C1] text-[#03110f]" : ""}
+            className={mode === "semana" ? "bg-[#c69a86] text-[#4b3932]" : ""}
             onClick={() => setMode("semana")}
           >
             Vista semana
@@ -920,7 +920,7 @@ export const AdminCalendarioSection = () => {
         <select
           value={estado}
           onChange={(event) => setEstado(event.target.value)}
-          className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 xl:w-[13rem]"
+          className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70 xl:w-[13rem]"
         >
           <option value="">Todos los estados</option>
           {ESTADOS_RESERVA.map((item) => (
@@ -949,7 +949,7 @@ export const AdminCalendarioSection = () => {
 
       <div className="mt-5 grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
         <Button
-          className="w-full min-w-0 rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] xl:w-auto"
+          className="w-full min-w-0 rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5] xl:w-auto"
           onClick={() => openDisponibilidadPanel("habilitar-dia")}
           disabled={saving}
         >
@@ -1102,7 +1102,7 @@ export const AdminCalendarioSection = () => {
                             ) as AvailabilityInterval,
                           }))
                         }
-                        className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
+                        className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70"
                       >
                         {AVAILABILITY_INTERVALS.map((interval) => (
                           <option key={interval} value={interval}>
@@ -1125,7 +1125,7 @@ export const AdminCalendarioSection = () => {
                         disponible: event.target.value === "true",
                       }))
                     }
-                    className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70"
+                    className="h-11 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70"
                   >
                     <option value="true">Disponible</option>
                     <option value="false">No disponible / bloqueado</option>
@@ -1148,14 +1148,14 @@ export const AdminCalendarioSection = () => {
                 </div>
               </div>
               {!editingDisponibilidad ? (
-                <div className="mt-5 grid gap-3 rounded-2xl border border-[#00D1C1]/20 bg-[#00D1C1]/10 p-4 text-sm text-[#D6D6D6]">
-                  <p className="font-semibold text-[#20E0D0]">
+                <div className="mt-5 grid gap-3 rounded-2xl border border-[#c69a86]/20 bg-[#c69a86]/10 p-4 text-sm text-[#6d554b]">
+                  <p className="font-semibold text-[#e8c2b5]">
                     {slotValidation.error
                       ? slotValidation.error
                       : `Se crearan ${clientCreatableSlots.length} horarios entre ${disponibilidadForm.horaInicio} y ${disponibilidadForm.horaFin}.`}
                   </p>
                   {!slotValidation.error ? (
-                    <p className="text-xs leading-5 text-[#A8A8A8]">
+                    <p className="text-xs leading-5 text-[#a8968d]">
                       Total calculado: {slotValidation.slots.length}. Duplicados
                       omitidos: {clientDuplicatedSlots.length}. Con reserva
                       existente: {clientReservedSlots.length}.
@@ -1177,7 +1177,7 @@ export const AdminCalendarioSection = () => {
               <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap">
                 <Button
                   type="submit"
-                  className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                  className="rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
                   disabled={disponibilidadSubmitDisabled}
                 >
                   {saving ? "Guardando..." : "Guardar disponibilidad"}
@@ -1238,10 +1238,10 @@ export const AdminCalendarioSection = () => {
         <div>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h3 className="text-xl font-semibold text-[#00D1C1]">
+              <h3 className="text-xl font-semibold text-[#c69a86]">
                 Reserva #{selectedEvento.id}
               </h3>
-              <p className="mt-1 text-sm text-[#D6D6D6]">
+              <p className="mt-1 text-sm text-[#6d554b]">
                 {formatFullDate(selectedEvento.fecha.slice(0, 10))} -{" "}
                 {getReservaTimeRange(selectedEvento)}
               </p>
@@ -1254,7 +1254,7 @@ export const AdminCalendarioSection = () => {
               Cerrar
             </Button>
           </div>
-          <div className="mt-5 grid gap-3 text-sm text-[#D6D6D6] md:grid-cols-2">
+          <div className="mt-5 grid gap-3 text-sm text-[#6d554b] md:grid-cols-2">
             <p>Cliente: {selectedEvento.cliente_nombre ?? "Cliente sin nombre"}</p>
             <p>Servicio: {selectedEvento.servicio_nombre ?? "Servicio sin nombre"}</p>
             <p>Contacto: {getEventoContacto(selectedEvento) || "Sin contacto"}</p>
@@ -1273,7 +1273,7 @@ export const AdminCalendarioSection = () => {
               {selectedEvento.observacion_admin || "Sin observacion"}
             </p>
           </div>
-          <p className="mt-4 text-xs text-[#8E8E8E]">
+          <p className="mt-4 text-xs text-[#8e7a71]">
             Para cambiar estados o reagendar, usa la seccion Reservas.
           </p>
         </div>
@@ -1288,7 +1288,7 @@ function DaySummaryCards({ summary }: { summary: DaySummary }) {
     {
       label: "Disponibles",
       value: summary.disponibles,
-      className: "border-[#00D1C1]/25 bg-[#00D1C1]/10 text-[#20E0D0]",
+      className: "border-[#c69a86]/25 bg-[#c69a86]/10 text-[#e8c2b5]",
     },
     {
       label: "Bloqueados",
@@ -1346,7 +1346,7 @@ function WeekView({
 }) {
   if (loading) {
     return (
-      <div className="mt-6 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]">
+      <div className="mt-6 rounded-2xl border border-white/10 bg-[#fffaf7] p-4 text-sm text-[#a8968d]">
         Cargando semana...
       </div>
     );
@@ -1357,18 +1357,18 @@ function WeekView({
       {days.map((day) => (
         <article
           key={day.date}
-          className="min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4"
+          className="min-w-0 rounded-2xl border border-white/10 bg-[#fffaf7] p-4"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="text-base font-semibold capitalize text-white">
                 {formatShortDate(day.date)}
               </h3>
-              <p className="mt-1 text-xs text-[#8E8E8E]">
+              <p className="mt-1 text-xs text-[#8e7a71]">
                 {day.summary.reservas} reservas
               </p>
             </div>
-            <span className="rounded-full border border-white/10 bg-[#111414] px-2 py-1 text-xs text-[#D6D6D6]">
+            <span className="rounded-full border border-white/10 bg-[#ffffff] px-2 py-1 text-xs text-[#6d554b]">
               {day.disponibilidad.length} slots
             </span>
           </div>
@@ -1406,8 +1406,8 @@ function WeekView({
 
 function MetricPill({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#111414] p-2">
-      <p className="text-[11px] leading-4 text-[#8E8E8E]">{label}</p>
+    <div className="rounded-xl border border-white/10 bg-[#ffffff] p-2">
+      <p className="text-[11px] leading-4 text-[#8e7a71]">{label}</p>
       <p className="mt-1 text-base font-semibold text-white">{value}</p>
     </div>
   );
@@ -1438,16 +1438,16 @@ function DayView({
     <div className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
       <div className="premium-card min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-5">
         <div className="flex items-center gap-2">
-          <CalendarDays className="h-5 w-5 text-[#00D1C1]" />
+          <CalendarDays className="h-5 w-5 text-[#c69a86]" />
           <h3 className="text-xl font-semibold capitalize text-white">
             {formatFullDate(date)}
           </h3>
         </div>
         <div className="mt-5 grid gap-3">
           {loading ? (
-            <p className="text-sm text-[#A8A8A8]">Cargando...</p>
+            <p className="text-sm text-[#a8968d]">Cargando...</p>
           ) : eventos.length === 0 ? (
-            <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]">
+            <p className="rounded-2xl border border-white/10 bg-[#fffaf7] p-4 text-sm text-[#a8968d]">
               No hay reservas para esta fecha
             </p>
           ) : (
@@ -1464,7 +1464,7 @@ function DayView({
 
       <div className="premium-card min-w-0 rounded-2xl p-4 sm:rounded-3xl sm:p-5">
         <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-[#00D1C1]" />
+          <Clock className="h-5 w-5 text-[#c69a86]" />
           <h3 className="text-xl font-semibold text-white">Gestion de horarios</h3>
         </div>
         <DisponibilidadList
@@ -1493,8 +1493,8 @@ function ReservaCard({
     <article
       className={
         compact
-          ? "min-w-0 rounded-xl border border-white/10 bg-[#0B0F0F] p-2.5"
-          : "min-w-0 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4"
+          ? "min-w-0 rounded-xl border border-white/10 bg-[#fffaf7] p-2.5"
+          : "min-w-0 rounded-2xl border border-white/10 bg-[#fffaf7] p-4"
       }
     >
       <div
@@ -1508,7 +1508,7 @@ function ReservaCard({
           <p className="break-words text-sm font-semibold leading-5 text-white">
             {getReservaTimeRange(evento)} - {evento.cliente_nombre ?? "Cliente sin nombre"}
           </p>
-          <p className="mt-1 break-words text-xs text-[#A8A8A8]">
+          <p className="mt-1 break-words text-xs text-[#a8968d]">
             {evento.servicio_nombre ?? "Servicio sin nombre"}
           </p>
         </div>
@@ -1521,7 +1521,7 @@ function ReservaCard({
         </span>
       </div>
       {!compact ? (
-        <div className="mt-3 grid gap-1 text-xs text-[#A8A8A8]">
+        <div className="mt-3 grid gap-1 text-xs text-[#a8968d]">
           <span>{getEventoContacto(evento) || "Sin contacto"}</span>
           {evento.observacion_admin ? <span>{evento.observacion_admin}</span> : null}
         </div>
@@ -1563,7 +1563,7 @@ function DisponibilidadList({
   onDelete: (item: DisponibilidadAdmin) => void;
 }) {
   if (loading) {
-    return <p className="mt-5 text-sm text-[#A8A8A8]">Cargando...</p>;
+    return <p className="mt-5 text-sm text-[#a8968d]">Cargando...</p>;
   }
 
   if (items.length === 0) {
@@ -1571,8 +1571,8 @@ function DisponibilidadList({
       <p
         className={
           compact
-            ? "rounded-xl border border-white/10 bg-[#0B0F0F] p-2.5 text-xs text-[#A8A8A8]"
-            : "mt-5 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#A8A8A8]"
+            ? "rounded-xl border border-white/10 bg-[#fffaf7] p-2.5 text-xs text-[#a8968d]"
+            : "mt-5 rounded-2xl border border-white/10 bg-[#fffaf7] p-4 text-sm text-[#a8968d]"
         }
       >
         No hay horarios creados para este dia. Usa Crear disponibilidad para agregar bloques horarios.
@@ -1585,12 +1585,12 @@ function DisponibilidadList({
       {items.map((item) => (
         <div
           key={`${item.id}-${item.fecha}-${item.hora}`}
-          className={`rounded-xl border bg-[#0B0F0F] p-2.5 ${
+          className={`rounded-xl border bg-[#fffaf7] p-2.5 ${
             isOcupado(item)
               ? "border-amber-300/25"
               : isBloqueo(item)
               ? "border-red-400/20"
-              : "border-[#00D1C1]/20"
+              : "border-[#c69a86]/20"
           }`}
         >
           {(() => {
@@ -1608,12 +1608,12 @@ function DisponibilidadList({
                   : timeLabel(item.hora)}
               </span>
               {item.motivo ? (
-                <p className="mt-0.5 truncate text-xs text-[#A8A8A8]">
+                <p className="mt-0.5 truncate text-xs text-[#a8968d]">
                   {item.motivo}
                 </p>
               ) : null}
               {evento ? (
-                <p className="mt-0.5 truncate text-xs text-[#A8A8A8]">
+                <p className="mt-0.5 truncate text-xs text-[#a8968d]">
                   {evento.cliente_nombre ?? "Cliente sin nombre"} -{" "}
                   {evento.servicio_nombre ?? "Servicio sin nombre"}
                 </p>

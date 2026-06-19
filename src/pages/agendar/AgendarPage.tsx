@@ -1,6 +1,7 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  CalendarCheck2,
   CalendarDays,
   CheckCircle,
   Clock,
@@ -61,7 +62,7 @@ import {
   SAME_DAY_BOOKING_LEAD_MESSAGE,
 } from "@/lib/bookingTimeRules";
 import { useToast } from "@/hooks/useToast";
-import brandLogo from "@/assets/logo_cquezadaskin.png";
+import brandLogo from "@/assets/oficial_logo.png";
 
 type AuthMode = "login" | "register";
 
@@ -83,7 +84,7 @@ type BookingForm = {
 };
 
 const FINAL_SUCCESS_MESSAGE =
-  "Tu solicitud fue enviada correctamente. CQuezadaSkin te contactará para confirmar.";
+  "Tu solicitud fue enviada correctamente. CQUEZADASKIN te contactará para confirmar.";
 const BOOKING_LOADING_MESSAGE =
   "Estamos enviando tu solicitud y validando la disponibilidad del horario.";
 
@@ -361,7 +362,7 @@ export const AgendarPage: React.FC = () => {
   );
 
   const isClientLoggedIn = Boolean(clientToken && client);
-  const clientName = client?.nombre ?? "Cliente CQuezadaSkin";
+  const clientName = client?.nombre ?? "Cliente CQUEZADASKIN";
   const clientEmail = client?.email ?? client?.correo ?? null;
 
   const authButtonText = authMode === "login" ? "Ingresar" : "Crear cuenta";
@@ -409,14 +410,14 @@ export const AgendarPage: React.FC = () => {
 
     const email = authForm.email.trim();
     if (!isValidEmail(email)) {
-      toast.warning({ title: "Correo invalido", description: EMAIL_ERROR_MESSAGE });
+      toast.warning({ title: "Correo inválido", description: EMAIL_ERROR_MESSAGE });
       return;
     }
 
     const phoneDigits = normalizePhoneDigits(authForm.telefono);
     if (authMode === "register" && !isValidChileanMobile(phoneDigits)) {
       setAuthForm((prev) => ({ ...prev, telefono: phoneDigits }));
-      toast.warning({ title: "Telefono invalido", description: PHONE_ERROR_MESSAGE });
+      toast.warning({ title: "Teléfono inválido", description: PHONE_ERROR_MESSAGE });
       return;
     }
 
@@ -429,7 +430,7 @@ export const AgendarPage: React.FC = () => {
 
       if (!isValidRut(rut)) {
         setAuthForm((prev) => ({ ...prev, rut }));
-        toast.warning({ title: "RUT invalido", description: RUT_ERROR_MESSAGE });
+        toast.warning({ title: "RUT inválido", description: RUT_ERROR_MESSAGE });
         return;
       }
     }
@@ -471,7 +472,7 @@ export const AgendarPage: React.FC = () => {
           error,
           authMode === "register"
             ? REGISTER_FALLBACK_ERROR
-            : "No pudimos iniciar la sesion del cliente."
+            : "No pudimos iniciar la sesión del cliente."
         ),
       });
     } finally {
@@ -552,7 +553,7 @@ export const AgendarPage: React.FC = () => {
               )
             : getErrorMessage(
                 error,
-                "No pudimos enviar tu solicitud. Revisa tu conexion e intenta nuevamente."
+                "No pudimos enviar tu solicitud. Revisa tu conexión e intenta nuevamente."
               ),
       });
     } finally {
@@ -562,45 +563,45 @@ export const AgendarPage: React.FC = () => {
 
   return (
     <section className="mx-auto w-[92%] max-w-6xl py-6 sm:py-12">
-      <header className="overflow-hidden rounded-3xl border border-white/10 bg-[#111111]/90 shadow-[0_24px_80px_rgba(0,0,0,0.48)] sm:rounded-[2rem]">
+      <header className="overflow-hidden rounded-3xl border border-white/10 bg-[#ffffff]/90 shadow-[0_24px_80px_rgba(0,0,0,0.48)] sm:rounded-[2rem]">
         <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
           <div className="p-6 sm:p-8 lg:p-10">
-            <p className="inline-flex items-center gap-2 rounded-full border border-[#00D1C1]/25 bg-[#00D1C1]/10 px-3 py-1.5 text-sm font-semibold text-[#20E0D0]">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#c69a86]/25 bg-[#c69a86]/10 px-3 py-1.5 text-sm font-semibold text-[#e8c2b5]">
               <Sparkles className="h-4 w-4" />
               Agenda online
             </p>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-5xl">
-              Reserva tu tratamiento en CQuezadaSkin
+              Reserva tu tratamiento en <span className="brand-wordmark">CQUEZADASKIN</span>
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#C9C9C9] sm:text-lg">
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#6d554b] sm:text-lg">
               Elige tu servicio, fecha y horario disponible. Constanza revisará
               tu solicitud y te contactará para confirmar los detalles.
             </p>
-            <div className="mt-5 flex flex-wrap gap-2 text-xs text-[#B8B8B8] sm:text-sm">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#111414]/70 px-3 py-1.5">
-                <MapPin className="h-4 w-4 text-[#00D1C1]" />
+            <div className="mt-5 flex flex-wrap gap-2 text-xs text-[#7d6a61] sm:text-sm">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#ffffff]/70 px-3 py-1.5">
+                <MapPin className="h-4 w-4 text-[#c69a86]" />
                 Home studio en Quilpué
               </span>
-              <span className="rounded-full border border-white/10 bg-[#111414]/70 px-3 py-1.5">
+              <span className="rounded-full border border-white/10 bg-[#ffffff]/70 px-3 py-1.5">
                 Limpieza facial
               </span>
-              <span className="rounded-full border border-white/10 bg-[#111414]/70 px-3 py-1.5">
+              <span className="rounded-full border border-white/10 bg-[#ffffff]/70 px-3 py-1.5">
                 Microneedling
               </span>
-              <span className="rounded-full border border-white/10 bg-[#111414]/70 px-3 py-1.5">
+              <span className="rounded-full border border-white/10 bg-[#ffffff]/70 px-3 py-1.5">
                 Corporal
               </span>
             </div>
           </div>
-          <div className="bg-[radial-gradient(circle_at_50%_28%,rgba(0,209,193,0.14),transparent_17rem)] p-5 pt-0 sm:p-8 sm:pt-0 lg:pt-8">
-            <div className="flex h-full min-h-[13rem] flex-col items-center justify-center gap-5 rounded-[1.5rem] border border-[#00D1C1]/25 bg-[#0B0F0F]/82 p-5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_40px_rgba(0,209,193,0.12)] sm:min-h-[15rem] sm:p-6 lg:min-h-64">
+          <div className="bg-[radial-gradient(circle_at_50%_28%,rgba(198,154,134,0.14),transparent_17rem)] p-5 pt-0 sm:p-8 sm:pt-0 lg:pt-8">
+            <div className="flex h-full min-h-[13rem] flex-col items-center justify-center gap-5 rounded-[1.5rem] border border-[#c69a86]/25 bg-[#fffaf7]/82 p-5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_40px_rgba(198,154,134,0.12)] sm:min-h-[15rem] sm:p-6 lg:min-h-64">
               <img
                 src={brandLogo}
-                alt="Logo CQuezadaSkin"
-                className="w-[min(72vw,210px)] rounded-2xl object-contain shadow-[0_0_34px_rgba(0,209,193,0.14)] sm:w-[240px] lg:w-[300px]"
+                alt="Logo CQUEZADASKIN"
+                className="w-[min(72vw,210px)] rounded-2xl object-contain shadow-[0_0_34px_rgba(198,154,134,0.14)] sm:w-[240px] lg:w-[300px]"
                 loading="eager"
               />
-              <p className="max-w-sm text-sm leading-relaxed text-[#D6D6D6]">
+              <p className="max-w-sm text-sm leading-relaxed text-[#6d554b]">
                 Una experiencia limpia, cálida y profesional para cuidar tu piel
                 con orientación personalizada.
               </p>
@@ -610,13 +611,13 @@ export const AgendarPage: React.FC = () => {
       </header>
 
       <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <Card className="rounded-2xl border-white/10 bg-[#121212]/92 shadow-[0_18px_60px_rgba(0,0,0,0.36)]">
+        <Card className="rounded-2xl border-white/10 bg-[#ffffff]/92 shadow-[0_18px_60px_rgba(0,0,0,0.36)]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               {isClientLoggedIn ? (
-                <UserCheck className="h-5 w-5 text-[#00D1C1]" />
+                <UserCheck className="h-5 w-5 text-[#c69a86]" />
               ) : (
-                <LogIn className="h-5 w-5 text-[#00D1C1]" />
+                <LogIn className="h-5 w-5 text-[#c69a86]" />
               )}
               {isClientLoggedIn ? "Mi cuenta" : "Cliente"}
             </CardTitle>
@@ -628,15 +629,15 @@ export const AgendarPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             {checkingSession ? (
-              <div className="rounded-lg border border-white/10 bg-[#111414]/70 p-4 text-sm text-[#D6D6D6]">
+              <div className="rounded-lg border border-white/10 bg-[#ffffff]/70 p-4 text-sm text-[#6d554b]">
                 Validando sesión...
               </div>
             ) : isClientLoggedIn ? (
               <div className="space-y-5">
-                <div className="rounded-2xl border border-white/10 bg-[#181818] p-4">
+                <div className="rounded-2xl border border-white/10 bg-[#f8eee8] p-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 items-start gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#00D1C1] text-[#03110f]">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#c69a86] text-[#4b3932]">
                         <UserCheck className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
@@ -644,19 +645,19 @@ export const AgendarPage: React.FC = () => {
                           {clientName}
                         </p>
                         {clientEmail ? (
-                          <p className="mt-1 flex items-center gap-2 truncate text-sm text-[#B8B8B8]">
-                            <Mail className="h-4 w-4 shrink-0 text-[#00D1C1]" />
+                          <p className="mt-1 flex items-center gap-2 truncate text-sm text-[#7d6a61]">
+                            <Mail className="h-4 w-4 shrink-0 text-[#c69a86]" />
                             {clientEmail}
                           </p>
                         ) : (
-                          <p className="mt-1 text-sm text-[#B8B8B8]">
-                            Cuenta cliente CQuezadaSkin
+                          <p className="mt-1 text-sm text-[#7d6a61]">
+                            Cuenta cliente CQUEZADASKIN
                           </p>
                         )}
                       </div>
                     </div>
 
-                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#00D1C1]/25 bg-[#00D1C1]/10 px-3 py-1 text-sm font-medium text-[#20E0D0]">
+                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#c69a86]/25 bg-[#c69a86]/10 px-3 py-1 text-sm font-medium text-[#e8c2b5]">
                       <CheckCircle className="h-4 w-4" />
                       Sesión activa
                     </span>
@@ -665,10 +666,10 @@ export const AgendarPage: React.FC = () => {
 
                 <Button
                   asChild
-                  className="w-full rounded-lg bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                className="w-full rounded-lg bg-[#f1d5cc] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
                 >
                   <Link to="/mis-reservas">
-                    <CalendarDays className="mr-2 h-4 w-4" />
+                    <CalendarCheck2 className="mr-2 h-4 w-4" />
                     Ver mis reservas
                   </Link>
                 </Button>
@@ -685,7 +686,7 @@ export const AgendarPage: React.FC = () => {
               </div>
             ) : (
               <form className="space-y-4" onSubmit={handleAuthSubmit}>
-                <div className="grid grid-cols-2 gap-2 rounded-lg border border-white/10 bg-[#0B0F0F] p-1">
+                <div className="grid grid-cols-2 gap-2 rounded-lg border border-white/10 bg-[#fffaf7] p-1">
                   <Button
                     type="button"
                     variant={authMode === "login" ? "default" : "ghost"}
@@ -750,8 +751,8 @@ export const AgendarPage: React.FC = () => {
                           <Phone className="h-4 w-4" />
                           Teléfono
                         </Label>
-                        <div className="flex h-11 overflow-hidden rounded-lg border border-white/10 bg-[#121212] focus-within:ring-[3px] focus-within:ring-[#00D1C1]/40">
-                          <span className="flex shrink-0 items-center border-r border-white/10 bg-[#111414] px-3 text-sm font-medium text-[#D6D6D6]">
+                        <div className="flex h-11 overflow-hidden rounded-lg border border-white/10 bg-[#ffffff] focus-within:ring-[3px] focus-within:ring-[#c69a86]/40">
+                          <span className="flex shrink-0 items-center border-r border-white/10 bg-[#ffffff] px-3 text-sm font-medium text-[#6d554b]">
                             {CHILEAN_MOBILE_PREFIX}
                           </span>
                           <Input
@@ -772,7 +773,7 @@ export const AgendarPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-white/10 bg-[#111414]/70 p-4 text-sm text-[#D6D6D6]">
+                    <div className="rounded-lg border border-white/10 bg-[#ffffff]/70 p-4 text-sm text-[#6d554b]">
                       Tus datos serán utilizados únicamente para gestionar tu
                       solicitud de reserva.
                     </div>
@@ -796,7 +797,7 @@ export const AgendarPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="client-password">Contrasena</Label>
+                  <Label htmlFor="client-password">Contraseña</Label>
                   <Input
                     id="client-password"
                     type="password"
@@ -813,21 +814,21 @@ export const AgendarPage: React.FC = () => {
                 </div>
 
                 {authMode === "register" ? (
-                  <div className="space-y-3 rounded-lg border border-white/10 bg-[#111414]/70 p-4">
-                    <label className="flex items-start gap-3 text-sm text-[#C9C9C9]">
+                  <div className="space-y-3 rounded-lg border border-white/10 bg-[#ffffff]/70 p-4">
+                    <label className="flex items-start gap-3 text-sm text-[#6d554b]">
                       <input
                         type="checkbox"
                         checked={authForm.aceptaPolitica}
                         onChange={(event) =>
                           setAuthField("aceptaPolitica", event.target.checked)
                         }
-                        className="mt-1 h-4 w-4 accent-[#00D1C1]"
+                        className="mt-1 h-4 w-4 accent-[#c69a86]"
                         required
                       />
                       <span>
                         Acepto la{" "}
                         <Link
-                          className="text-[#00D1C1] underline-offset-4 hover:underline"
+                          className="text-[#c69a86] underline-offset-4 hover:underline"
                           to="/privacidad"
                           target="_blank"
                         >
@@ -837,7 +838,7 @@ export const AgendarPage: React.FC = () => {
                       </span>
                     </label>
 
-                    <label className="flex items-start gap-3 text-sm text-[#C9C9C9]">
+                    <label className="flex items-start gap-3 text-sm text-[#6d554b]">
                       <input
                         type="checkbox"
                         checked={authForm.recibePromociones}
@@ -847,7 +848,7 @@ export const AgendarPage: React.FC = () => {
                             event.target.checked
                           )
                         }
-                        className="mt-1 h-4 w-4 accent-[#00D1C1]"
+                        className="mt-1 h-4 w-4 accent-[#c69a86]"
                       />
                       <span>Quiero recibir promociones</span>
                     </label>
@@ -856,7 +857,7 @@ export const AgendarPage: React.FC = () => {
 
                 <Button
                   type="submit"
-                  className="h-11 w-full rounded-lg bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                  className="h-11 w-full rounded-lg bg-[#f1d5cc] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
                   disabled={!canSubmitAuth || authLoading}
                 >
                   {authLoading ? "Procesando..." : authButtonText}
@@ -866,10 +867,10 @@ export const AgendarPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-white/10 bg-[#121212]/92 shadow-[0_18px_60px_rgba(0,0,0,0.36)]">
+        <Card className="rounded-2xl border-white/10 bg-[#ffffff]/92 shadow-[0_18px_60px_rgba(0,0,0,0.36)]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <CalendarDays className="h-5 w-5 text-[#00D1C1]" />
+              <CalendarDays className="h-5 w-5 text-[#c69a86]" />
               Solicitud de reserva
             </CardTitle>
             <CardDescription>
@@ -888,7 +889,7 @@ export const AgendarPage: React.FC = () => {
                     }
                     disabled={servicesLoading}
                   >
-                    <SelectTrigger className="h-11 rounded-lg border-white/10 bg-[#121212] text-white">
+                    <SelectTrigger className="h-11 rounded-lg border-white/10 bg-[#ffffff] text-white">
                       <SelectValue
                         placeholder={
                           servicesLoading
@@ -906,7 +907,7 @@ export const AgendarPage: React.FC = () => {
                     </SelectContent>
                   </Select>
                   {selectedService ? (
-                    <div className="rounded-2xl border border-white/10 bg-[#181818] p-4 text-sm text-[#C9C9C9]">
+                    <div className="rounded-2xl border border-white/10 bg-[#f8eee8] p-4 text-sm text-[#6d554b]">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <p className="font-semibold text-white">
@@ -919,7 +920,7 @@ export const AgendarPage: React.FC = () => {
                           ) : null}
                         </div>
                         {formatPrice(selectedService.precio) ? (
-                          <span className="w-fit rounded-full border border-[#00D1C1]/25 bg-[#00D1C1]/10 px-3 py-1 text-sm font-semibold text-[#20E0D0]">
+                          <span className="w-fit rounded-full border border-[#c69a86]/25 bg-[#c69a86]/10 px-3 py-1 text-sm font-semibold text-[#e8c2b5]">
                             {formatPrice(selectedService.precio)}
                           </span>
                         ) : null}
@@ -945,14 +946,14 @@ export const AgendarPage: React.FC = () => {
                         id="fecha"
                         type="button"
                         variant="outline"
-                        className="h-11 w-full justify-start rounded-2xl border-white/10 bg-[#121212] text-left font-normal text-white shadow-sm hover:bg-[#181818]"
+                        className="h-11 w-full justify-start rounded-2xl border-white/10 bg-[#ffffff] text-left font-normal text-white shadow-sm hover:bg-[#f8eee8]"
                       >
-                        <CalendarDays className="mr-2 h-4 w-4 text-[#00D1C1]" />
+                        <CalendarDays className="mr-2 h-4 w-4 text-[#c69a86]" />
                         <span
                           className={
                             bookingForm.fecha
                               ? "text-white"
-                              : "text-[#8E8E8E]"
+                              : "text-[#8e7a71]"
                           }
                         >
                           {formatDisplayDate(bookingForm.fecha)}
@@ -1002,7 +1003,7 @@ export const AgendarPage: React.FC = () => {
                       )
                     }
                   >
-                    <SelectTrigger className="h-11 rounded-lg border-white/10 bg-[#121212] text-white">
+                    <SelectTrigger className="h-11 rounded-lg border-white/10 bg-[#ffffff] text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1024,7 +1025,7 @@ export const AgendarPage: React.FC = () => {
                       availableTimes.length === 0
                     }
                   >
-                    <SelectTrigger className="h-11 rounded-lg border-white/10 bg-[#121212] text-white">
+                    <SelectTrigger className="h-11 rounded-lg border-white/10 bg-[#ffffff] text-white">
                       <SelectValue
                         placeholder={
                           !bookingForm.fecha
@@ -1050,7 +1051,7 @@ export const AgendarPage: React.FC = () => {
                   ) : bookingForm.fecha &&
                     !timesLoading &&
                     availableTimes.length === 0 ? (
-                    <p className="text-sm text-[#20E0D0]">
+                    <p className="text-sm text-[#e8c2b5]">
                       {bookingForm.fecha === todayKey()
                         ? SAME_DAY_BOOKING_LEAD_MESSAGE
                         : "Sin horas disponibles para esta fecha"}
@@ -1060,14 +1061,14 @@ export const AgendarPage: React.FC = () => {
               </div>
 
               {!isClientLoggedIn ? (
-                <div className="rounded-lg border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-4 text-sm text-[#CFFCF8]">
+                <div className="rounded-lg border border-[#c69a86]/25 bg-[#c69a86]/10 p-4 text-sm text-[#CFFCF8]">
                   Ingresa o crea tu cuenta de cliente para enviar la solicitud.
                 </div>
               ) : null}
 
               {bookingLoading ? (
-                <Alert className="rounded-lg border-[#00D1C1]/25 bg-[#00D1C1]/10">
-                  <Clock className="h-5 w-5 text-[#00D1C1]" />
+                <Alert className="rounded-lg border-[#c69a86]/25 bg-[#c69a86]/10">
+                  <Clock className="h-5 w-5 text-[#c69a86]" />
                   <div className="ml-3">
                     <AlertTitle>Enviando solicitud</AlertTitle>
                     <AlertDescription className="text-[#CFFCF8]">
@@ -1077,18 +1078,18 @@ export const AgendarPage: React.FC = () => {
                 </Alert>
               ) : null}
 
-              <div className="rounded-lg border border-white/10 bg-[#111414]/70 p-4">
-                <label className="flex items-start gap-3 text-sm text-[#C9C9C9]">
+              <div className="rounded-lg border border-white/10 bg-[#ffffff]/70 p-4">
+                <label className="flex items-start gap-3 text-sm text-[#6d554b]">
                   <input
                     type="checkbox"
                     required
-                    className="mt-1 h-4 w-4 accent-[#00D1C1]"
+                    className="mt-1 h-4 w-4 accent-[#c69a86]"
                     disabled={bookingLoading}
                   />
                   <span>
                     Acepto los{" "}
                     <Link
-                      className="text-[#00D1C1] underline-offset-4 hover:underline"
+                      className="text-[#c69a86] underline-offset-4 hover:underline"
                       to="/terminos"
                       target="_blank"
                     >
@@ -1096,7 +1097,7 @@ export const AgendarPage: React.FC = () => {
                     </Link>{" "}
                     y la{" "}
                     <Link
-                      className="text-[#00D1C1] underline-offset-4 hover:underline"
+                      className="text-[#c69a86] underline-offset-4 hover:underline"
                       to="/privacidad"
                       target="_blank"
                     >
@@ -1109,7 +1110,7 @@ export const AgendarPage: React.FC = () => {
 
               <Button
                 type="submit"
-                className="h-12 w-full rounded-lg bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0] sm:w-auto sm:px-8"
+                className="h-12 w-full rounded-lg bg-[#f1d5cc] font-semibold text-[#4b3932] hover:bg-[#e8c2b5] sm:w-auto sm:px-8"
                 disabled={!canSubmitBooking || bookingLoading}
               >
                 {bookingLoading ? "Validando horario..." : "Enviar solicitud"}

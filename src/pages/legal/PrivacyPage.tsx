@@ -1,4 +1,4 @@
-﻿import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -19,7 +19,7 @@ export default function PrivacyPage() {
         <Button
           type="button"
           variant="outline"
-          className="rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#121212]/90 hover:bg-[#121212]"
+          className="rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#ffffff]/90 hover:bg-[#ffffff]"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -30,13 +30,13 @@ export default function PrivacyPage() {
           <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">
             Política de Privacidad
           </h1>
-          <p className="mt-3 text-lg text-[#C9C9C9]">
+          <p className="mt-3 text-lg text-[#6d554b]">
             Transparencia sobre como usamos la informacion en el sistema de
             agendamiento.
           </p>
         </header>
 
-        <Card className="mt-10 rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#121212]/90 shadow-sm">
+        <Card className="mt-10 rounded-2xl border-[rgba(255,255,255,0.10)] bg-[#ffffff]/90 shadow-sm">
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
@@ -45,16 +45,16 @@ export default function PrivacyPage() {
                   Ultima actualizacion: marzo 2026
                 </CardDescription>
               </div>
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#181818]">
-                <ShieldCheck className="h-6 w-6 text-[#00D1C1]" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f8eee8]">
+                <ShieldCheck className="h-6 w-6 text-[#c69a86]" />
               </div>
             </div>
           </CardHeader>
 
-          <CardContent className="max-w-none space-y-4 text-[#C9C9C9] [&_a]:text-[#00D1C1] [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-white [&_h3]:font-semibold [&_h3]:text-white [&_li]:ml-5 [&_li]:list-disc [&_strong]:text-white">
+          <CardContent className="max-w-none space-y-4 text-[#6d554b] [&_a]:text-[#c69a86] [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-white [&_h3]:font-semibold [&_h3]:text-white [&_li]:ml-5 [&_li]:list-disc [&_strong]:text-white">
             <h2>1. Responsable del tratamiento de datos</h2>
             <p>
-              El presente sitio web es operado por CQuezadaSkin, servicio de
+              El presente sitio web es operado por CQUEZADASKIN, servicio de
               cosmetología y estética facial/corporal en Quilpué, Chile.
             </p>
             <p>
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
             <h2>4. Confirmaciones y contacto</h2>
             <p>
               Al realizar una reserva, el sistema enviará una confirmación de
-              recepcion de la solicitud. Posteriormente, CQuezadaSkin podra
+              recepcion de la solicitud. Posteriormente, CQUEZADASKIN podra
               contactar al cliente para coordinar la prestacion del servicio.
             </p>
 
@@ -125,11 +125,11 @@ export default function PrivacyPage() {
 
             <h2>10. Legislacion aplicable</h2>
             <p>
-              Esta politica se rige por la legislacion vigente en Chile,
+              Esta política se rige por la legislación vigente en Chile,
               especialmente la Ley N 19.628 sobre proteccion de la vida privada.
             </p>
 
-            <p className="mt-8 text-sm text-[#B8B8B8]">
+            <p className="mt-8 text-sm text-[#7d6a61]">
               Tambien puedes revisar los{" "}
               <Link to="/terminos">Términos y Condiciones</Link>.
             </p>

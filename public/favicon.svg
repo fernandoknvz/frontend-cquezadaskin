@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CQuezadaSkin">
-  <rect width="64" height="64" rx="18" fill="#050505"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CQUEZADASKIN">
+  <rect width="64" height="64" rx="18" fill="#f3f2f3"/>
   <path
     d="M43.5 43.8c-3.2 3-7.1 4.5-11.7 4.5-4.9 0-9-1.6-12.2-4.7-3.2-3.2-4.8-7-4.8-11.6 0-4.7 1.6-8.6 4.9-11.7 3.3-3.1 7.3-4.6 12.1-4.6 4.5 0 8.3 1.4 11.5 4.2l-4.1 5.1c-2-1.7-4.4-2.5-7.2-2.5-2.8 0-5.1.9-6.9 2.7-1.8 1.8-2.7 4.1-2.7 6.8s.9 5 2.7 6.8c1.8 1.8 4.1 2.7 6.9 2.7 2.9 0 5.4-.9 7.4-2.8l4.1 5.1Z"
-    fill="#00D1C1"
+    fill="#3f3e43"
   />
   <path
     d="M46.7 17.4c2.1 2 3.7 4.4 4.6 7.2"
     fill="none"
-    stroke="#20E0D0"
+    stroke="#7e7c84"
     stroke-width="2.6"
     stroke-linecap="round"
     opacity="0.85"

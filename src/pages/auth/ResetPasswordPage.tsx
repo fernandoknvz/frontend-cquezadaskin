@@ -1,4 +1,4 @@
-﻿import { useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
         <h1 className="premium-heading text-3xl font-semibold text-white">
           Restablecer contraseña
         </h1>
-        <p className="mt-1 text-sm text-[#D6D6D6]">
+        <p className="mt-1 text-sm text-[#6d554b]">
           Ingresa una nueva contraseña para continuar.
         </p>
 
@@ -88,13 +88,13 @@ export default function ResetPasswordPage() {
               {error}
             </div>
           ) : message ? (
-            <div className="rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-xs text-[#00D1C1]">
+            <div className="rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-3 text-xs text-[#c69a86]">
               {message}
             </div>
           ) : null}
 
           <Button
-            className="w-full rounded-2xl h-12 bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            className="w-full rounded-2xl h-12 bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
             disabled={loading}
           >
             {loading ? "Actualizando..." : "Actualizar contraseña"}

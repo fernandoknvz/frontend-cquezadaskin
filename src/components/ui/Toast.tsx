@@ -29,9 +29,9 @@ const styles: Record<
   }
 > = {
   success: {
-    border: "border-[#00D1C1]/60",
-    glow: "shadow-[0_22px_60px_rgba(0,209,193,0.18)]",
-    iconWrap: "border-[#00D1C1]/35 bg-[#00D1C1]/12 text-[#20E0D0]",
+    border: "border-[#d9b8a8]",
+    glow: "shadow-[0_22px_60px_rgba(198,154,134,0.18)]",
+    iconWrap: "border-[#d9b8a8] bg-[#f8eee8] text-[#9b6f5f]",
     icon: <CheckCircle2 className="h-4 w-4" />,
   },
   error: {
@@ -47,9 +47,9 @@ const styles: Record<
     icon: <AlertTriangle className="h-4 w-4" />,
   },
   info: {
-    border: "border-sky-300/45",
-    glow: "shadow-[0_22px_60px_rgba(56,189,248,0.14)]",
-    iconWrap: "border-sky-300/30 bg-sky-400/12 text-sky-200",
+    border: "border-[#d9b8a8]",
+    glow: "shadow-[0_22px_60px_rgba(198,154,134,0.14)]",
+    iconWrap: "border-[#d9b8a8] bg-[#f8eee8] text-[#9b6f5f]",
     icon: <Info className="h-4 w-4" />,
   },
 };
@@ -83,7 +83,7 @@ export function Toast({ toast, onClose }: ToastProps) {
       aria-live={toast.type === "error" ? "assertive" : "polite"}
       aria-atomic="true"
       className={cn(
-        "pointer-events-auto grid grid-cols-[2.25rem_1fr_auto] gap-3 rounded-xl border bg-[#0A0F10]/90 p-3.5 text-white backdrop-blur-xl transition-all duration-200 ease-out",
+        "pointer-events-auto grid grid-cols-[2.25rem_1fr_auto] gap-3 rounded-xl border bg-white/95 p-3.5 text-[#3b302c] backdrop-blur-xl transition-all duration-200 ease-out",
         style.border,
         style.glow,
         isVisible
@@ -101,9 +101,9 @@ export function Toast({ toast, onClose }: ToastProps) {
       </div>
 
       <div className="min-w-0 pt-0.5">
-        <p className="text-sm font-semibold leading-5 text-white">{toast.title}</p>
+        <p className="text-sm font-semibold leading-5 text-[#3b302c]">{toast.title}</p>
         {toast.description ? (
-          <p className="mt-1 text-sm leading-5 text-[#D6D6D6]">
+          <p className="mt-1 text-sm leading-5 text-[#6d554b]">
             {toast.description}
           </p>
         ) : null}
@@ -112,9 +112,9 @@ export function Toast({ toast, onClose }: ToastProps) {
       {dismissible ? (
         <button
           type="button"
-          aria-label="Cerrar notificacion"
+          aria-label="Cerrar notificación"
           onClick={handleClose}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 text-[#B8B8B8] transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-[#ead3c7] text-[#8e7a71] transition hover:border-[#d9b8a8] hover:bg-[#f8eee8] hover:text-[#3b302c]"
         >
           <X className="h-3.5 w-3.5" />
         </button>

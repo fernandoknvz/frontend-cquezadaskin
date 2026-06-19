@@ -52,15 +52,15 @@ export const TestimoniosSection = () => {
   }, []);
 
   return (
-    <section className="w-full bg-[#050505]">
+    <section className="w-full bg-[#fffaf7]">
       <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8 2xl:w-[80%] 2xl:max-w-none">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
             <p className="premium-kicker">Valoraciones</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white min-[390px]:text-3xl sm:text-4xl">
-              Experiencias de clientes CQuezadaSkin
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#3b302c] min-[390px]:text-3xl sm:text-4xl">
+              Experiencias de clientes <span className="brand-wordmark">CQUEZADASKIN</span>
             </h2>
-            <p className="mt-4 text-[#B8B8B8]">
+            <p className="mt-4 text-[#6d554b]">
               Opiniones reales revisadas antes de publicarse para mantener un
               espacio confiable y respetuoso.
             </p>
@@ -82,11 +82,11 @@ export const TestimoniosSection = () => {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-semibold text-white">
+                    <h3 className="font-semibold text-[#3b302c]">
                       {testimonio.nombre_mostrado}
                     </h3>
                     {formatDate(testimonio.creado_en) ? (
-                      <p className="mt-1 text-xs text-[#8E8E8E]">
+                      <p className="mt-1 text-xs text-[#7d6a61]">
                         {formatDate(testimonio.creado_en)}
                       </p>
                     ) : null}
@@ -94,15 +94,15 @@ export const TestimoniosSection = () => {
                   <StarRating value={testimonio.puntuacion} />
                 </div>
 
-                <p className="mt-5 flex-1 text-sm leading-7 text-[#D6D6D6]">
+                <p className="mt-5 flex-1 text-sm leading-7 text-[#6d554b]">
                   {testimonio.comentario}
                 </p>
 
                 {testimonio.respuesta_admin ? (
-                  <div className="mt-5 rounded-2xl border border-[#00D1C1]/20 bg-[#00D1C1]/10 p-4 text-sm text-[#D6D6D6]">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#20E0D0]">
+                  <div className="mt-5 rounded-2xl border border-[#d9b8a8] bg-[#f8eee8] p-4 text-sm text-[#6d554b]">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#9b6f5f]">
                       <MessageCircle className="h-4 w-4" />
-                      Respuesta CQuezadaSkin
+                      Respuesta <span className="brand-wordmark">CQUEZADASKIN</span>
                     </div>
                     {testimonio.respuesta_admin}
                   </div>
@@ -123,7 +123,7 @@ function StarRating({ value }: { value: number }) {
         <Star
           key={index}
           className={`h-4 w-4 ${
-            index < value ? "fill-[#00D1C1] text-[#00D1C1]" : "text-[#3A3A3A]"
+            index < value ? "fill-[#b98975] text-[#b98975]" : "text-[#d9b8a8]"
           }`}
         />
       ))}
@@ -136,8 +136,8 @@ function StateBox({ text, tone = "default" }: { text: string; tone?: "default" |
     <div
       className={`mt-8 rounded-2xl border p-5 text-sm ${
         tone === "error"
-          ? "border-red-400/30 bg-red-500/10 text-red-300"
-          : "border-white/10 bg-[#121212] text-[#A8A8A8]"
+          ? "border-red-200 bg-red-50 text-red-700"
+          : "border-[#ead3c7] bg-white text-[#7d6a61]"
       }`}
     >
       {text}

@@ -146,7 +146,7 @@ const getReservaServicio = (reserva: ReservaCliente) =>
   reserva.servicio_nombre ??
   reserva.nombre_servicio ??
   reserva.servicio ??
-  "Tratamiento CQuezadaSkin";
+  "Tratamiento CQUEZADASKIN";
 
 const getClienteEmail = (perfil: ClientePerfil | null) =>
   perfil?.email ?? perfil?.correo ?? "";
@@ -174,7 +174,7 @@ const mapPerfilToForm = (perfil: ClientePerfil | null): PerfilForm => ({
 const getEstadoClass = (estado?: string | null) => {
   const normalized = (estado ?? "pendiente").toLowerCase();
   if (normalized === "confirmada" || normalized === "completada") {
-    return "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+    return "border-[#c69a86]/30 bg-[#c69a86]/10 text-[#e8c2b5]";
   }
   if (normalized === "cancelada") {
     return "border-red-400/30 bg-red-500/10 text-red-200";
@@ -185,7 +185,7 @@ const getEstadoClass = (estado?: string | null) => {
   if (normalized === "solicitada") {
     return "border-sky-300/30 bg-sky-400/10 text-sky-200";
   }
-  return "border-white/10 bg-[#0B0F0F] text-[#D6D6D6]";
+  return "border-white/10 bg-[#fffaf7] text-[#6d554b]";
 };
 
 const getErrorMessage = (error: unknown, fallback: string) =>
@@ -225,7 +225,7 @@ export const MisReservasPage = () => {
     motivo: "",
   });
 
-  const clienteNombre = perfil?.nombre || "Cliente CQuezadaSkin";
+  const clienteNombre = perfil?.nombre || "Cliente CQUEZADASKIN";
   const clearNotification = useCallback(() => {
     toast.clear();
   }, [toast]);
@@ -517,7 +517,7 @@ export const MisReservasPage = () => {
     }
 
     if (comentario.length < 10) {
-      showError("Cuentanos un poco mas sobre tu experiencia");
+      showError("Cuéntanos un poco más sobre tu experiencia");
       return;
     }
 
@@ -561,10 +561,10 @@ export const MisReservasPage = () => {
   if (!token) {
     return (
       <section className="mx-auto w-[92%] max-w-5xl py-10 sm:py-14">
-        <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+        <Card className="rounded-2xl border-white/10 bg-[#ffffff] text-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <LogIn className="h-5 w-5 text-[#00D1C1]" />
+              <LogIn className="h-5 w-5 text-[#c69a86]" />
               Inicia sesión como cliente
             </CardTitle>
             <CardDescription>
@@ -574,7 +574,7 @@ export const MisReservasPage = () => {
           <CardContent>
             <Button
               asChild
-              className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+              className="rounded-2xl bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
             >
               <Link to="/agendar">Ir a agendar</Link>
             </Button>
@@ -588,15 +588,15 @@ export const MisReservasPage = () => {
     <section className="mx-auto w-[92%] max-w-6xl py-8 text-white sm:py-14">
       <header className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#00D1C1]">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#c69a86]">
             Área cliente
           </p>
           <h1 className="premium-heading mt-2 text-3xl font-semibold min-[390px]:text-4xl sm:text-6xl">
             Mi cuenta
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-[#D6D6D6] sm:text-lg">
+          <p className="mt-3 max-w-2xl text-base text-[#6d554b] sm:text-lg">
             Revisa tu perfil, próximas reservas, historial y seguridad de tu
-            cuenta CQuezadaSkin.
+            cuenta CQUEZADASKIN.
           </p>
         </div>
         <div className="grid w-full grid-cols-1 gap-2 min-[430px]:grid-cols-3 sm:flex sm:w-auto sm:flex-wrap">
@@ -615,7 +615,7 @@ export const MisReservasPage = () => {
       </header>
 
       {loading ? (
-        <div className="mt-8 rounded-2xl border border-white/10 bg-[#121212] p-6 text-sm text-[#B8B8B8]">
+        <div className="mt-8 rounded-2xl border border-white/10 bg-[#ffffff] p-6 text-sm text-[#7d6a61]">
           Cargando tu cuenta...
         </div>
       ) : (
@@ -641,7 +641,7 @@ export const MisReservasPage = () => {
             <ReservasSection
               title="Próximas reservas"
               description="Gestiona tus próximas solicitudes y reservas."
-              icon={<ClipboardList className="h-5 w-5 text-[#00D1C1]" />}
+              icon={<ClipboardList className="h-5 w-5 text-[#c69a86]" />}
               emptyTitle="No tienes próximas reservas"
               reservas={proximas}
               showActions
@@ -651,7 +651,7 @@ export const MisReservasPage = () => {
             <ReservasSection
               title="Historial"
               description="Reservas pasadas, completadas o canceladas."
-              icon={<History className="h-5 w-5 text-[#00D1C1]" />}
+              icon={<History className="h-5 w-5 text-[#c69a86]" />}
               emptyTitle="Aún no hay historial"
               reservas={historial}
               showActions={false}
@@ -722,10 +722,10 @@ function ProfileCard({
   onSubmit: (event: FormEvent) => void;
 }) {
   return (
-    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+    <Card className="rounded-2xl border-white/10 bg-[#ffffff] text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <UserRound className="h-5 w-5 text-[#00D1C1]" />
+          <UserRound className="h-5 w-5 text-[#c69a86]" />
           Perfil
         </CardTitle>
         <CardDescription>
@@ -768,7 +768,7 @@ function ProfileCard({
               required
             />
           </div>
-          <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#0B0F0F] p-4 text-sm text-[#D6D6D6]">
+          <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#fffaf7] p-4 text-sm text-[#6d554b]">
             <input
               type="checkbox"
               checked={perfilForm.aceptaPromociones}
@@ -780,15 +780,15 @@ function ProfileCard({
               }
               className="mt-1"
             />
-            Acepto recibir novedades y promociones de CQuezadaSkin.
+            Acepto recibir novedades y promociones de CQUEZADASKIN.
           </label>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-[#8E8E8E]">
+            <p className="text-sm text-[#8e7a71]">
               {totalReservas} reservas registradas en tu cuenta.
             </p>
             <Button
               type="submit"
-              className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+              className="rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
               disabled={saving}
             >
               <Pencil className="h-4 w-4" />
@@ -813,10 +813,10 @@ function SecurityCard({
   onSubmit: (event: FormEvent) => void;
 }) {
   return (
-    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+    <Card className="rounded-2xl border-white/10 bg-[#ffffff] text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <ShieldCheck className="h-5 w-5 text-[#00D1C1]" />
+          <ShieldCheck className="h-5 w-5 text-[#c69a86]" />
           Seguridad
         </CardTitle>
         <CardDescription>
@@ -870,7 +870,7 @@ function SecurityCard({
           </div>
           <Button
             type="submit"
-            className="w-fit rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+            className="w-fit rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
             disabled={saving}
           >
             <LockKeyhole className="h-4 w-4" />
@@ -902,7 +902,7 @@ function ReservasSection({
   onReagendar: (reserva: ReservaCliente) => void;
 }) {
   return (
-    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+    <Card className="rounded-2xl border-white/10 bg-[#ffffff] text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
           {icon}
@@ -912,7 +912,7 @@ function ReservasSection({
       </CardHeader>
       <CardContent>
         {reservas.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5 text-sm text-[#A8A8A8]">
+          <div className="rounded-2xl border border-white/10 bg-[#fffaf7] p-5 text-sm text-[#a8968d]">
             {emptyTitle}
           </div>
         ) : (
@@ -948,19 +948,19 @@ function ReservaCard({
   const canManage = showActions && estado !== "cancelada" && estado !== "completada";
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5">
+    <article className="rounded-2xl border border-white/10 bg-[#fffaf7] p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-white">
             {getReservaServicio(reserva)}
           </h3>
-          <div className="mt-3 grid gap-2 text-sm text-[#D6D6D6] sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 text-sm text-[#6d554b] sm:grid-cols-2">
             <p className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-[#00D1C1]" />
+              <CalendarDays className="h-4 w-4 text-[#c69a86]" />
               {formatDate(reserva.fecha)}
             </p>
             <p className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-[#00D1C1]" />
+              <Clock className="h-4 w-4 text-[#c69a86]" />
               {timeLabel(reserva.hora)}
             </p>
           </div>
@@ -975,7 +975,7 @@ function ReservaCard({
       </div>
 
       {reserva.observacion_admin ? (
-        <p className="mt-4 rounded-2xl border border-white/10 bg-[#121212] p-3 text-sm text-[#A8A8A8]">
+        <p className="mt-4 rounded-2xl border border-white/10 bg-[#ffffff] p-3 text-sm text-[#a8968d]">
           {reserva.observacion_admin}
         </p>
       ) : null}
@@ -1026,12 +1026,12 @@ function MisValoracionesSection({
   });
 
   return (
-    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+    <Card className="rounded-2xl border-white/10 bg-[#ffffff] text-white">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <MessageSquare className="h-5 w-5 text-[#00D1C1]" />
+              <MessageSquare className="h-5 w-5 text-[#c69a86]" />
               Mis valoraciones
             </CardTitle>
             <CardDescription>
@@ -1056,7 +1056,7 @@ function MisValoracionesSection({
                 onChange={(event) =>
                   onChange((prev) => ({ ...prev, cita_id: event.target.value }))
                 }
-                className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 focus:ring-2 focus:ring-[#00D1C1]/30"
+                className="h-11 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70 focus:ring-2 focus:ring-[#c69a86]/30"
               >
                 <option value="">Sin asociar a una reserva</option>
                 {reservasElegibles.map((reserva) => (
@@ -1091,7 +1091,7 @@ function MisValoracionesSection({
                     puntuacion: event.target.value,
                   }))
                 }
-                className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 focus:ring-2 focus:ring-[#00D1C1]/30"
+                className="h-11 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70 focus:ring-2 focus:ring-[#c69a86]/30"
               >
                 <option value="5">5 estrellas</option>
                 <option value="4">4 estrellas</option>
@@ -1114,12 +1114,12 @@ function MisValoracionesSection({
                 required
               />
             </div>
-            <p className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-3 text-xs text-[#A8A8A8]">
+            <p className="rounded-2xl border border-white/10 bg-[#fffaf7] p-3 text-xs text-[#a8968d]">
               Tu valoración fue enviada y quedará pendiente de revisión.
             </p>
             <Button
               type="submit"
-              className="w-fit rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+              className="w-fit rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
               disabled={saving}
             >
               <Send className="h-4 w-4" />
@@ -1129,18 +1129,18 @@ function MisValoracionesSection({
 
           <div className="grid gap-3">
             {loading ? (
-              <div className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5 text-sm text-[#A8A8A8]">
+              <div className="rounded-2xl border border-white/10 bg-[#fffaf7] p-5 text-sm text-[#a8968d]">
                 Cargando tus valoraciones...
               </div>
             ) : valoraciones.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5 text-sm text-[#A8A8A8]">
+              <div className="rounded-2xl border border-white/10 bg-[#fffaf7] p-5 text-sm text-[#a8968d]">
                 Aun no has enviado valoraciones.
               </div>
             ) : (
               valoraciones.map((valoracion) => (
                 <article
                   key={String(valoracion.id)}
-                  className="rounded-2xl border border-white/10 bg-[#0B0F0F] p-5"
+                  className="rounded-2xl border border-white/10 bg-[#fffaf7] p-5"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -1158,11 +1158,11 @@ function MisValoracionesSection({
                         valoracion.estado}
                     </span>
                   </div>
-                  <p className="mt-4 text-sm leading-7 text-[#D6D6D6]">
+                  <p className="mt-4 text-sm leading-7 text-[#6d554b]">
                     {valoracion.comentario}
                   </p>
                   {valoracion.respuesta_admin ? (
-                    <p className="mt-4 rounded-2xl border border-[#00D1C1]/20 bg-[#00D1C1]/10 p-3 text-sm text-[#D6D6D6]">
+                    <p className="mt-4 rounded-2xl border border-[#c69a86]/20 bg-[#c69a86]/10 p-3 text-sm text-[#6d554b]">
                       {valoracion.respuesta_admin}
                     </p>
                   ) : null}
@@ -1183,7 +1183,7 @@ function StarRating({ value }: { value: number }) {
         <Star
           key={index}
           className={`h-4 w-4 ${
-            index < value ? "fill-[#00D1C1] text-[#00D1C1]" : "text-[#3A3A3A]"
+            index < value ? "fill-[#c69a86] text-[#c69a86]" : "text-[#3A3A3A]"
           }`}
         />
       ))}
@@ -1194,7 +1194,7 @@ function StarRating({ value }: { value: number }) {
 const getValoracionEstadoClass = (estado?: string | null) => {
   const normalized = (estado ?? "pendiente").toLowerCase();
   if (normalized === "aprobado") {
-    return "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#20E0D0]";
+    return "border-[#c69a86]/30 bg-[#c69a86]/10 text-[#e8c2b5]";
   }
   if (normalized === "rechazado" || normalized === "rechazada") {
     return "border-red-400/30 bg-red-500/10 text-red-200";
@@ -1226,7 +1226,7 @@ function ActionPanel({
   onSubmitReagendar: (event: FormEvent) => void;
 }) {
   return (
-    <Card className="rounded-2xl border-white/10 bg-[#121212] text-white">
+    <Card className="rounded-2xl border-white/10 bg-[#ffffff] text-white">
       <CardHeader>
         <CardTitle className="text-xl">
           {mode === "cancelar" ? "Cancelar reserva" : "Reagendar reserva"}
@@ -1298,7 +1298,7 @@ function ActionPanel({
                   required
                 />
                 {reagendarForm.fecha === getTodayKey() ? (
-                  <p className="text-xs leading-5 text-[#A8A8A8]">
+                  <p className="text-xs leading-5 text-[#a8968d]">
                     {SAME_DAY_BOOKING_LEAD_MESSAGE}.
                   </p>
                 ) : null}
@@ -1320,7 +1320,7 @@ function ActionPanel({
             <div className="flex flex-wrap gap-2">
               <Button
                 type="submit"
-                className="rounded-2xl bg-[#00D1C1] font-semibold text-[#03110f] hover:bg-[#20E0D0]"
+                className="rounded-2xl bg-[#c69a86] font-semibold text-[#4b3932] hover:bg-[#e8c2b5]"
                 disabled={saving}
               >
                 {saving ? "Procesando..." : "Guardar reagendamiento"}

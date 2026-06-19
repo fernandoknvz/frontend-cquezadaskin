@@ -16,8 +16,8 @@ const toneStyles: Record<
   { className: string; icon: ReactNode }
 > = {
   success: {
-    className: "border-[#00D1C1]/30 bg-[#00D1C1]/10 text-[#CFFCF8]",
-    icon: <CheckCircle2 className="h-4 w-4 text-[#20E0D0]" />,
+    className: "border-[#d9b8a8] bg-[#f8eee8] text-[#4b3932]",
+    icon: <CheckCircle2 className="h-4 w-4 text-[#9b6f5f]" />,
   },
   error: {
     className: "border-red-400/30 bg-red-500/10 text-red-200",

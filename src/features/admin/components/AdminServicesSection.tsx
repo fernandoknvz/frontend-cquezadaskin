@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 
 import { AppModal } from "@/components/ui/AppModal";
@@ -227,13 +227,13 @@ export const AdminServicesSection = () => {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="premium-section-title text-3xl font-semibold">Servicios</h2>
-          <p className="mt-1 text-sm text-[#D6D6D6]">
+          <p className="mt-1 text-sm text-[#6d554b]">
             Crea o edita los servicios visibles en el sitio.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
-            className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            className="rounded-2xl bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
             onClick={() => {
               setForm(emptyForm);
               setFormOpen(true);
@@ -292,7 +292,7 @@ export const AdminServicesSection = () => {
               id="service-category"
               value={form.categoria_id}
               onChange={(event) => handleChange("categoria_id", event.target.value)}
-              className="h-11 rounded-2xl border border-white/10 bg-[#0B0F0F] px-3 text-sm text-white outline-none focus:border-[#00D1C1]/70 focus:ring-2 focus:ring-[#00D1C1]/30"
+              className="h-11 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70 focus:ring-2 focus:ring-[#c69a86]/30"
             >
               <option value="">Sin categoria</option>
               {categories.map((cat) => (
@@ -334,7 +334,7 @@ export const AdminServicesSection = () => {
                 className="h-36 w-full rounded-2xl border border-white/10 object-cover"
               />
             ) : null}
-            <p className="text-xs text-[#A8A8A8]">
+            <p className="text-xs text-[#a8968d]">
               Si no subes imagen, se usara una imagen por defecto.
             </p>
           </div>
@@ -369,7 +369,7 @@ export const AdminServicesSection = () => {
               onChange={(event) => handleChange("orden", event.target.value)}
             />
           </div>
-          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
             <input
               type="checkbox"
               checked={form.activo}
@@ -377,7 +377,7 @@ export const AdminServicesSection = () => {
             />
             Visible en el sitio
           </label>
-          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
             <input
               type="checkbox"
               checked={form.mostrar_servicios}
@@ -385,7 +385,7 @@ export const AdminServicesSection = () => {
             />
             Mostrar en Servicios
           </label>
-          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
             <input
               type="checkbox"
               checked={form.mostrar_especiales}
@@ -393,7 +393,7 @@ export const AdminServicesSection = () => {
             />
             Mostrar en Especiales
           </label>
-          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#B8B8B8]">
+          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
             <input
               type="checkbox"
               checked={form.mostrar_empresas}
@@ -442,7 +442,7 @@ export const AdminServicesSection = () => {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="submit"
-            className="rounded-2xl bg-[#00D1C1] text-[#03110f] hover:bg-[#20E0D0]"
+            className="rounded-2xl bg-[#c69a86] text-[#4b3932] hover:bg-[#e8c2b5]"
             disabled={loading}
           >
             {isEditing ? "Actualizar servicio" : "Guardar servicio"}
@@ -457,7 +457,7 @@ export const AdminServicesSection = () => {
       </AppModal>
 
       {message ? (
-        <div className="mt-4 rounded-2xl border border-[#00D1C1]/25 bg-[#00D1C1]/10 p-3 text-sm text-[#00D1C1]">
+        <div className="mt-4 rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-3 text-sm text-[#c69a86]">
           {message}
         </div>
       ) : null}
@@ -470,7 +470,7 @@ export const AdminServicesSection = () => {
 
       <div className="mt-6 grid gap-3">
         {services.length === 0 ? (
-          <p className="text-sm text-[#A8A8A8]">No hay servicios cargados.</p>
+          <p className="text-sm text-[#a8968d]">No hay servicios cargados.</p>
         ) : (
           services.map((service) => (
             <div
@@ -478,11 +478,11 @@ export const AdminServicesSection = () => {
               className="premium-card premium-card-hover flex flex-col gap-3 rounded-3xl p-4 md:flex-row md:items-center md:justify-between"
             >
               <div>
-                <h4 className="text-base font-semibold text-[#00D1C1]">
+                <h4 className="text-base font-semibold text-[#c69a86]">
                   {service.nombre}
                 </h4>
-                <p className="text-sm text-[#D6D6D6]">{service.descripcion}</p>
-                <p className="mt-1 text-xs text-[#A8A8A8]">
+                <p className="text-sm text-[#6d554b]">{service.descripcion}</p>
+                <p className="mt-1 text-xs text-[#a8968d]">
                   ${Number(service.precio ?? 0).toLocaleString("es-CL")} | Orden{" "}
                   {service.orden ?? 0}
                 </p>

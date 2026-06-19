@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/AuthContext";
@@ -25,7 +25,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-12 text-center text-sm text-[#8E8E8E]">
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center text-sm text-[#8e7a71]">
         Verificando sesión...
       </div>
     );
