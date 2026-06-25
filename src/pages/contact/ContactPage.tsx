@@ -175,7 +175,7 @@ const ModeSelector: React.FC<{
         "Respuesta cercana",
         `Atención en ${siteConfig.address}`,
       ]}
-      cta="Solicitar cotización"
+      cta="Realizar consulta"
       onClick={onSelectCompany}
       disabled={disabled}
     />

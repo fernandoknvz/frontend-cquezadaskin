@@ -22,14 +22,6 @@ export const NavbarBrand: React.FC<Props> = ({ compact = false }) => {
         >
           CQUEZADASKIN
         </div>
-        <div
-          className={[
-            "mt-1 truncate text-[11px] font-medium leading-none text-[var(--brand-700)] transition-all duration-300",
-            compact ? "opacity-80" : "opacity-100",
-          ].join(" ")}
-        >
-          Skincare facial y corporal
-        </div>
       </div>
     </Link>
   );

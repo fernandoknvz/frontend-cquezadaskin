@@ -1,15 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, CalendarCheck2, MessageCircle, Sparkles, Heart } from "lucide-react";
+import { CalendarCheck2, Check, Heart, MessageCircle, Sparkles } from "lucide-react";
 
 import { listServices, type ServiceItem } from "@/services/servicesApi";
 import { listServiceCategories, type ServiceCategory } from "@/services/categoriesApi";
 import { REAL_SERVICE_CATEGORIES } from "@/features/services/data/realServices";
+import {
+  OFFICIAL_SERVICE_CATEGORIES,
+  getOfficialCategoryById,
+  getOfficialCategoryIdByName,
+  getOfficialCategoryIdFromText,
+  type OfficialServiceCategoryId,
+} from "@/features/services/data/serviceCategoryConfig";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
-
-const skincareHeroImg = "/img/oficial_hero.jpeg";
 
 type Service = {
   title: string;
@@ -29,31 +35,51 @@ type Category = {
   items: Service[];
 };
 
-const STATIC_CATEGORIES: Category[] = [
-  ...REAL_SERVICE_CATEGORIES.map((category, index) => {
+type FilterOption = {
+  id: string;
+  name: string;
+};
+
+const NAVBAR_OFFSET = 64;
+
+const MAIN_DESCRIPTION =
+  "En CQUEZADASKIN creemos que la belleza y el bienestar van de la mano. Cada tratamiento está diseñado para cuidar tu piel, realzar tus rasgos de manera armónica y acompañarte en el cuidado integral de tu cuerpo. Nuestro enfoque combina estética, relajación y resultados, creando experiencias personalizadas que te permiten reconectar contigo misma, potenciar tu belleza natural y sentirte bien desde adentro hacia afuera.";
+
+const STATIC_CATEGORIES: Category[] = OFFICIAL_SERVICE_CATEGORIES.map(
+  (officialCategory, index) => {
     const Icon = index % 2 === 0 ? Sparkles : Heart;
+    const services = REAL_SERVICE_CATEGORIES.flatMap((category) => {
+      const officialId = getOfficialCategoryIdByName(category.name);
+      return officialId === officialCategory.id ? category.services : [];
+    });
+
     return {
-      id: category.id,
-      name: category.name,
-      description: category.description,
+      id: officialCategory.id,
+      name: officialCategory.name,
+      description: officialCategory.description,
       icon: <Icon className="h-4 w-4" />,
-      items: category.services.map((service) => ({
-        title: category.name,
+      items: services.map((service) => ({
+        title: officialCategory.name,
         subtitle: service.name,
         description: service.description,
         bullets: [],
-        image: skincareHeroImg,
+        image: officialCategory.fallbackImage,
         ctaPrimary: { label: "Agendar", to: "/agendar" },
         ctaSecondary: { label: "Consultar", to: "/contacto" },
       })),
     };
-  }),
-];
+  }
+);
 
 export const PersonalServicesPage: React.FC = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [isFilterFixed, setIsFilterFixed] = useState(false);
+  const [filterBarHeight, setFilterBarHeight] = useState(0);
+  const [portalReady, setPortalReady] = useState(false);
+  const filterAnchorRef = useRef<HTMLDivElement | null>(null);
+  const filterBarRef = useRef<HTMLDivElement | null>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
@@ -86,49 +112,45 @@ export const PersonalServicesPage: React.FC = () => {
       .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
       .forEach((cat) => categoryMap.set(cat.id, cat));
 
-    const grouped = new Map<number, ServiceItem[]>();
-    const withoutCategory: ServiceItem[] = [];
+    const grouped = new Map<OfficialServiceCategoryId, ServiceItem[]>();
 
     visible.forEach((service) => {
       const categoryId = service.categoria_id;
-      if (categoryId && categoryMap.has(categoryId)) {
-        const list = grouped.get(categoryId) ?? [];
-        list.push(service);
-        grouped.set(categoryId, list);
-      } else {
-        withoutCategory.push(service);
-      }
+      const apiCategory = categoryId ? categoryMap.get(categoryId) : undefined;
+      const officialCategoryId = apiCategory
+        ? getOfficialCategoryIdByName(apiCategory.nombre)
+        : getOfficialCategoryIdFromText([
+            service.etiqueta,
+            service.nombre,
+            service.subtitulo,
+            service.descripcion,
+          ]);
+
+      const list = grouped.get(officialCategoryId) ?? [];
+      list.push(service);
+      grouped.set(officialCategoryId, list);
     });
 
     const iconPool = [Sparkles, Heart];
     const result: Category[] = [];
 
-    categoryMap.forEach((cat, id) => {
-      const items = grouped.get(id);
+    OFFICIAL_SERVICE_CATEGORIES.forEach((officialCategory) => {
+      const items = grouped.get(officialCategory.id);
       if (!items || items.length === 0) return;
       const Icon = iconPool[result.length % iconPool.length] ?? Sparkles;
+
       result.push({
-        id: String(id),
-        name: cat.nombre,
-        description: cat.descripcion ?? "Selecciona el tratamiento ideal para tu piel.",
+        id: officialCategory.id,
+        name: officialCategory.name,
+        description: officialCategory.description,
         icon: <Icon className="h-4 w-4" />,
         items: items
           .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-          .map((service) => mapServiceItemToCard(service, "servicios")),
+          .map((service) =>
+            mapServiceItemToCard(service, "servicios", officialCategory.id)
+          ),
       });
     });
-
-    if (withoutCategory.length > 0) {
-      result.push({
-        id: "otros",
-        name: "Otros tratamientos",
-        description: "Opciones adicionales disponibles para agendar.",
-        icon: <Sparkles className="h-4 w-4" />,
-        items: withoutCategory
-          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-          .map((service) => mapServiceItemToCard(service, "servicios")),
-      });
-    }
 
     return result.length > 0 ? result : null;
   }, [categories, services]);
@@ -141,6 +163,44 @@ export const PersonalServicesPage: React.FC = () => {
       name: category.name,
     })),
   ];
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  useEffect(() => {
+    let frame = 0;
+
+    const measureFilterBar = () => {
+      const barHeight = filterBarRef.current?.offsetHeight;
+      if (barHeight) {
+        setFilterBarHeight((prev) => (prev === barHeight ? prev : barHeight));
+      }
+    };
+
+    const updateFixedState = () => {
+      if (frame) window.cancelAnimationFrame(frame);
+
+      frame = window.requestAnimationFrame(() => {
+        const anchor = filterAnchorRef.current;
+        if (!anchor) return;
+
+        measureFilterBar();
+        setIsFilterFixed(anchor.getBoundingClientRect().top <= NAVBAR_OFFSET);
+      });
+    };
+
+    updateFixedState();
+    window.addEventListener("scroll", updateFixedState, { passive: true });
+    window.addEventListener("resize", updateFixedState);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateFixedState);
+      window.removeEventListener("resize", updateFixedState);
+    };
+  }, [filterOptions.length]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -198,44 +258,53 @@ export const PersonalServicesPage: React.FC = () => {
   };
 
   return (
-    <section className="mx-auto w-[92%] max-w-[1180px] py-10 sm:py-14">
-      <header className="max-w-3xl scroll-mt-32">
-        <p className="text-sm font-semibold uppercase tracking-wide text-[#c69a86]">
-          Servicios
-        </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
-          Tratamientos reales CQUEZADASKIN
-        </h1>
-        <p className="mt-3 text-base text-[#6d554b] sm:text-lg">
-          Explora la carta de tratamientos faciales, corporales, lash & brows,
-          fibroblast y camuflajes estéticos en Quilpué.
-        </p>
-      </header>
+    <div className="py-10 sm:py-14">
+      <section className="mx-auto w-[92%] max-w-[1180px]">
+        <header className="max-w-3xl scroll-mt-32">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#c69a86]">
+            Servicios
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white min-[390px]:text-4xl md:text-5xl">
+            Tratamientos reales CQUEZADASKIN
+          </h1>
+          <p className="mt-3 text-base text-[#6d554b] sm:text-lg">
+            {MAIN_DESCRIPTION}
+          </p>
+        </header>
+      </section>
 
-      <div className="sticky top-16 z-40 -mx-4 mt-8 border-y border-white/10 bg-[#fffaf7]/86 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-2xl sm:border sm:bg-[#fffaf7]/78">
-        <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {filterOptions.map((option) => {
-            const active = selectedCategory === option.id;
-            return (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => handleCategoryClick(option.id)}
-                className={[
-                  "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c69a86]/50",
-                  active
-                    ? "border-[#c69a86]/60 bg-[#c69a86]/12 text-[#e8c2b5] shadow-[0_0_24px_rgba(198,154,134,0.14)]"
-                    : "border-white/10 bg-[#ffffff]/80 text-[#6d554b] hover:border-[#c69a86]/40 hover:text-white",
-                ].join(" ")}
-              >
-                {option.name}
-              </button>
-            );
-          })}
-        </div>
+      <div
+        ref={filterAnchorRef}
+        className="mt-8"
+        style={isFilterFixed ? { height: filterBarHeight } : undefined}
+      >
+        {!isFilterFixed ? (
+          <FilterBar
+            ref={filterBarRef}
+            options={filterOptions}
+            selectedCategory={selectedCategory}
+            onCategoryClick={handleCategoryClick}
+          />
+        ) : null}
       </div>
 
-      <div className="mt-10 space-y-16 sm:mt-12 sm:space-y-24">
+      {portalReady && isFilterFixed
+        ? createPortal(
+            <div
+              className="fixed inset-x-0 z-40"
+              style={{ top: NAVBAR_OFFSET }}
+            >
+              <FilterBar
+                options={filterOptions}
+                selectedCategory={selectedCategory}
+                onCategoryClick={handleCategoryClick}
+              />
+            </div>,
+            document.body
+          )
+        : null}
+
+      <section className="mx-auto mt-10 w-[92%] max-w-[1180px] space-y-16 sm:mt-12 sm:space-y-24">
         {categoriesToRender.map((category) => (
           <CategoryBlock
             key={category.id}
@@ -245,10 +314,49 @@ export const PersonalServicesPage: React.FC = () => {
             }}
           />
         ))}
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
+
+const FilterBar = React.forwardRef<
+  HTMLDivElement,
+  {
+    options: FilterOption[];
+    selectedCategory: string;
+    onCategoryClick: (categoryId: string) => void;
+  }
+>(({ options, selectedCategory, onCategoryClick }, ref) => (
+  <div
+    ref={ref}
+    className="border-y border-white/10 bg-[#fffaf7]/86 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+  >
+    <div className="mx-auto w-[92%] max-w-[1180px]">
+      <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {options.map((option) => {
+          const active = selectedCategory === option.id;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onCategoryClick(option.id)}
+              className={[
+                "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c69a86]/50",
+                active
+                  ? "border-[#c69a86]/60 bg-[#c69a86]/12 text-[#e8c2b5] shadow-[0_0_24px_rgba(198,154,134,0.14)]"
+                  : "border-white/10 bg-[#ffffff]/80 text-[#6d554b] hover:border-[#c69a86]/40 hover:text-white",
+              ].join(" ")}
+            >
+              {option.name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+));
+
+FilterBar.displayName = "FilterBar";
 
 function CategoryBlock({
   category,
@@ -261,7 +369,7 @@ function CategoryBlock({
     <section
       ref={setSectionRef}
       data-category-id={category.id}
-      className="scroll-mt-36"
+      className="scroll-mt-40"
     >
       <div className="flex items-start gap-3">
         <div className="inline-flex items-center justify-center rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-2 text-[#c69a86] shadow-[0_0_24px_rgba(198,154,134,0.10)]">
@@ -302,7 +410,7 @@ function CategoryBlock({
 function ServiceRow({ service }: { service: Service }) {
   return (
     <motion.article
-      className="premium-card premium-card-hover flex h-full min-h-[340px] flex-col rounded-2xl p-5 sm:min-h-[390px] sm:rounded-3xl sm:p-6"
+      className="premium-card premium-card-hover flex h-full min-h-[420px] flex-col overflow-hidden rounded-2xl p-0 sm:min-h-[470px] sm:rounded-3xl"
       variants={{
         hidden: { opacity: 0, y: 18 },
         visible: {
@@ -314,7 +422,16 @@ function ServiceRow({ service }: { service: Service }) {
       whileHover={{ y: -5, scale: 1.015 }}
       transition={{ duration: 0.22, ease: "easeOut" }}
     >
-      <div className="content flex h-full flex-col">
+      <div className="h-44 w-full overflow-hidden border-b border-white/10 bg-[#f8eee8] sm:h-52">
+        <img
+          src={service.image}
+          alt={service.subtitle}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+      </div>
+
+      <div className="content flex h-full flex-col p-5 sm:p-6">
         <div className="inline-flex w-fit items-center rounded-full border border-[#c69a86]/25 bg-[#c69a86]/10 px-3 py-1 text-xs font-semibold text-[#e8c2b5]">
           {service.title}
         </div>
@@ -350,11 +467,7 @@ function ServiceRow({ service }: { service: Service }) {
           </Button>
 
           {service.ctaSecondary && (
-            <Button
-              asChild
-              variant="outline"
-              className="w-full rounded-2xl"
-            >
+            <Button asChild variant="outline" className="w-full rounded-2xl">
               <Link to={service.ctaSecondary.to} className="gap-2">
                 <MessageCircle className="h-4 w-4" />
                 {service.ctaSecondary.label}
@@ -371,9 +484,12 @@ function ServiceRow({ service }: { service: Service }) {
   );
 }
 
-export default PersonalServicesPage;
-
-function mapServiceItemToCard(service: ServiceItem, context: "servicios" | "empresas"): Service {
+function mapServiceItemToCard(
+  service: ServiceItem,
+  context: "servicios" | "empresas",
+  categoryId: OfficialServiceCategoryId
+): Service {
+  const officialCategory = getOfficialCategoryById(categoryId);
   const label =
     service.cta_primary_label ||
     (context === "empresas" ? "Cotizar ahora" : "Agendar");
@@ -386,13 +502,15 @@ function mapServiceItemToCard(service: ServiceItem, context: "servicios" | "empr
     service.cta_secondary_url || (context === "empresas" ? "/contacto" : "/agendar");
 
   return {
-    title: service.etiqueta?.trim() || "Servicio",
+    title: officialCategory.name,
     subtitle: service.subtitulo?.trim() || service.nombre,
     description: service.descripcion ?? "",
     bullets: service.beneficios ?? [],
-    image: resolveImageUrl(service.imagen_url, "/img/oficial_hero.jpeg"),
+    image: resolveImageUrl(service.imagen_url, officialCategory.fallbackImage),
     ctaPrimary: { label, to },
     ctaSecondary:
       secondaryLabel && secondaryUrl ? { label: secondaryLabel, to: secondaryUrl } : undefined,
   };
 }
+
+export default PersonalServicesPage;

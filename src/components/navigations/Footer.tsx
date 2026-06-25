@@ -1,9 +1,15 @@
 ﻿import React from "react";
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
-import { Phone, Mail, MapPin, Instagram } from "lucide-react";
+import { Instagram, Mail, MapPinned, PhoneCall } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import NavbarBrand from "./NavbarBrand";
+
+const ContactIcon = ({ children }: { children: React.ReactNode }) => (
+  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#ead3c7] bg-white/70 text-[#b98975]">
+    {children}
+  </span>
+);
 
 export const Footer: React.FC = () => {
   return (
@@ -44,19 +50,25 @@ export const Footer: React.FC = () => {
             <h4 className="text-sm font-semibold text-[#3b302c]">Contacto</h4>
             <div className="mt-4 space-y-3 text-sm text-[#6d554b]">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-[#b98975]" />
+                <ContactIcon>
+                  <PhoneCall className="h-4 w-4" />
+                </ContactIcon>
                 <a className="hover:text-white" href={siteConfig.phoneHref}>
                   {siteConfig.phone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-[#b98975]" />
+                <ContactIcon>
+                  <Mail className="h-4 w-4" />
+                </ContactIcon>
                 <a className="hover:text-white" href={`mailto:${siteConfig.email}`}>
                   {siteConfig.email}
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Instagram className="h-4 w-4 text-[#b98975]" />
+                <ContactIcon>
+                  <Instagram className="h-4 w-4" />
+                </ContactIcon>
                 <a
                   className="hover:text-white"
                   href={siteConfig.instagram}
@@ -67,7 +79,9 @@ export const Footer: React.FC = () => {
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-[#b98975]" />
+                <ContactIcon>
+                  <MapPinned className="h-4 w-4" />
+                </ContactIcon>
                 <span>{siteConfig.address}</span>
               </div>
             </div>
@@ -78,8 +92,8 @@ export const Footer: React.FC = () => {
 
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <p className="text-xs text-[#7d6a61]">
-            © {new Date().getFullYear()} {siteConfig.name}. Sistema Web de
-            Agendamiento creado por Fernando Olguea Desarrollador de Software.
+            © 2026 CQUEZADASKIN. Plataforma de agendamiento desarrollada por
+            Fernando Olguea · Ingeniero en Informática.
           </p>
           <div className="flex gap-4 text-xs">
             <Link className="text-[#7d6a61] hover:text-[#9b6f5f]" to="/privacidad">

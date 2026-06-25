@@ -35,7 +35,6 @@ import {
   timeLabel,
 } from "@/lib/reservaTime";
 import {
-  AVAILABILITY_INTERVALS,
   generateAvailabilitySlots,
   normalizeAvailabilityDateForApi,
   normalizeAvailabilityTimeForApi,
@@ -1067,51 +1066,25 @@ export const AdminCalendarioSection = () => {
                   />
                 </div>
                 {!editingDisponibilidad ? (
-                  <>
-                    <div className="grid gap-2">
-                      <Label htmlFor="disponibilidad-hora-fin">
-                        Hora termino
-                      </Label>
-                      <Input
-                        id="disponibilidad-hora-fin"
-                        type="time"
-                        value={disponibilidadForm.horaFin}
-                        disabled={saving}
-                        onChange={(event) =>
-                          setDisponibilidadForm((prev) => ({
-                            ...prev,
-                            horaFin: event.target.value,
-                          }))
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="disponibilidad-intervalo">
-                        Intervalo
-                      </Label>
-                      <select
-                        id="disponibilidad-intervalo"
-                        value={disponibilidadForm.intervaloMinutos}
-                        disabled={saving}
-                        onChange={(event) =>
-                          setDisponibilidadForm((prev) => ({
-                            ...prev,
-                            intervaloMinutos: Number(
-                              event.target.value
-                            ) as AvailabilityInterval,
-                          }))
-                        }
-                        className="h-11 w-full min-w-0 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70"
-                      >
-                        {AVAILABILITY_INTERVALS.map((interval) => (
-                          <option key={interval} value={interval}>
-                            {interval} minutos
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </>
+                  <div className="grid gap-2">
+                    <Label htmlFor="disponibilidad-hora-fin">
+                      Hora termino
+                    </Label>
+                    <Input
+                      id="disponibilidad-hora-fin"
+                      type="time"
+                      value={disponibilidadForm.horaFin}
+                      disabled={saving}
+                      onChange={(event) =>
+                        setDisponibilidadForm((prev) => ({
+                          ...prev,
+                          horaFin: event.target.value,
+                          intervaloMinutos: 30,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
                 ) : null}
                 <div className="grid gap-2">
                   <Label htmlFor="disponibilidad-estado">Estado</Label>

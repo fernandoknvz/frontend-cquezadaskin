@@ -6,8 +6,9 @@ import { Check, CalendarCheck2, CalendarDays, MessageCircle, Building2, Users, S
 import { listServices, type ServiceItem } from "@/services/servicesApi";
 import { listServiceCategories, type ServiceCategory } from "@/services/categoriesApi";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
-const skincareHeroImg = "/img/oficial_hero.jpeg";
+const fallbackHeroImg = "/img/oficial_hero.jpeg";
 
 type Service = {
   title: string; // etiqueta (Tratamiento / Plan / Beneficio)
@@ -30,7 +31,7 @@ type Category = {
 const STATIC_CATEGORIES: Category[] = [
   {
     id: "corporate",
-    name: "Skincare para grupos",
+    name: "Tratamientos para grupos",
     description:
       "Opciones para pequeños grupos, regalos y jornadas de autocuidado.",
     icon: <Building2 className="h-4 w-4" />,
@@ -46,13 +47,13 @@ const STATIC_CATEGORIES: Category[] = [
           "Orientación básica de cuidado",
           "Ideal para grupos pequeños",
         ],
-        image: skincareHeroImg,
-        ctaPrimary: { label: "Consultar jornada", to: "/empresas" },
+        image: fallbackHeroImg,
+        ctaPrimary: { label: "Consultar jornada", to: "/contacto" },
         ctaSecondary: { label: "Hablar por WhatsApp", to: "/contacto" },
       },
       {
         title: "Tratamiento",
-        subtitle: "Pausa skincare",
+        subtitle: "Pausa de cuidado facial",
         description:
           "Una pausa de cuidado facial para conectar con la piel y recibir recomendaciones cosmetológicas.",
         bullets: [
@@ -61,7 +62,7 @@ const STATIC_CATEGORIES: Category[] = [
           "Recomendaciones prácticas",
           "Perfecto para fechas especiales",
         ],
-        image: skincareHeroImg,
+        image: fallbackHeroImg,
         ctaPrimary: { label: "Solicitar información", to: "/empresas" },
         ctaSecondary: { label: "Consultar disponibilidad", to: "/contacto" },
       },
@@ -85,7 +86,7 @@ const STATIC_CATEGORIES: Category[] = [
           "Formato educativo y cercano",
           "Coordinación según agenda",
         ],
-        image: skincareHeroImg,
+        image: fallbackHeroImg,
         ctaPrimary: { label: "Consultar fecha", to: "/empresas" },
         ctaSecondary: { label: "Hablar por WhatsApp", to: "/contacto" },
       },
@@ -95,11 +96,11 @@ const STATIC_CATEGORIES: Category[] = [
     id: "benefits",
     name: "Giftcards y regalos",
     description:
-      "Giftcards de skincare: un regalo útil, cuidado y fácil de coordinar.",
+      "Giftcards de cuidado facial: un regalo útil, cuidado y fácil de coordinar.",
     icon: <Users className="h-4 w-4" />,
     items: [
       {
-        title: "Giftcard skincare",
+        title: "Giftcard de cuidado facial",
         subtitle: "Para colaboradores",
         description:
           "Regala una experiencia de cuidado facial o corporal con coordinacion simple por contacto.",
@@ -109,7 +110,7 @@ const STATIC_CATEGORIES: Category[] = [
           "Coordinacion simple",
           "Experiencia premium y calida",
         ],
-        image: skincareHeroImg,
+        image: fallbackHeroImg,
         ctaPrimary: { label: "Consultar giftcards", to: "/empresas" },
         ctaSecondary: { label: "Consultar", to: "/contacto" },
       },
@@ -170,7 +171,7 @@ export const BusinessServicesPage: React.FC = () => {
               Atenciones especiales
             </h1>
             <p className="mt-2 text-base text-[#6d554b] sm:text-lg">
-              Skincare para grupos, activaciones y beneficios para colaboradores. Cotiza por jornada,
+              Tratamientos para grupos, activaciones y beneficios para colaboradores. Cotiza por jornada,
               cantidad de personas y tipo de tratamiento.
             </p>
           </header>
@@ -210,7 +211,7 @@ export const BusinessServicesPage: React.FC = () => {
                     className="w-full rounded-2xl shadow-sm sm:w-auto"
                     style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
                   >
-                    <Link to="/empresas" className="gap-2">
+                    <Link to="/contacto" className="gap-2">
                       <Building2 className="h-4 w-4" />
                       Cotizar ahora
                     </Link>
@@ -220,10 +221,15 @@ export const BusinessServicesPage: React.FC = () => {
                     variant="outline"
                     className="w-full rounded-2xl border-white/10 bg-[#ffffff]/80 hover:bg-[#ffffff] sm:w-auto"
                   >
-                    <Link to="/contacto" className="gap-2">
+                    <a
+                      href={getWhatsAppUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="gap-2"
+                    >
                       <MessageCircle className="h-4 w-4" />
                       Hablar por WhatsApp
-                    </Link>
+                    </a>
                   </Button>
                 </div>
               </div>
@@ -339,6 +345,10 @@ function CategoryBlock({ category }: { category: Category }) {
 }
 
 function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }) {
+  const isWhatsAppCta = service.ctaSecondary?.label === "Hablar por WhatsApp";
+  const primaryTo =
+    service.ctaPrimary.to === "/empresas" ? "/contacto" : service.ctaPrimary.to;
+
   return (
     <div
       className={[
@@ -408,7 +418,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
             className="w-full rounded-2xl shadow-sm sm:w-auto"
             style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
           >
-            <Link to={service.ctaPrimary.to} className="gap-2">
+            <Link to={primaryTo} className="gap-2">
               <CalendarCheck2 className="h-4 w-4" />
               {service.ctaPrimary.label}
             </Link>
@@ -420,10 +430,22 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
               variant="outline"
               className="w-full rounded-2xl border-white/10 bg-[#ffffff]/80 hover:bg-[#ffffff] sm:w-auto"
             >
-              <Link to={service.ctaSecondary.to} className="gap-2">
-                <MessageCircle className="h-4 w-4" />
-                {service.ctaSecondary.label}
-              </Link>
+              {isWhatsAppCta ? (
+                <a
+                  href={getWhatsAppUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="gap-2"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {service.ctaSecondary.label}
+                </a>
+              ) : (
+                <Link to={service.ctaSecondary.to} className="gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  {service.ctaSecondary.label}
+                </Link>
+              )}
             </Button>
           )}
         </div>
@@ -442,8 +464,7 @@ function mapServiceItemToCard(service: ServiceItem, context: "especiales" | "emp
   const label =
     service.cta_primary_label ||
     (context === "empresas" ? "Cotizar ahora" : "Consultar especial");
-  const to =
-    service.cta_primary_url || (context === "empresas" ? "/empresas" : "/contacto");
+  const to = service.cta_primary_url || "/contacto";
   const secondaryLabel =
     service.cta_secondary_label ||
     (context === "empresas" ? "Hablar por WhatsApp" : "Ver disponibilidad");

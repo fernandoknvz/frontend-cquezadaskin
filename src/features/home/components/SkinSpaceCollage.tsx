@@ -13,13 +13,13 @@ const collageImages = [
   },
   {
     src: deviceImg,
-    alt: "Constanza sosteniendo un dispositivo profesional de skincare",
+    alt: "Constanza sosteniendo un dispositivo profesional de estética facial",
     figureClassName: "lg:aspect-[0.78/1]",
     imageClassName: "object-contain object-center",
   },
   {
     src: productsImg,
-    alt: "Productos skincare profesionales en bandeja clínica",
+    alt: "Productos profesionales para tratamientos faciales en bandeja clínica",
     figureClassName: "lg:aspect-[1.08/1]",
     imageClassName: "object-contain object-center",
   },

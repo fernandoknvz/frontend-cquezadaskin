@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 
 import { siteConfig } from "@/config/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 type Props = {
   phoneNumber?: string;
@@ -31,10 +32,10 @@ export default function WhatsAppWidget({
       ? "left-4 bottom-4 items-start sm:left-6 sm:bottom-6"
       : "right-4 bottom-4 items-end sm:right-6 sm:bottom-6";
 
-  const waUrl = useMemo(() => {
-    const text = encodeURIComponent(message.trim() || defaultMessage);
-    return `https://wa.me/${phoneNumber}?text=${text}`;
-  }, [phoneNumber, message, defaultMessage]);
+  const waUrl = useMemo(
+    () => getWhatsAppUrl(message.trim() || defaultMessage, phoneNumber),
+    [phoneNumber, message, defaultMessage]
+  );
 
   const handleSendMessage = () => {
     if (!message.trim()) return;

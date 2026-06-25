@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck2, ChevronRight, MapPin, Sparkles } from "lucide-react";
+import { CalendarCheck2, ChevronRight, MapPin } from "lucide-react";
 import { listHomeContent, type HomeContentItem } from "@/services/homeContentApi";
 
 const fallbackHero = "/img/oficial_hero.jpeg";
@@ -52,7 +52,7 @@ export const Hero: React.FC = () => {
         {bgSrc ? (
           <img
             src={bgSrc}
-            alt="Home studio de skincare CQUEZADASKIN"
+            alt="Espacio de estética facial y corporal CQUEZADASKIN"
             className="absolute inset-0 h-full w-full object-cover object-[58%_center] saturate-[0.92] brightness-[1.02] contrast-[0.98] sm:object-[62%_center] lg:object-center"
             loading="eager"
             decoding="async"
@@ -73,12 +73,7 @@ export const Hero: React.FC = () => {
             <HeroSkeleton />
           ) : (
             <>
-              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#ead3c7] bg-white/78 px-3 py-2 text-xs font-medium text-[#6d554b] shadow-[0_18px_50px_rgba(80,55,45,0.08)] backdrop-blur sm:px-4 sm:text-sm">
-                <Sparkles className="h-4 w-4 text-[#b98975]" />
-                <span className="truncate">Skincare profesional en home studio</span>
-              </div>
-
-              <h1 className="brand-wordmark mt-5 max-w-3xl text-4xl font-semibold leading-[0.95] text-[var(--brand-900)] min-[390px]:text-5xl sm:mt-6 sm:text-6xl lg:text-7xl">
+              <h1 className="brand-wordmark max-w-3xl text-4xl font-semibold leading-[0.95] text-[var(--brand-900)] min-[390px]:text-5xl sm:text-6xl lg:text-7xl">
                 {content.titulo}
               </h1>
 

@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  OFFICIAL_SERVICE_CATEGORIES,
+  getOfficialCategoryIdByName,
+  type OfficialServiceCategoryId,
+} from "@/features/services/data/serviceCategoryConfig";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import {
   type AdminService,
@@ -91,6 +96,42 @@ export const AdminServicesSection = () => {
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id]);
+  const officialCategoryOptions = useMemo(() => {
+    const optionByOfficialId = new Map<
+      OfficialServiceCategoryId,
+      { id: number; name: string; order: number; exact: boolean }
+    >();
+
+    categories.forEach((cat) => {
+      const officialId = getOfficialCategoryIdByName(cat.nombre);
+      const officialCategory = OFFICIAL_SERVICE_CATEGORIES.find(
+        (item) => item.id === officialId
+      );
+      if (!officialCategory) return;
+
+      const exact =
+        cat.nombre.trim().toLowerCase() === officialCategory.name.toLowerCase();
+      const current = optionByOfficialId.get(officialId);
+      const candidate = {
+        id: cat.id,
+        name: officialCategory.name,
+        order: cat.orden ?? 0,
+        exact,
+      };
+
+      if (
+        !current ||
+        (candidate.exact && !current.exact) ||
+        (candidate.exact === current.exact && candidate.order < current.order)
+      ) {
+        optionByOfficialId.set(officialId, candidate);
+      }
+    });
+
+    return OFFICIAL_SERVICE_CATEGORIES.map((category) =>
+      optionByOfficialId.get(category.id)
+    ).filter((option): option is NonNullable<typeof option> => Boolean(option));
+  }, [categories]);
 
   const loadServices = async () => {
     setLoading(true);
@@ -295,9 +336,9 @@ export const AdminServicesSection = () => {
               className="h-11 rounded-2xl border border-white/10 bg-[#fffaf7] px-3 text-sm text-white outline-none focus:border-[#c69a86]/70 focus:ring-2 focus:ring-[#c69a86]/30"
             >
               <option value="">Sin categoria</option>
-              {categories.map((cat) => (
+              {officialCategoryOptions.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.nombre}
+                  {cat.name}
                 </option>
               ))}
             </select>
