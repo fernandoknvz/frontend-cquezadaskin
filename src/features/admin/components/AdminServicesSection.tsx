@@ -11,6 +11,7 @@ import {
   getOfficialCategoryIdByName,
   type OfficialServiceCategoryId,
 } from "@/features/services/data/serviceCategoryConfig";
+import { useToast } from "@/hooks/useToast";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import {
   type AdminService,
@@ -84,7 +85,26 @@ const mapToForm = (service: AdminService): ServiceFormState => ({
   cta_secondary_url: service.cta_secondary_url ?? "",
 });
 
+const visibilityOptions = [
+  {
+    field: "mostrar_servicios",
+    label: "Mostrar en Servicios",
+    help: "Aparece en la pagina principal de tratamientos.",
+  },
+  {
+    field: "mostrar_especiales",
+    label: "Mostrar en Especiales",
+    help: "Aparece en la seccion de atenciones especiales.",
+  },
+] as const;
+
+const getVisibilityBadges = (service: AdminService) =>
+  visibilityOptions
+    .filter((option) => Boolean(service[option.field]))
+    .map((option) => option.label.replace("Mostrar en ", ""));
+
 export const AdminServicesSection = () => {
+  const toast = useToast();
   const [services, setServices] = useState<AdminService[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [form, setForm] = useState<ServiceFormState>(emptyForm);
@@ -92,7 +112,6 @@ export const AdminServicesSection = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id]);
@@ -180,7 +199,6 @@ export const AdminServicesSection = () => {
     setImageFile(null);
     setImagePreview("");
     setFormOpen(false);
-    setMessage(null);
     setError(null);
   };
 
@@ -197,7 +215,6 @@ export const AdminServicesSection = () => {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
-    setMessage(null);
     try {
       const beneficios = form.beneficios
         .split("\n")
@@ -226,15 +243,28 @@ export const AdminServicesSection = () => {
 
       if (form.id) {
         await updateServiceAdmin(form.id, payload);
-        setMessage("Servicio actualizado");
+        toast.success({
+          title: "Servicio actualizado",
+          description: "Los cambios quedaron guardados correctamente.",
+        });
       } else {
         await createServiceAdmin(payload);
-        setMessage("Servicio creado");
+        toast.success({
+          title: "Servicio creado",
+          description: "El servicio quedo guardado correctamente.",
+        });
       }
       resetForm();
       await loadServices();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar servicio");
+      const description =
+        err instanceof Error ? err.message : "Error al guardar servicio";
+      setError(description);
+      toast.error({
+        title: "No se pudo guardar el servicio",
+        description,
+        duration: 5000,
+      });
     }
   };
 
@@ -243,7 +273,6 @@ export const AdminServicesSection = () => {
     setImageFile(null);
     setImagePreview("");
     setFormOpen(true);
-    setMessage(null);
     setError(null);
   };
 
@@ -253,13 +282,22 @@ export const AdminServicesSection = () => {
     const confirmed = window.confirm("Eliminar este servicio?");
     if (!confirmed) return;
     setError(null);
-    setMessage(null);
     try {
       await deleteServiceAdmin(id);
-      setMessage("Servicio eliminado");
+      toast.success({
+        title: "Servicio eliminado",
+        description: "El servicio fue eliminado correctamente.",
+      });
       await loadServices();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar servicio");
+      const description =
+        err instanceof Error ? err.message : "Error al eliminar servicio";
+      setError(description);
+      toast.error({
+        title: "No se pudo eliminar el servicio",
+        description,
+        duration: 5000,
+      });
     }
   };
 
@@ -418,30 +456,36 @@ export const AdminServicesSection = () => {
             />
             Visible en el sitio
           </label>
-          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
-            <input
-              type="checkbox"
-              checked={form.mostrar_servicios}
-              onChange={(event) => handleChange("mostrar_servicios", event.target.checked)}
-            />
-            Mostrar en Servicios
-          </label>
-          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
-            <input
-              type="checkbox"
-              checked={form.mostrar_especiales}
-              onChange={(event) => handleChange("mostrar_especiales", event.target.checked)}
-            />
-            Mostrar en Especiales
-          </label>
-          <label className="mt-7 inline-flex items-center gap-2 text-sm text-[#7d6a61]">
-            <input
-              type="checkbox"
-              checked={form.mostrar_empresas}
-              onChange={(event) => handleChange("mostrar_empresas", event.target.checked)}
-            />
-            Mostrar en Empresas
-          </label>
+          <div className="grid gap-3 md:col-span-2">
+            <div>
+              <p className="text-sm font-semibold text-white">Visibilidad del servicio</p>
+              <p className="mt-1 text-xs text-[#a8968d]">
+                Selecciona en que secciones publicas aparecera este servicio.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {visibilityOptions.map((option) => (
+                <label
+                  key={option.field}
+                  className="rounded-2xl border border-white/10 bg-[#ffffff]/70 p-3 text-sm text-[#7d6a61]"
+                >
+                  <span className="flex items-center gap-2 font-semibold text-white">
+                    <input
+                      type="checkbox"
+                      checked={form[option.field]}
+                      onChange={(event) =>
+                        handleChange(option.field, event.target.checked)
+                      }
+                    />
+                    {option.label}
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-[#a8968d]">
+                    {option.help}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-2">
             <Label htmlFor="service-cta-primary-label">CTA principal</Label>
             <Input
@@ -497,12 +541,6 @@ export const AdminServicesSection = () => {
       </form>
       </AppModal>
 
-      {message ? (
-        <div className="mt-4 rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-3 text-sm text-[#c69a86]">
-          {message}
-        </div>
-      ) : null}
-
       {error ? (
         <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-300">
           {error}
@@ -513,35 +551,55 @@ export const AdminServicesSection = () => {
         {services.length === 0 ? (
           <p className="text-sm text-[#a8968d]">No hay servicios cargados.</p>
         ) : (
-          services.map((service) => (
-            <div
-              key={service.id}
-              className="premium-card premium-card-hover flex flex-col gap-3 rounded-3xl p-4 md:flex-row md:items-center md:justify-between"
-            >
-              <div>
-                <h4 className="text-base font-semibold text-[#c69a86]">
-                  {service.nombre}
-                </h4>
-                <p className="text-sm text-[#6d554b]">{service.descripcion}</p>
-                <p className="mt-1 text-xs text-[#a8968d]">
-                  ${Number(service.precio ?? 0).toLocaleString("es-CL")} | Orden{" "}
-                  {service.orden ?? 0}
-                </p>
+          services.map((service) => {
+            const visibilityBadges = getVisibilityBadges(service);
+
+            return (
+              <div
+                key={service.id}
+                className="premium-card premium-card-hover flex flex-col gap-3 rounded-3xl p-4 md:flex-row md:items-center md:justify-between"
+              >
+                <div>
+                  <h4 className="text-base font-semibold text-[#c69a86]">
+                    {service.nombre}
+                  </h4>
+                  <p className="text-sm text-[#6d554b]">{service.descripcion}</p>
+                  <p className="mt-1 text-xs text-[#a8968d]">
+                    ${Number(service.precio ?? 0).toLocaleString("es-CL")} | Orden{" "}
+                    {service.orden ?? 0}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {visibilityBadges.length > 0 ? (
+                      visibilityBadges.map((badge) => (
+                        <span
+                          key={`${service.id}-${badge}`}
+                          className="rounded-full border border-[#c69a86]/25 bg-[#c69a86]/10 px-3 py-1 text-xs font-semibold text-[#e8c2b5]"
+                        >
+                          {badge}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="rounded-full border border-white/10 bg-[#ffffff]/70 px-3 py-1 text-xs text-[#a8968d]">
+                        Sin seccion publica
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="grid w-full grid-cols-2 gap-2 md:w-auto">
+                  <Button variant="outline" onClick={() => handleEdit(service)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-red-400/30 text-red-300 hover:bg-red-500/10 hover:text-red-300"
+                    onClick={() => handleDelete(service.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="grid w-full grid-cols-2 gap-2 md:w-auto">
-                <Button variant="outline" onClick={() => handleEdit(service)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-red-400/30 text-red-300 hover:bg-red-500/10 hover:text-red-300"
-                  onClick={() => handleDelete(service.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>

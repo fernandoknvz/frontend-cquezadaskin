@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/useToast";
 import {
   createFAQAdmin,
   deleteFAQAdmin,
@@ -42,12 +43,12 @@ const mapToForm = (faq: FAQItem): FAQFormState => ({
 });
 
 export const AdminFAQSection = () => {
+  const toast = useToast();
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [form, setForm] = useState<FAQFormState>(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id]);
@@ -82,10 +83,14 @@ export const AdminFAQSection = () => {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
-    setMessage(null);
 
     if (!form.pregunta.trim() || !form.respuesta.trim()) {
-      setError("Pregunta y respuesta son obligatorias");
+      const description = "Pregunta y respuesta son obligatorias";
+      setError(description);
+      toast.warning({
+        title: "Faltan datos",
+        description,
+      });
       return;
     }
 
@@ -101,16 +106,28 @@ export const AdminFAQSection = () => {
     try {
       if (form.id) {
         await patchFAQAdmin(form.id, payload);
-        setMessage("FAQ actualizada correctamente.");
+        toast.success({
+          title: "FAQ actualizada",
+          description: "Los cambios quedaron guardados correctamente.",
+        });
       } else {
         await createFAQAdmin(payload);
-        setMessage("FAQ creada correctamente.");
+        toast.success({
+          title: "FAQ creada",
+          description: "La pregunta frecuente quedo guardada correctamente.",
+        });
       }
       setForm(emptyForm);
       setFormOpen(false);
       await loadFAQs();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar FAQ");
+      const description = err instanceof Error ? err.message : "Error al guardar FAQ";
+      setError(description);
+      toast.error({
+        title: "No se pudo guardar la FAQ",
+        description,
+        duration: 5000,
+      });
     } finally {
       setSaving(false);
     }
@@ -119,19 +136,26 @@ export const AdminFAQSection = () => {
   const handleDelete = async (id: number | string) => {
     if (!window.confirm("Eliminar esta FAQ?")) return;
     setError(null);
-    setMessage(null);
     try {
       await deleteFAQAdmin(id);
-      setMessage("FAQ eliminada correctamente.");
+      toast.success({
+        title: "FAQ eliminada",
+        description: "La pregunta frecuente fue eliminada correctamente.",
+      });
       await loadFAQs();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar FAQ");
+      const description = err instanceof Error ? err.message : "Error al eliminar FAQ";
+      setError(description);
+      toast.error({
+        title: "No se pudo eliminar la FAQ",
+        description,
+        duration: 5000,
+      });
     }
   };
 
   const handleToggleActive = async (faq: FAQItem) => {
     setError(null);
-    setMessage(null);
     try {
       await patchFAQAdmin(faq.id, {
         pregunta: faq.pregunta,
@@ -140,10 +164,19 @@ export const AdminFAQSection = () => {
         orden: faq.orden ?? 0,
         activo: faq.activo === false,
       });
-      setMessage("FAQ actualizada correctamente.");
+      toast.success({
+        title: faq.activo === false ? "FAQ activada" : "FAQ ocultada",
+        description: "La visibilidad quedo actualizada correctamente.",
+      });
       await loadFAQs();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar FAQ");
+      const description = err instanceof Error ? err.message : "Error al actualizar FAQ";
+      setError(description);
+      toast.error({
+        title: "No se pudo actualizar la FAQ",
+        description,
+        duration: 5000,
+      });
     }
   };
 
@@ -252,11 +285,6 @@ export const AdminFAQSection = () => {
       </form>
       </AppModal>
 
-      {message ? (
-        <div className="mt-4 rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-3 text-sm text-[#c69a86]">
-          {message}
-        </div>
-      ) : null}
       {error ? (
         <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-300">
           {error}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/useToast";
 import {
   type AdminInstagramPayload,
   type AdminInstagramPost,
@@ -42,11 +43,11 @@ const buildPayload = (form: InstagramFormState): AdminInstagramPayload => ({
 });
 
 export const AdminInstagramSection = () => {
+  const toast = useToast();
   const [posts, setPosts] = useState<AdminInstagramPost[]>([]);
   const [form, setForm] = useState<InstagramFormState>(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id]);
@@ -81,35 +82,44 @@ export const AdminInstagramSection = () => {
   const resetForm = () => {
     setForm(emptyForm);
     setFormOpen(false);
-    setMessage(null);
     setError(null);
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
-    setMessage(null);
     try {
       const payload = buildPayload(form);
       if (form.id) {
         await updateInstagramAdmin(form.id, payload);
-        setMessage("Post actualizado");
+        toast.success({
+          title: "Post actualizado",
+          description: "Los cambios quedaron guardados correctamente.",
+        });
       } else {
         await createInstagramAdmin(payload);
-        setMessage("Post creado");
+        toast.success({
+          title: "Post creado",
+          description: "El post quedo guardado correctamente.",
+        });
       }
       setForm(emptyForm);
       setFormOpen(false);
       await loadPosts();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar post");
+      const description = err instanceof Error ? err.message : "Error al guardar post";
+      setError(description);
+      toast.error({
+        title: "No se pudo guardar el post",
+        description,
+        duration: 5000,
+      });
     }
   };
 
   const handleEdit = (post: AdminInstagramPost) => {
     setForm(mapToForm(post));
     setFormOpen(true);
-    setMessage(null);
     setError(null);
   };
 
@@ -117,13 +127,21 @@ export const AdminInstagramSection = () => {
     const confirmed = window.confirm("Eliminar este post?");
     if (!confirmed) return;
     setError(null);
-    setMessage(null);
     try {
       await deleteInstagramAdmin(id);
-      setMessage("Post eliminado");
+      toast.success({
+        title: "Post eliminado",
+        description: "El post fue eliminado correctamente.",
+      });
       await loadPosts();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar post");
+      const description = err instanceof Error ? err.message : "Error al eliminar post";
+      setError(description);
+      toast.error({
+        title: "No se pudo eliminar el post",
+        description,
+        duration: 5000,
+      });
     }
   };
 
@@ -199,11 +217,6 @@ export const AdminInstagramSection = () => {
           <Alert variant="destructive">
             <AlertTitle>Acción requerida</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : message ? (
-          <Alert>
-            <AlertTitle>Listo</AlertTitle>
-            <AlertDescription>{message}</AlertDescription>
           </Alert>
         ) : null}
 

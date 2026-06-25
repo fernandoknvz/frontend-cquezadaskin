@@ -7,6 +7,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/useToast";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import {
   type AdminHomeContent,
@@ -52,13 +53,13 @@ const buildPayload = (
 });
 
 export const AdminHomeContentSection = () => {
+  const toast = useToast();
   const [items, setItems] = useState<AdminHomeContent[]>([]);
   const [form, setForm] = useState<HomeContentFormState>(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id]);
@@ -103,7 +104,6 @@ export const AdminHomeContentSection = () => {
     setImageFile(null);
     setImagePreview("");
     setFormOpen(false);
-    setMessage(null);
     setError(null);
   };
 
@@ -120,20 +120,32 @@ export const AdminHomeContentSection = () => {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
-    setMessage(null);
     try {
       const payload = buildPayload(form, imageFile);
       if (form.id) {
         await updateHomeContentAdmin(form.id, payload);
-        setMessage("Contenido actualizado");
+        toast.success({
+          title: "Contenido actualizado",
+          description: "Los cambios quedaron guardados correctamente.",
+        });
       } else {
         await createHomeContentAdmin(payload);
-        setMessage("Contenido creado");
+        toast.success({
+          title: "Contenido creado",
+          description: "El contenido quedo guardado correctamente.",
+        });
       }
       resetForm();
       await loadItems();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar contenido");
+      const description =
+        err instanceof Error ? err.message : "Error al guardar contenido";
+      setError(description);
+      toast.error({
+        title: "No se pudo guardar el contenido",
+        description,
+        duration: 5000,
+      });
     }
   };
 
@@ -142,7 +154,6 @@ export const AdminHomeContentSection = () => {
     setImageFile(null);
     setImagePreview("");
     setFormOpen(true);
-    setMessage(null);
     setError(null);
   };
 
@@ -152,13 +163,22 @@ export const AdminHomeContentSection = () => {
     const confirmed = window.confirm("Eliminar este contenido?");
     if (!confirmed) return;
     setError(null);
-    setMessage(null);
     try {
       await deleteHomeContentAdmin(id);
-      setMessage("Contenido eliminado");
+      toast.success({
+        title: "Contenido eliminado",
+        description: "El contenido fue eliminado correctamente.",
+      });
       await loadItems();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar contenido");
+      const description =
+        err instanceof Error ? err.message : "Error al eliminar contenido";
+      setError(description);
+      toast.error({
+        title: "No se pudo eliminar el contenido",
+        description,
+        duration: 5000,
+      });
     }
   };
 
@@ -253,11 +273,6 @@ export const AdminHomeContentSection = () => {
           <Alert variant="destructive">
             <AlertTitle>Acción requerida</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : message ? (
-          <Alert>
-            <AlertTitle>Listo</AlertTitle>
-            <AlertDescription>{message}</AlertDescription>
           </Alert>
         ) : null}
 

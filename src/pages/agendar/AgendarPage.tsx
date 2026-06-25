@@ -989,32 +989,15 @@ export const AgendarPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
+                <div className="hidden">
+                  <Label className="hidden">
                     <Clock className="h-4 w-4" />
                     Duración
                   </Label>
-                  <Select
-                    value={bookingForm.duracionMin}
-                    onValueChange={(value) =>
-                      setBookingField(
-                        "duracionMin",
-                        value as BookingForm["duracionMin"]
-                      )
-                    }
-                  >
-                    <SelectTrigger className="h-11 rounded-lg border-white/10 bg-[#ffffff] text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 min</SelectItem>
-                      <SelectItem value="60">60 min</SelectItem>
-                      <SelectItem value="90">90 min</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <input type="hidden" name="duracion_min" value={bookingForm.duracionMin} />
                 </div>
 
-                <div className="space-y-2 sm:col-span-2">
+                <div className="space-y-2">
                   <Label>Hora disponible</Label>
                   <Select
                     value={bookingForm.hora}

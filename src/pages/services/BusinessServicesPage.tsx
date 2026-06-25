@@ -1,17 +1,22 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, CalendarCheck2, CalendarDays, MessageCircle, Building2, Users, Sparkles } from "lucide-react";
+import {
+  Building2,
+  CalendarCheck2,
+  CalendarDays,
+  Check,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react";
 
 import { listServices, type ServiceItem } from "@/services/servicesApi";
 import { listServiceCategories, type ServiceCategory } from "@/services/categoriesApi";
 import { resolveImageUrl } from "@/lib/resolveImageUrl";
 import { getWhatsAppUrl } from "@/lib/whatsapp";
 
-const fallbackHeroImg = "/img/oficial_hero.jpeg";
-
 type Service = {
-  title: string; // etiqueta (Tratamiento / Plan / Beneficio)
+  title: string;
   subtitle: string;
   description: string;
   bullets: string[];
@@ -28,115 +33,21 @@ type Category = {
   items: Service[];
 };
 
-const STATIC_CATEGORIES: Category[] = [
-  {
-    id: "corporate",
-    name: "Tratamientos para grupos",
-    description:
-      "Opciones para pequeños grupos, regalos y jornadas de autocuidado.",
-    icon: <Building2 className="h-4 w-4" />,
-    items: [
-      {
-        title: "Tratamiento",
-        subtitle: "Facial express",
-        description:
-          "Atención breve enfocada en luminosidad e hidratación para jornadas de autocuidado o regalos especiales.",
-        bullets: [
-          "Formato simple de coordinar",
-          "Experiencia limpia y cercana",
-          "Orientación básica de cuidado",
-          "Ideal para grupos pequeños",
-        ],
-        image: fallbackHeroImg,
-        ctaPrimary: { label: "Consultar jornada", to: "/contacto" },
-        ctaSecondary: { label: "Hablar por WhatsApp", to: "/contacto" },
-      },
-      {
-        title: "Tratamiento",
-        subtitle: "Pausa de cuidado facial",
-        description:
-          "Una pausa de cuidado facial para conectar con la piel y recibir recomendaciones cosmetológicas.",
-        bullets: [
-          "Cuidado facial personalizado",
-          "Ambiente cálido",
-          "Recomendaciones prácticas",
-          "Perfecto para fechas especiales",
-        ],
-        image: fallbackHeroImg,
-        ctaPrimary: { label: "Solicitar información", to: "/empresas" },
-        ctaSecondary: { label: "Consultar disponibilidad", to: "/contacto" },
-      },
-    ],
-  },
-  {
-    id: "events",
-    name: "Jornadas especiales",
-    description:
-      "Ideal para celebraciones, fechas especiales o instancias de autocuidado coordinadas previamente.",
-    icon: <Sparkles className="h-4 w-4" />,
-    items: [
-      {
-        title: "Tratamiento",
-        subtitle: "Evaluación estética grupal",
-        description:
-          "Orientación grupal para resolver dudas, detectar necesidades y recomendar tratamientos adecuados.",
-        bullets: [
-          "Evaluación general de necesidades",
-          "Recomendaciones de rutina",
-          "Formato educativo y cercano",
-          "Coordinación según agenda",
-        ],
-        image: fallbackHeroImg,
-        ctaPrimary: { label: "Consultar fecha", to: "/empresas" },
-        ctaSecondary: { label: "Hablar por WhatsApp", to: "/contacto" },
-      },
-    ],
-  },
-  {
-    id: "benefits",
-    name: "Giftcards y regalos",
-    description:
-      "Giftcards de cuidado facial: un regalo útil, cuidado y fácil de coordinar.",
-    icon: <Users className="h-4 w-4" />,
-    items: [
-      {
-        title: "Giftcard de cuidado facial",
-        subtitle: "Para colaboradores",
-        description:
-          "Regala una experiencia de cuidado facial o corporal con coordinacion simple por contacto.",
-        bullets: [
-          "Regalo util y memorable",
-          "Perfecto para fechas especiales",
-          "Coordinacion simple",
-          "Experiencia premium y calida",
-        ],
-        image: fallbackHeroImg,
-        ctaPrimary: { label: "Consultar giftcards", to: "/empresas" },
-        ctaSecondary: { label: "Consultar", to: "/contacto" },
-      },
-    ],
-  },
-];
-
 export const BusinessServicesPage: React.FC = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [specialServices, setSpecialServices] = useState<ServiceItem[]>([]);
-  const [businessServices, setBusinessServices] = useState<ServiceItem[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [specialServicesData, businessServicesData, categoriesData] = await Promise.all([
+        const [specialServicesData, categoriesData] = await Promise.all([
           listServices("especiales"),
-          listServices("empresas"),
           listServiceCategories(),
         ]);
         setSpecialServices(specialServicesData);
-        setBusinessServices(businessServicesData);
         setCategories(categoriesData);
       } catch {
         setSpecialServices([]);
-        setBusinessServices([]);
         setCategories([]);
       }
     };
@@ -148,19 +59,8 @@ export const BusinessServicesPage: React.FC = () => {
     const visible = specialServices.filter(
       (service) => service.activo !== false && service.mostrar_especiales
     );
-    return buildDynamicCategories(visible, categories, "especiales");
+    return buildDynamicCategories(visible, categories);
   }, [categories, specialServices]);
-
-  const businessCategories = useMemo(() => {
-    const visible = businessServices.filter(
-      (service) => service.activo !== false && service.mostrar_empresas
-    );
-    return buildDynamicCategories(visible, categories, "empresas");
-  }, [businessServices, categories]);
-
-  const hasDynamicContent = Boolean(specialCategories || businessCategories);
-
-  const categoriesToRender = specialCategories ?? businessCategories ?? STATIC_CATEGORIES;
 
   return (
     <section className="mx-auto w-[92%] 2xl:w-[80%]">
@@ -171,148 +71,91 @@ export const BusinessServicesPage: React.FC = () => {
               Atenciones especiales
             </h1>
             <p className="mt-2 text-base text-[#6d554b] sm:text-lg">
-              Tratamientos para grupos, activaciones y beneficios para colaboradores. Cotiza por jornada,
-              cantidad de personas y tipo de tratamiento.
+              Tratamientos especiales y experiencias de autocuidado
+              personalizadas segun disponibilidad.
             </p>
           </header>
 
-          <div className="mt-10 space-y-14">
-            {hasDynamicContent ? (
-              <>
-                {specialCategories ? (
-                  <ServiceSection title="Especiales" categories={specialCategories} />
-                ) : null}
-                {businessCategories ? (
-                  <ServiceSection title="Empresas" categories={businessCategories} />
-                ) : null}
-              </>
+          <div className="mt-10">
+            {specialCategories ? (
+              <ServiceSection categories={specialCategories} />
             ) : (
-              <ServiceSection categories={categoriesToRender} />
+              <EmptySpecialsState />
             )}
           </div>
 
-          <div className="mt-12 rounded-2xl border border-white/10 bg-[#ffffff]/80 p-4 text-sm text-[#6d554b] sm:rounded-3xl sm:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <div
-                className="mt-0.5 rounded-2xl p-2"
-                style={{ backgroundColor: "rgba(246,231,223,0.85)" }}
-              >
-                <CalendarDays className="h-4 w-4" style={{ color: "var(--brand-800)" }} />
-              </div>
-              <div>
-                <div className="font-semibold text-white">Cómo coordinamos</div>
-                <p className="mt-1">
-                  Nos indicas fecha tentativa, número de personas y tipo de tratamiento. Te enviamos una
-                  propuesta clara (duración, logística y valores).
-                </p>
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    asChild
-                    className="w-full rounded-2xl shadow-sm sm:w-auto"
-                    style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
-                  >
-                    <Link to="/contacto" className="gap-2">
-                      <Building2 className="h-4 w-4" />
-                      Cotizar ahora
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full rounded-2xl border-white/10 bg-[#ffffff]/80 hover:bg-[#ffffff] sm:w-auto"
-                  >
-                    <a
-                      href={getWhatsAppUrl()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="gap-2"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      Hablar por WhatsApp
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <CoordinationBlock />
         </div>
       </div>
     </section>
   );
 };
 
-function buildDynamicCategories(
-  visible: ServiceItem[],
-  categories: ServiceCategory[],
-  context: "especiales" | "empresas"
-) {
-    if (visible.length === 0) {
-      return null;
+function buildDynamicCategories(visible: ServiceItem[], categories: ServiceCategory[]) {
+  if (visible.length === 0) {
+    return null;
+  }
+
+  const categoryMap = new Map<number, ServiceCategory>();
+  categories
+    .filter((cat) => cat.activo !== false)
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+    .forEach((cat) => categoryMap.set(cat.id, cat));
+
+  const grouped = new Map<number, ServiceItem[]>();
+  const withoutCategory: ServiceItem[] = [];
+
+  visible.forEach((service) => {
+    const categoryId = service.categoria_id;
+    if (categoryId && categoryMap.has(categoryId)) {
+      const list = grouped.get(categoryId) ?? [];
+      list.push(service);
+      grouped.set(categoryId, list);
+    } else {
+      withoutCategory.push(service);
     }
+  });
 
-    const categoryMap = new Map<number, ServiceCategory>();
-    categories
-      .filter((cat) => cat.activo !== false)
-      .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-      .forEach((cat) => categoryMap.set(cat.id, cat));
+  const iconPool = [Building2, Sparkles];
+  const result: Category[] = [];
 
-    const grouped = new Map<number, ServiceItem[]>();
-    const withoutCategory: ServiceItem[] = [];
-
-    visible.forEach((service) => {
-      const categoryId = service.categoria_id;
-      if (categoryId && categoryMap.has(categoryId)) {
-        const list = grouped.get(categoryId) ?? [];
-        list.push(service);
-        grouped.set(categoryId, list);
-      } else {
-        withoutCategory.push(service);
-      }
+  categoryMap.forEach((cat, id) => {
+    const items = grouped.get(id);
+    if (!items || items.length === 0) return;
+    const Icon = iconPool[result.length % iconPool.length] ?? Sparkles;
+    result.push({
+      id: String(id),
+      name: cat.nombre,
+      description:
+        cat.descripcion ??
+        "Experiencias especiales de bienestar y estetica personalizadas.",
+      icon: <Icon className="h-4 w-4" />,
+      items: items
+        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+        .map(mapServiceItemToCard),
     });
+  });
 
-    const iconPool = [Building2, Sparkles, Users];
-    const result: Category[] = [];
-
-    categoryMap.forEach((cat, id) => {
-      const items = grouped.get(id);
-      if (!items || items.length === 0) return;
-      const Icon = iconPool[result.length % iconPool.length] ?? Building2;
-      result.push({
-        id: String(id),
-        name: cat.nombre,
-        description:
-          cat.descripcion ??
-          "Experiencias de bienestar pensadas para equipos, eventos y beneficios corporativos.",
-        icon: <Icon className="h-4 w-4" />,
-        items: items
-          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-          .map((service) => mapServiceItemToCard(service, context)),
-      });
+  if (withoutCategory.length > 0) {
+    result.push({
+      id: "otros",
+      name: "Otros servicios",
+      description: "Opciones especiales adicionales disponibles.",
+      icon: <Sparkles className="h-4 w-4" />,
+      items: withoutCategory
+        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+        .map(mapServiceItemToCard),
     });
+  }
 
-    if (withoutCategory.length > 0) {
-      result.push({
-        id: "otros",
-        name: "Otros servicios",
-        description: "Opciones corporativas adicionales disponibles.",
-        icon: <Sparkles className="h-4 w-4" />,
-        items: withoutCategory
-          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-          .map((service) => mapServiceItemToCard(service, context)),
-      });
-    }
-
-    return result.length > 0 ? result : null;
+  return result.length > 0 ? result : null;
 }
 
-function ServiceSection({ title, categories }: { title?: string; categories: Category[] }) {
+function ServiceSection({ categories }: { categories: Category[] }) {
   return (
     <div className="space-y-12 sm:space-y-14">
-      {title ? (
-        <h2 className="text-2xl font-semibold text-white sm:text-3xl">{title}</h2>
-      ) : null}
       {categories.map((cat) => (
-        <CategoryBlock key={`${title ?? "section"}-${cat.id}`} category={cat} />
+        <CategoryBlock key={`especiales-${cat.id}`} category={cat} />
       ))}
     </div>
   );
@@ -346,8 +189,6 @@ function CategoryBlock({ category }: { category: Category }) {
 
 function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }) {
   const isWhatsAppCta = service.ctaSecondary?.label === "Hablar por WhatsApp";
-  const primaryTo =
-    service.ctaPrimary.to === "/empresas" ? "/contacto" : service.ctaPrimary.to;
 
   return (
     <div
@@ -357,7 +198,6 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
         reverse ? "lg:[&_.media]:order-2 lg:[&_.content]:order-1" : "",
       ].join(" ")}
     >
-      {/* Imagen */}
       <div className="media relative">
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#ffffff]/75 shadow-[0_10px_30px_rgba(0,0,0,0.08)] sm:rounded-3xl">
           <div className="aspect-[4/3] w-full">
@@ -386,7 +226,6 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
         />
       </div>
 
-      {/* Texto */}
       <div className="content">
         <div
           className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-[#F5F5F5] border border-white/10"
@@ -418,7 +257,7 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
             className="w-full rounded-2xl shadow-sm sm:w-auto"
             style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
           >
-            <Link to={primaryTo} className="gap-2">
+            <Link to={service.ctaPrimary.to} className="gap-2">
               <CalendarCheck2 className="h-4 w-4" />
               {service.ctaPrimary.label}
             </Link>
@@ -451,28 +290,131 @@ function ServiceRow({ service, reverse }: { service: Service; reverse: boolean }
         </div>
 
         <div className="mt-3 text-xs text-[#8e7a71]">
-          * Horarios y disponibilidad pueden variar según agenda.
+          * Horarios y disponibilidad pueden variar segun agenda.
         </div>
       </div>
     </div>
   );
 }
 
-export default BusinessServicesPage;
+function EmptySpecialsState() {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[#ffffff]/80 p-5 text-sm text-[#6d554b] sm:rounded-3xl sm:p-6">
+      <p className="font-semibold text-white">
+        Aún no hay atenciones especiales publicadas.
+      </p>
+      <p className="mt-2">
+        Puedes escribirnos para consultar por una atencion especial o disponibilidad personalizada.
+      </p>
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <Button
+          asChild
+          className="w-full rounded-2xl shadow-sm sm:w-auto"
+          style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
+        >
+          <Link to="/contacto" className="gap-2">
+            <CalendarCheck2 className="h-4 w-4" />
+            Contactar
+          </Link>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
+          className="w-full rounded-2xl border-white/10 bg-[#ffffff]/80 hover:bg-[#ffffff] sm:w-auto"
+        >
+          <a
+            href={getWhatsAppUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="gap-2"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Hablar por WhatsApp
+          </a>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
-function mapServiceItemToCard(service: ServiceItem, context: "especiales" | "empresas"): Service {
-  const label =
-    service.cta_primary_label ||
-    (context === "empresas" ? "Cotizar ahora" : "Consultar especial");
+function CoordinationBlock() {
+  return (
+    <div className="mt-12 rounded-2xl border border-white/10 bg-[#ffffff]/80 p-4 text-sm text-[#6d554b] sm:rounded-3xl sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div
+          className="mt-0.5 rounded-2xl p-2"
+          style={{ backgroundColor: "rgba(246,231,223,0.85)" }}
+        >
+          <CalendarDays className="h-4 w-4" style={{ color: "var(--brand-800)" }} />
+        </div>
+        <div>
+          <div className="font-semibold text-white">Como coordinamos</div>
+          <p className="mt-1">
+            Nos indicas que tratamiento especial buscas y la disponibilidad que
+            necesitas. Te orientamos con una respuesta clara para coordinar tu
+            atencion.
+          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <Button
+              asChild
+              className="w-full rounded-2xl shadow-sm sm:w-auto"
+              style={{ backgroundColor: "var(--brand-800)", color: "var(--brand-white)" }}
+            >
+              <Link to="/contacto" className="gap-2">
+                <Building2 className="h-4 w-4" />
+                Realizar consulta
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full rounded-2xl border-white/10 bg-[#ffffff]/80 hover:bg-[#ffffff] sm:w-auto"
+            >
+              <a
+                href={getWhatsAppUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="gap-2"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Hablar por WhatsApp
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function normalizeSpecialCtaLabel(label?: string | null) {
+  const value = label?.trim();
+  if (!value) return "Consultar especial";
+
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (
+    normalized.includes("cotizar") ||
+    normalized.includes("jornada") ||
+    normalized.includes("empresa")
+  ) {
+    return "Realizar consulta";
+  }
+
+  return value;
+}
+
+function mapServiceItemToCard(service: ServiceItem): Service {
+  const label = normalizeSpecialCtaLabel(service.cta_primary_label);
   const to = service.cta_primary_url || "/contacto";
-  const secondaryLabel =
-    service.cta_secondary_label ||
-    (context === "empresas" ? "Hablar por WhatsApp" : "Ver disponibilidad");
-  const secondaryUrl =
-    service.cta_secondary_url || (context === "empresas" ? "/contacto" : "/contacto");
+  const secondaryLabel = service.cta_secondary_label || "Ver disponibilidad";
+  const secondaryUrl = service.cta_secondary_url || "/contacto";
 
   return {
-    title: service.etiqueta?.trim() || "Servicio",
+    title: service.etiqueta?.trim() || "Servicio especial",
     subtitle: service.subtitulo?.trim() || service.nombre,
     description: service.descripcion ?? "",
     bullets: service.beneficios ?? [],
@@ -482,3 +424,5 @@ function mapServiceItemToCard(service: ServiceItem, context: "especiales" | "emp
       secondaryLabel && secondaryUrl ? { label: secondaryLabel, to: secondaryUrl } : undefined,
   };
 }
+
+export default BusinessServicesPage;

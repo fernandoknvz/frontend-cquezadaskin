@@ -7,7 +7,7 @@ export type NavItem = { label: string; to: string };
 const NAV_ITEMS: NavItem[] = [
   { label: "Inicio", to: "/" },
   { label: "Servicios", to: "/servicios" },
-  { label: "Especiales", to: "/empresas" },
+  { label: "Especiales", to: "/especiales" },
   { label: "Instagram", to: "/eventos" },
   { label: "Agendar", to: "/agendar" },
   { label: "Mis reservas", to: "/mis-reservas" },

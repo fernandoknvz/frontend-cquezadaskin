@@ -15,6 +15,7 @@ import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/useToast";
 import {
   getClienteAdmin,
   listClientesAdmin,
@@ -91,9 +92,6 @@ const normalizeTimeInput = (value?: string | null) => {
   return value.slice(0, 5);
 };
 
-const wait = (milliseconds: number) =>
-  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-
 const mapToForm = (cliente: ClienteAdmin): ClienteFormState => ({
   nombre: cliente.nombre ?? "",
   email: getClienteEmail(cliente),
@@ -103,6 +101,7 @@ const mapToForm = (cliente: ClienteAdmin): ClienteFormState => ({
 });
 
 export const AdminClientesSection = () => {
+  const toast = useToast();
   const [clientes, setClientes] = useState<ClienteAdmin[]>([]);
   const [pagination, setPagination] = useState<Pagination>(emptyPagination);
   const [search, setSearch] = useState("");
@@ -111,7 +110,6 @@ export const AdminClientesSection = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [modalFeedback, setModalFeedback] = useState<ModalFeedback>(null);
   const [selectedCliente, setSelectedCliente] = useState<ClienteAdmin | null>(
     null
@@ -177,7 +175,6 @@ export const AdminClientesSection = () => {
     setDetailLoading(true);
     setModalFeedback(null);
     setError(null);
-    setMessage(null);
     try {
       const detail = await getClienteAdmin(cliente.id);
       setSelectedCliente(detail);
@@ -209,7 +206,6 @@ export const AdminClientesSection = () => {
     setSaving(true);
     setModalFeedback(null);
     setError(null);
-    setMessage(null);
     try {
       await updateClienteAdmin(selectedCliente.id, {
         nombre: form.nombre.trim(),
@@ -222,12 +218,10 @@ export const AdminClientesSection = () => {
       const updated = await getClienteAdmin(selectedCliente.id);
       setSelectedCliente(updated);
       setForm(mapToForm(updated));
-      setMessage("Cliente actualizado correctamente");
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
+      toast.success({
+        title: "Cliente actualizado",
+        description: "Los cambios quedaron guardados correctamente.",
       });
-      await wait(900);
       setSelectedCliente(null);
       setForm(null);
       setModalFeedback(null);
@@ -245,10 +239,12 @@ export const AdminClientesSection = () => {
   const handleToggleActivo = async (cliente: ClienteAdmin) => {
     const nextActivo = !isClienteActivo(cliente);
     setError(null);
-    setMessage(null);
     try {
       await patchClienteAdmin(cliente.id, { activo: nextActivo });
-      setMessage("Cliente actualizado correctamente");
+      toast.success({
+        title: nextActivo ? "Cliente activado" : "Cliente desactivado",
+        description: "El estado del cliente quedo actualizado correctamente.",
+      });
       await loadClientes();
       if (selectedCliente?.id === cliente.id) {
         const detail = await getClienteAdmin(cliente.id);
@@ -302,7 +298,6 @@ export const AdminClientesSection = () => {
       prev ? { ...prev, feedback: null, saving: true } : prev
     );
     setError(null);
-    setMessage(null);
 
     try {
       const motivo = reagendarForm.motivo.trim();
@@ -312,19 +307,10 @@ export const AdminClientesSection = () => {
         motivo,
         observacion_admin: motivo,
       });
-      setReagendarModal((prev) =>
-        prev
-          ? {
-              ...prev,
-              feedback: {
-                tone: "success",
-                message: "Reagendamiento guardado correctamente.",
-              },
-              saving: false,
-            }
-          : prev
-      );
-      await wait(900);
+      toast.success({
+        title: "Reserva reagendada",
+        description: "El reagendamiento quedo guardado correctamente.",
+      });
       setReagendarModal(null);
       await refreshSelectedCliente(selectedCliente.id);
     } catch (err) {
@@ -388,12 +374,6 @@ export const AdminClientesSection = () => {
           Buscar
         </Button>
       </form>
-
-      {message ? (
-        <div className="mt-4 rounded-2xl border border-[#c69a86]/25 bg-[#c69a86]/10 p-3 text-sm text-[#c69a86]">
-          {message}
-        </div>
-      ) : null}
 
       {error ? (
         <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-300">

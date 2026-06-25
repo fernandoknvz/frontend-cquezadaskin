@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/useToast";
 import {
   getAccount,
   updateAccount,
@@ -11,13 +12,13 @@ import {
 } from "@/services/accountApi";
 
 export const AdminAccountSection = () => {
+  const toast = useToast();
   const [account, setAccount] = useState<AccountUser | null>(null);
   const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadAccount = async () => {
@@ -37,7 +38,6 @@ export const AdminAccountSection = () => {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setMessage(null);
     setError(null);
 
     if (!currentPassword.trim()) {
@@ -78,7 +78,10 @@ export const AdminAccountSection = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setMessage("Cuenta actualizada correctamente.");
+      toast.success({
+        title: "Cuenta actualizada",
+        description: "Los cambios quedaron guardados correctamente.",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al actualizar cuenta");
     } finally {
@@ -159,11 +162,6 @@ export const AdminAccountSection = () => {
           <Alert variant="destructive">
             <AlertTitle>Acción requerida</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : message ? (
-          <Alert>
-            <AlertTitle>Listo</AlertTitle>
-            <AlertDescription>{message}</AlertDescription>
           </Alert>
         ) : null}
 

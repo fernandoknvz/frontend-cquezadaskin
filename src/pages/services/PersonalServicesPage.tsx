@@ -388,9 +388,8 @@ function CategoryBlock({
 
       <motion.div
         className="mt-8 grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3 xl:gap-8"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.12 }}
+        initial={false}
+        animate="visible"
         variants={{
           hidden: {},
           visible: { transition: { staggerChildren: 0.07 } },

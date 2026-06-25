@@ -17,7 +17,7 @@ import {
 
 type EstadoFiltro = "todos" | "pendiente" | "aprobada" | "rechazada";
 type ModalFeedback = {
-  tone: "success" | "error" | "info";
+  tone: "error" | "info";
   message: string;
 } | null;
 
@@ -46,9 +46,6 @@ const getEstadoClass = (estado?: string | null) => {
   }
   return "border-amber-300/30 bg-amber-400/10 text-amber-200";
 };
-
-const wait = (milliseconds: number) =>
-  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
 export const AdminValoracionesSection = () => {
   const toast = useToast();
@@ -165,11 +162,6 @@ export const AdminValoracionesSection = () => {
         publicada: estado === "aprobada",
         aprobada: estado === "aprobada",
       });
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
-      });
-      await wait(900);
       setSelected(null);
       setModalFeedback(null);
       if (!replaceValoracion(updated)) await loadValoraciones();
@@ -208,11 +200,6 @@ export const AdminValoracionesSection = () => {
       const updated = await patchValoracionAdmin(valoracion.id, {
         visible: nextVisible,
       });
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
-      });
-      await wait(900);
       setSelected(null);
       setModalFeedback(null);
       if (!replaceValoracion(updated)) await loadValoraciones();
@@ -242,11 +229,6 @@ export const AdminValoracionesSection = () => {
       const updated = await patchValoracionAdmin(valoracion.id, {
         respuesta_admin: respuesta.trim() || null,
       });
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
-      });
-      await wait(900);
       setSelected(null);
       setModalFeedback(null);
       if (!replaceValoracion(updated)) await loadValoraciones();
@@ -273,11 +255,6 @@ export const AdminValoracionesSection = () => {
     clearNotification();
     try {
       await deleteValoracionAdmin(id);
-      setModalFeedback({
-        tone: "success",
-        message: "Cambios guardados correctamente.",
-      });
-      await wait(900);
       setValoraciones((current) =>
         current.filter((item) => String(item.id) !== String(id))
       );

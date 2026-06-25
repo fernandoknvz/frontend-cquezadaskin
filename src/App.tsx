@@ -1,7 +1,8 @@
 import "./App.css";
 
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import { StandalonePageTransition } from "./components/motion/PageTransition";
+import { ScrollToTop } from "./components/navigations/ScrollToTop";
 import { MainLayout } from "./layouts/MainLayout";
 import { HomePage } from "./pages/home/HomePage";
 import { ContactPage } from "./pages/contact/ContactPage";
@@ -21,6 +22,7 @@ import NotFoundPage from "./pages/not-found/NotFoundPage";
 function App() {
   return (
     <div className="min-h-screen">
+      <ScrollToTop />
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
@@ -28,7 +30,8 @@ function App() {
           <Route path="/agendar" element={<AgendarPage />} />
           <Route path="/mis-reservas" element={<MisReservasPage />} />
           <Route path="/servicios" element={<PersonalServicesPage />} />
-          <Route path="/empresas" element={<BusinessServicesPage />} />
+          <Route path="/especiales" element={<BusinessServicesPage />} />
+          <Route path="/empresas" element={<Navigate to="/especiales" replace />} />
           <Route path="/eventos" element={<EventPage />} />
           <Route path="/privacidad" element={<PrivacyPage />} />
           <Route path="/terminos" element={<TermsPage />} />

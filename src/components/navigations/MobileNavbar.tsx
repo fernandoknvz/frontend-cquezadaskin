@@ -1,8 +1,9 @@
 ﻿import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu, CalendarCheck2, Phone } from "lucide-react";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { siteConfig } from "@/config/site";
 import type { NavItem } from "./Navbar";
@@ -49,6 +50,10 @@ export const MobileNavbar: React.FC<Props> = ({ items, compact = false }) => {
           </SheetTrigger>
 
           <SheetContent side="right" className="w-[min(88vw,340px)] border-l border-[#ead3c7] bg-[#fffaf7] p-0 text-[#3b302c]">
+            <VisuallyHidden>
+              <SheetTitle>Menu de navegacion principal</SheetTitle>
+            </VisuallyHidden>
+
             <div className="p-5">
               <NavbarBrand />
 
